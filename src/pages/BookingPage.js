@@ -17,12 +17,33 @@ export function BookingPage() {
   container.appendChild(Header());
 
   const main = document.createElement("main");
-  main.className = "container";
-  main.style.padding = "3rem 0";
-  main.style.minHeight = "60vh";
+  main.className = "booking-main";
+  main.style.cssText = `
+    padding: 100px 0 60px;
+    min-height: 70vh;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  `;
+
+  // Create centered container
+  const centeredContainer = document.createElement("div");
+  centeredContainer.className = "booking-container";
+  centeredContainer.style.cssText = `
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+  `;
 
   if (!authService.isAuthenticated()) {
-    main.innerHTML = loginRequiredTemplate;
+    centeredContainer.innerHTML = loginRequiredTemplate;
+    main.appendChild(centeredContainer);
     container.appendChild(main);
     container.appendChild(Footer());
     return container;
@@ -30,16 +51,122 @@ export function BookingPage() {
 
   const user = authService.getUser();
 
+  // Check for service selection from URL parameters
+  const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const selectedServiceId = urlParams.get('service_id');
+  const selectedServiceName = urlParams.get('service_name');
+
   const title = document.createElement("h1");
-  title.textContent = "Đặt Lịch Dịch Vụ";
-  title.style.marginBottom = "2rem";
-  main.appendChild(title);
+  title.textContent = selectedServiceName ? `Đặt Lịch - ${decodeURIComponent(selectedServiceName)}` : "Đặt Lịch Dịch Vụ";
+  title.style.cssText = `
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #1a1a2e;
+    font-size: 2.2rem;
+    font-weight: 700;
+  `;
+  centeredContainer.appendChild(title);
+
+  // Show selected service info if available
+  if (selectedServiceId && selectedServiceName) {
+    const serviceInfo = document.createElement("div");
+    serviceInfo.className = "selected-service-info";
+    serviceInfo.style.cssText = `
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      border-left: 5px solid #f97316;
+      text-align: center;
+    `;
+    serviceInfo.innerHTML = `
+      <h3 style="color: #f97316; margin-bottom: 10px;">
+        <i class="fas fa-check-circle"></i> Dịch vụ đã chọn
+      </h3>
+      <p style="color: #333; font-weight: 500; margin: 0;">
+        ${decodeURIComponent(selectedServiceName)}
+      </p>
+    `;
+    centeredContainer.appendChild(serviceInfo);
+  }
 
   const formContainer = document.createElement("div");
   formContainer.innerHTML = bookingFormTemplate;
   const form = formContainer.querySelector("#booking-form");
 
-  main.appendChild(form);
+  centeredContainer.appendChild(form);
+
+  // Add responsive styles
+  const style = document.createElement("style");
+  style.textContent = `
+    .booking-main {
+      padding: 100px 0 60px !important;
+      min-height: 70vh !important;
+      background: #f8f9fa !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: flex-start !important;
+    }
+
+    .booking-container {
+      max-width: 800px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+      background: white !important;
+      border-radius: 20px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+      padding: 40px !important;
+    }
+
+    .booking-container h1 {
+      text-align: center !important;
+      color: #1a1a2e !important;
+      font-size: 2.2rem !important;
+      font-weight: 700 !important;
+      margin-bottom: 2rem !important;
+    }
+
+    .selected-service-info {
+      text-align: center !important;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9) !important;
+      padding: 20px !important;
+      border-radius: 15px !important;
+      margin-bottom: 30px !important;
+      border-left: 5px solid #f97316 !important;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .booking-main {
+        padding: 80px 0 40px !important;
+      }
+      
+      .booking-container {
+        margin: 0 15px !important;
+        padding: 25px !important;
+        border-radius: 15px !important;
+      }
+      
+      .booking-container h1 {
+        font-size: 1.8rem !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .booking-container {
+        margin: 0 10px !important;
+        padding: 20px !important;
+      }
+      
+      .booking-container h1 {
+        font-size: 1.6rem !important;
+      }
+    }
+  `;
+  container.appendChild(style);
+
+  // Add the centered container to main
+  main.appendChild(centeredContainer);
 
   // Load danh sách sản phẩm
   const productSelect = form.querySelector("#product_id");

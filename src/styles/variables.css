@@ -2,6 +2,8 @@
   /* Brand Colors */
   --primary-color: #f97316; /* Orange - Energetic, commonly used for services */
   --primary-hover: #ea580c;
+  --primary-dark: #ea580c;
+  --primary-light: #fb923c;
   --secondary-color: #0f172a; /* Dark Blue - Professional, trustworthy */
   --accent-color: #3b82f6;
   

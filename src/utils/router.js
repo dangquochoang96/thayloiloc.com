@@ -12,7 +12,21 @@ export class Router {
 
   async handleRoute() {
     const hash = window.location.hash.slice(1) || '/';
-    const route = this.routes[hash] || this.routes['*'];
+    
+    // Handle dynamic routes (e.g., /booking-detail/123)
+    let route = this.routes[hash];
+    
+    if (!route) {
+      // Try to match dynamic routes
+      const pathParts = hash.split('/');
+      const basePath = '/' + pathParts[1]; // e.g., /booking-detail
+      
+      if (this.routes[basePath]) {
+        route = this.routes[basePath];
+      } else {
+        route = this.routes['*'];
+      }
+    }
 
     if (route) {
       this.rootElement.innerHTML = ''; // Clear previous content

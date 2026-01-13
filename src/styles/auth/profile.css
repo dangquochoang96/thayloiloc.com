@@ -1,0 +1,550 @@
+/* Profile Page Styles */
+.profile-main {
+  padding-top: 100px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.profile-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-left: calc(50% + 2rem); /* Dịch chuyển sang phải */
+  transform: translateX(-50%);
+}
+
+/* Profile Header */
+.profile-header {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  border: 1px solid #f1f3f4;
+}
+
+.profile-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-avatar img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #f97316;
+  box-shadow: 0 8px 25px rgba(249,115,22,0.2);
+}
+
+.avatar-upload {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  background: #f97316;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(249,115,22,0.4);
+  border: 3px solid white;
+}
+
+.upload-btn:hover {
+  background: #ea580c;
+  transform: scale(1.1);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h2 {
+  color: #1a1a2e;
+  margin-bottom: 0.8rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.profile-info p {
+  color: #666;
+  margin-bottom: 0.8rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-info p i {
+  color: #f97316;
+  width: 20px;
+}
+
+.user-status {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(249,115,22,0.3);
+}
+
+/* Profile Tabs */
+.profile-tabs {
+  display: flex;
+  background: white;
+  border-radius: 15px;
+  padding: 0.8rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  gap: 0.8rem;
+  border: 1px solid #f1f3f4;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.2rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.tab-btn:hover {
+  background: #fff5f0;
+  color: #f97316;
+  transform: translateY(-2px);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: white;
+  box-shadow: 0 6px 20px rgba(249,115,22,0.4);
+  transform: translateY(-2px);
+}
+
+.tab-btn i {
+  font-size: 1.2rem;
+}
+
+/* Tab Content */
+.profile-content {
+  position: relative;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-card {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem 3.5rem 3rem 3rem; /* Padding bất đối xứng: trái ít hơn phải */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  border: 1px solid #f1f3f4;
+}
+
+.form-card h3 {
+  color: #1a1a2e;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.form-card h3 i {
+  color: #f97316;
+  font-size: 1.5rem;
+}
+
+/* Form Styles */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding-left: 1rem; /* Thêm padding bên trái */
+}
+
+.form-group {
+  margin-bottom: 2rem;
+  padding-left: 0.5rem; /* Spacing nhẹ cho form groups */
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 1.05rem;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-group i {
+  position: absolute;
+  left: 18px;
+  color: #f97316;
+  z-index: 2;
+  font-size: 1.1rem;
+}
+
+.input-group input,
+.input-group textarea {
+  width: 100%;
+  padding: 1.2rem 1.2rem 1.2rem 3.5rem;
+  border: 2px solid #e8ecef;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  transition: all 0.3s;
+  resize: vertical;
+  background: #fafbfc;
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+  outline: none;
+  border-color: #f97316;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+}
+
+.input-group input[readonly] {
+  background: #f8f9fa;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 18px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.toggle-password:hover {
+  background: #f8f9fa;
+  color: #f97316;
+}
+
+/* Alert Messages */
+.alert {
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1rem;
+}
+
+.alert i {
+  font-size: 1.2rem;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Booking History */
+.booking-list {
+  margin-bottom: 2rem;
+  padding-left: 1rem; /* Dịch chuyển booking items sang phải */
+}
+
+.booking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  border: 2px solid #f1f3f4;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+  background: white;
+}
+
+.booking-item:hover {
+  border-color: #f97316;
+  box-shadow: 0 8px 25px rgba(249,115,22,0.15);
+  transform: translateY(-2px);
+}
+
+.booking-info h4 {
+  color: #1a1a2e;
+  margin-bottom: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.booking-info p {
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.booking-info i {
+  color: #f97316;
+  width: 18px;
+  font-size: 1rem;
+}
+
+.booking-status {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.booking-status.completed {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.booking-status.pending {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.booking-status.cancelled {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.2rem 2.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: white;
+  box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(249,115,22,0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  color: white;
+  box-shadow: 0 6px 20px rgba(108,117,125,0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #5a6268, #495057);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(108,117,125,0.4);
+}
+
+/* Loading and Empty States */
+.loading-state, .empty-state, .error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.loading-state i, .empty-state i, .error-state i {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.loading-state h4, .empty-state h4, .error-state h4 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #1a1a2e;
+}
+
+.loading-state p, .empty-state p, .error-state p {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem;
+    margin-left: auto; /* Reset margin trên mobile */
+    transform: none;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .profile-avatar img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-info h2 {
+    font-size: 1.8rem;
+  }
+
+  .profile-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tab-btn {
+    justify-content: flex-start;
+    padding: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-left: 0; /* Reset padding trên mobile */
+  }
+
+  .form-group {
+    padding-left: 0; /* Reset padding trên mobile */
+  }
+
+  .form-card {
+    padding: 2rem; /* Padding đều trên mobile */
+  }
+
+  .booking-list {
+    padding-left: 0; /* Reset padding trên mobile */
+  }
+
+  .booking-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .booking-status {
+    align-self: stretch;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header {
+    padding: 1.5rem;
+  }
+
+  .profile-avatar img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .upload-btn {
+    width: 35px;
+    height: 35px;
+  }
+
+  .form-card {
+    padding: 1.5rem;
+  }
+
+  .form-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .tab-btn {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
+}

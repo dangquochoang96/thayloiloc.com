@@ -1,9 +1,15 @@
 import './styles/main.css';
 import { Router } from './utils/router.js';
+import { ensureFontAwesome } from './utils/icons.js';
 import { HomePage } from './pages/HomePage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
+import { ProfilePage } from './pages/ProfilePage.js';
 import { BookingPage } from './pages/BookingPage.js';
+import { BookingHistoryPage } from './pages/BookingHistoryPage.js';
+import { BookingDetailPage } from './pages/BookingDetailPage.js';
+import { FilterHistoryPage } from './pages/FilterHistoryPage.js';
+import { ServicesPage } from './pages/ServicesPage.js';
 
 const routes = {
   '/': {
@@ -15,8 +21,23 @@ const routes = {
   '/register': {
     render: RegisterPage
   },
+  '/profile': {
+    render: ProfilePage
+  },
+  '/services': {
+    render: ServicesPage
+  },
   '/booking': {
     render: BookingPage
+  },
+  '/booking-history': {
+    render: BookingHistoryPage
+  },
+  '/booking-detail': {
+    render: BookingDetailPage
+  },
+  '/filter-history': {
+    render: FilterHistoryPage
   },
   '*': {
     render: () => {
@@ -27,4 +48,11 @@ const routes = {
   }
 };
 
-new Router(routes);
+// Ensure Font Awesome is loaded before starting the router
+ensureFontAwesome().then(() => {
+  console.log('Starting router with Font Awesome loaded');
+  new Router(routes);
+}).catch((error) => {
+  console.warn('Font Awesome failed to load, continuing anyway:', error);
+  new Router(routes);
+});

@@ -1,0 +1,157 @@
+<div class="profile-container">
+  <div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <img id="avatar-preview" src="/public/images/default-avatar.svg" alt="Avatar">
+        <div class="avatar-upload">
+          <input type="file" id="avatar-input" accept="image/*" hidden>
+          <label for="avatar-input" class="upload-btn">
+            <i class="fas fa-camera"></i>
+          </label>
+        </div>
+      </div>
+      <div class="profile-info">
+        <h2 id="user-name">Người dùng</h2>
+        <p><i class="fas fa-phone"></i><span id="user-phone">+84 xxx xxx xxx</span></p>
+        <div class="user-status">
+          <i class="fas fa-crown"></i>
+          Thành viên
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Tabs -->
+    <div class="profile-tabs">
+      <button class="tab-btn active" data-tab="profile-info">
+        <span>Thông tin cá nhân</span>
+      </button>
+      <button class="tab-btn" data-tab="change-password">
+        <span>Đổi mật khẩu</span>
+      </button>
+      <button class="tab-btn" data-tab="booking-history">
+        <span>Lịch sử đặt lịch</span>
+      </button>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="profile-content">
+      <!-- Profile Information Tab -->
+      <div id="profile-info" class="tab-content active">
+        <div class="form-card">
+          <h3>
+            Thông tin cá nhân
+          </h3>
+          
+          <div id="success-msg" class="alert alert-success" style="display: none;">
+            <span></span>
+          </div>
+          <div id="error-msg" class="alert alert-error" style="display: none;">
+            <span></span>
+          </div>
+
+          <form id="profile-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fullName">
+                  Họ và tên
+                </label>
+                <div class="input-group">
+                  <input type="text" id="fullName" name="fullName" placeholder="Nhập họ và tên của bạn">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="phone">
+                  Số điện thoại
+                </label>
+                <div class="input-group">
+                  <input type="tel" id="phone" name="phone" placeholder="Số điện thoại" readonly>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="address">
+                Địa chỉ
+              </label>
+              <div class="input-group">
+                <textarea id="address" name="address" placeholder="Nhập địa chỉ của bạn" rows="3"></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Cập nhật thông tin
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Change Password Tab -->
+      <div id="change-password" class="tab-content">
+        <div class="form-card">
+          <h3>
+            Đổi mật khẩu
+          </h3>
+          
+          <form id="password-form">
+            <div class="form-group">
+              <label for="currentPassword">
+                Mật khẩu hiện tại
+              </label>
+              <div class="input-group">
+                <input type="password" id="currentPassword" name="currentPassword" placeholder="Nhập mật khẩu hiện tại" required>
+                <button type="button" class="toggle-password">
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">
+                Mật khẩu mới
+              </label>
+              <div class="input-group">
+                <input type="password" id="newPassword" name="newPassword" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" required>
+                <button type="button" class="toggle-password">
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">
+                Xác nhận mật khẩu mới
+              </label>
+              <div class="input-group">
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu mới" required>
+                <button type="button" class="toggle-password">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Đổi mật khẩu
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Booking History Tab -->
+      <div id="booking-history" class="tab-content">
+        <div class="form-card">
+          <h3>
+            Lịch sử đặt lịch
+          </h3>
+          <div class="booking-list">
+            <!-- Dynamic content will be loaded here -->
+          </div>
+
+          <div class="text-center">
+            <a href="#/booking-history" class="btn btn-secondary">
+              Xem tất cả lịch sử
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
