@@ -1,129 +1,129 @@
-import { Header } from '../components/Header.js';
-import { Footer } from '../components/Footer.js';
-import { servicesService } from '../services/services.service.js';
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
+import { newsService } from "../services/news.service.js";
+import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
+
+// Import HTML templates
+import heroTemplate from "../templates/home/hero-section.html?raw";
+import servicesTemplate from "../templates/home/services-section.html?raw";
+import newsTemplate from "../templates/home/news-section.html?raw";
+import contactTemplate from "../templates/home/contact-section.html?raw";
+import floatingButtonTemplate from "../templates/home/floating-button.html?raw";
+
+// Import CSS styles
+import "../styles/home/hero-section.css";
+import "../styles/home/services-section.css";
+import "../styles/home/news-section.css";
+import "../styles/home/contact-section.css";
+import "../styles/home/floating-button.css";
 
 export function HomePage() {
-  const container = document.createElement('div');
-  
+  const container = document.createElement("div");
+
   const header = Header();
   container.appendChild(header);
 
-  const main = document.createElement('main');
-  
+  const main = document.createElement("main");
+
   // Hero Section
-  const heroSection = document.createElement('section');
-  heroSection.style.padding = '4rem 0';
-  heroSection.style.backgroundColor = '#fff';
-  heroSection.innerHTML = `
-    <div class="container" style="text-align: center;">
-      <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1.5rem; line-height: 1.2;">
-        Your Trusted Partner for <br/>
-        <span style="color: var(--primary-color)">Home Maintenance</span>
-      </h1>
-      <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem;">
-        From repairs to installations, we handle it all with professionalism and care. Book a service today and experience the difference.
-      </p>
-      <div style="display: flex; gap: 1rem; justify-content: center;">
-        <a href="#/booking" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1.1rem;">Book a Service</a>
-        <a href="#/services" class="btn btn-secondary" style="padding: 0.75rem 2rem; font-size: 1.1rem;">View Services</a>
-      </div>
-    </div>
-  `;
-  main.appendChild(heroSection);
+  const heroSection = document.createElement("div");
+  heroSection.innerHTML = heroTemplate;
+  main.appendChild(heroSection.firstElementChild);
 
-  // Features Section
-  const featuresSection = document.createElement('section');
-  featuresSection.style.padding = '4rem 0';
-  featuresSection.innerHTML = `
-    <div class="container">
-      <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2rem;">Why Choose Us</h2>
-      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-        <div class="card">
-          <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Expert Technicians</h3>
-          <p style="color: var(--text-muted);">Our team consists of certified and experienced professionals.</p>
-        </div>
-        <div class="card">
-          <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Transparent Pricing</h3>
-          <p style="color: var(--text-muted);">No hidden fees. You pay what you see.</p>
-        </div>
-        <div class="card">
-          <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Satisfaction Guaranteed</h3>
-          <p style="color: var(--text-muted);">We are committed to delivering top-notch service quality.</p>
-        </div>
-      </div>
-    </div>
-  `;
-  main.appendChild(featuresSection);
+  // Services Section
+  const servicesSection = document.createElement("div");
+  servicesSection.innerHTML = servicesTemplate;
+  main.appendChild(servicesSection.firstElementChild);
 
-  // Service Section
-  const serviceSection = document.createElement('section');
-  serviceSection.className = 'container';
-  serviceSection.style.padding = '3rem 0';
-  
-  const serviceTitle = document.createElement('h1');
-  serviceTitle.style.textAlign = 'center';
-  serviceTitle.style.marginBottom = '3rem';
-  serviceTitle.textContent = 'Our Services';
-  serviceSection.appendChild(serviceTitle);
+  // News Section
+  const newsSection = document.createElement("div");
+  newsSection.innerHTML = newsTemplate;
+  main.appendChild(newsSection.firstElementChild);
 
-  const servicesGrid = document.createElement('div');
-  servicesGrid.className = 'grid';
-  servicesGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
-  
-  // Loading state
-  servicesGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-muted);">Loading services...</p>';
-  serviceSection.appendChild(servicesGrid);
+  // Load news from API
+  loadNews();
 
-  // Fetch services from API
-  servicesService.getListService()
-    .then(response => {
-      if (response.code === 1 && response.data) {
-        // Sort by order field
-        const services = response.data.sort((a, b) => parseInt(a.order) - parseInt(b.order));
-        
-        // Clear loading message
-        servicesGrid.innerHTML = '';
-        
-        // Render services
-        services.forEach(service => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.style.cursor = 'pointer';
-          card.style.transition = 'transform 0.2s';
-          
-          card.innerHTML = `
-            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">${service.name}</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">${service.des ? service.des.substring(0, 100).replace(/<[^>]*>/g, '') + '...' : 'Dịch vụ máy lọc nước'}</p>
-          `;
-          
-          // Add hover effect
-          card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-5px)';
-          });
-          card.addEventListener('mouseleave', () => {
-            card.style.transform = 'translateY(0)';
-          });
-          
-          // Click to navigate to booking
-          card.addEventListener('click', () => {
-            window.location.hash = '/booking';
-          });
-          
-          servicesGrid.appendChild(card);
-        });
-      } else {
-        servicesGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: red;">Failed to load services</p>';
-      }
-    })
-    .catch(error => {
-      console.error('Error loading services:', error);
-      servicesGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: red;">Error loading services. Please try again later.</p>';
-    });
-
-  main.appendChild(serviceSection);
+  // Contact Section
+  const contactSection = document.createElement("div");
+  contactSection.innerHTML = contactTemplate;
+  main.appendChild(contactSection.firstElementChild);
 
   container.appendChild(main);
   container.appendChild(Footer());
 
+  // Floating Button
+  const floatingButton = document.createElement("div");
+  floatingButton.innerHTML = floatingButtonTemplate;
+  container.appendChild(floatingButton.firstElementChild);
+
   return container;
+}
+
+// News loading function using news service
+function loadNews() {
+  newsService
+    .getNewsList()
+    .then((result) => {
+      const newsLoading = document.getElementById("newsLoading");
+      const newsGrid = document.getElementById("newsGrid");
+
+      if (newsLoading) newsLoading.style.display = "none";
+      if (newsGrid) newsGrid.style.display = "grid";
+
+      let news = [];
+      if (result.data && Array.isArray(result.data)) {
+        news = result.data.slice(0, 6); // Get 6 latest news
+      } else if (Array.isArray(result)) {
+        news = result.slice(0, 6);
+      }
+
+      displayNews(news);
+    })
+    .catch((err) => {
+      console.log("Error loading news:", err);
+      const newsLoading = document.getElementById("newsLoading");
+      if (newsLoading) {
+        newsLoading.innerHTML =
+          '<p style="color:#666;">Không thể tải tin tức</p>';
+      }
+    });
+}
+
+function displayNews(news) {
+  const container = document.getElementById("newsGrid");
+  if (!container) return;
+
+  if (news.length === 0) {
+    container.innerHTML =
+      '<p style="text-align:center; color:#666; grid-column:1/-1;">Chưa có tin tức</p>';
+    return;
+  }
+
+  container.innerHTML = news
+    .map((item) => {
+      const imageUrl = getImageUrl(item.image || item.thumbnail || item.avatar);
+      const detailLink = `news-detail.html?id=${item.id}`;
+
+      return `
+      <div class="news-card" onclick="window.location.href='${detailLink}'" style="cursor:pointer;">
+        <div class="news-image">
+          <img src="${imageUrl}" alt="${
+        item.title || item.name || "Tin tức"
+      }" onerror="this.src='/images/logo.png'">
+        </div>
+        <div class="news-content">
+          <span class="news-date"><i class="fas fa-calendar"></i> ${formatDate(
+            item.created_at || item.date
+          )}</span>
+          <h3>${item.title || item.name || "Tin tức"}</h3>
+          <p>${truncateText(
+            item.description || item.content || item.des || "",
+            100
+          )}</p>
+          <a href="${detailLink}" class="news-link">Xem thêm <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
 }

@@ -1,0 +1,27 @@
+<div class="card auth-card">
+    <h2 class="auth-title">Create Account</h2>
+    <form id="register-form" class="auth-form">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <div id="error-msg" class="message message-error" style="display: none;"></div>
+        <div id="success-msg" class="message message-success" style="display: none;">Registration successful!
+            Redirecting...</div>
+
+        <button type="submit" class="btn btn-primary btn-submit">Register</button>
+
+        <p class="auth-footer">
+            Already have an account? <a href="#/login" class="auth-link">Login</a>
+        </p>
+    </form>
+</div>

@@ -1,0 +1,21 @@
+<div class="card auth-card">
+    <h2 class="auth-title">Welcome Back</h2>
+    <form id="login-form" class="auth-form">
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <div id="error-msg" class="message message-error" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-primary btn-submit">Login</button>
+
+        <p class="auth-footer">
+            Don't have an account? <a href="#/register" class="auth-link">Register</a>
+        </p>
+    </form>
+</div>

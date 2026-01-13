@@ -1,0 +1,36 @@
+/* Features Section Styles */
+.features-section {
+  padding: 4rem 0;
+}
+
+.features-title {
+  text-align: center;
+  margin-bottom: 3rem;
+  font-size: 2rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-title {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.feature-description {
+  color: var(--text-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .features-title {
+    font-size: 1.5rem;
+  }
+}

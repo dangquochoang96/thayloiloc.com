@@ -6,14 +6,14 @@ export class ApiClient {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     };
 
     // Add Auth Token if exists
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem("auth_token");
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
     const config = {
@@ -23,41 +23,43 @@ export class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle non-2xx responses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Request failed with status ${response.status}`);
+        throw new Error(
+          errorData.message || `Request failed with status ${response.status}`
+        );
       }
 
       return await response.json();
     } catch (error) {
-      console.error('API Request Error:', error);
+      console.error("API Request Error:", error);
       throw error;
     }
   }
 
   get(endpoint) {
-    return this.request(endpoint, { method: 'GET' });
+    return this.request(endpoint, { method: "GET" });
   }
 
   post(endpoint, body) {
     return this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(body),
     });
   }
 
   put(endpoint, body) {
     return this.request(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(body),
     });
   }
 
   delete(endpoint) {
-    return this.request(endpoint, { method: 'DELETE' });
+    return this.request(endpoint, { method: "DELETE" });
   }
 }
 
-export const api = new ApiClient('http://api.chothuetatca.com/api');
+export const api = new ApiClient("https://api.chothuetatca.com/api");

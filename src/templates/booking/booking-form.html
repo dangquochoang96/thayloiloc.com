@@ -1,0 +1,67 @@
+<form id="booking-form" class="card booking-form">
+    <div class="form-container">
+        <!-- Loại dịch vụ -->
+        <div class="form-group">
+            <label for="type_task">Loại Dịch Vụ <span class="required">*</span></label>
+            <select id="type_task" name="type_task" required>
+                <option value="">-- Chọn loại dịch vụ --</option>
+                <option value="1">[VS Bảo dưỡng]</option>
+                <option value="2">[Thay lõi + VS]</option>
+                <option value="3">[Sửa máy + VS]</option>
+                <option value="4">[Lắp máy]</option>
+                <option value="5">[Chuyển máy]</option>
+                <option value="6">Khác</option>
+            </select>
+        </div>
+
+        <!-- Sản phẩm -->
+        <div class="form-group">
+            <label for="product_id">Sản Phẩm <span class="required">*</span></label>
+            <select id="product_id" name="product_id" required>
+                <option value="">Đang tải...</option>
+            </select>
+        </div>
+
+        <!-- Thời gian bắt đầu -->
+        <div class="form-group">
+            <label for="time_star">Thời Gian Bắt Đầu <span class="required">*</span></label>
+            <input type="datetime-local" id="time_star" name="time_star" required>
+        </div>
+
+        <!-- Thời gian kết thúc -->
+        <div class="form-group">
+            <label for="time_end">Thời Gian Kết Thúc <span class="required">*</span></label>
+            <input type="datetime-local" id="time_end" name="time_end" required>
+        </div>
+
+        <!-- Địa chỉ -->
+        <div class="form-group">
+            <label for="address">Địa Chỉ <span class="required">*</span></label>
+            <input type="text" id="address" name="address" required placeholder="Nhập địa chỉ của bạn">
+        </div>
+
+        <!-- Mô tả -->
+        <div class="form-group">
+            <label for="des">Mô Tả</label>
+            <textarea id="des" name="des" rows="4"
+                placeholder="Mô tả chi tiết vấn đề hoặc yêu cầu của bạn..."></textarea>
+        </div>
+
+        <!-- Upload ảnh -->
+        <div class="form-group">
+            <label for="images">Hình Ảnh (Tùy chọn)</label>
+            <input type="file" id="images" name="images" multiple accept="image/*">
+            <p class="form-hint">Bạn có thể upload nhiều ảnh để mô tả vấn đề</p>
+            <div id="image-preview" class="image-preview"></div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="error-msg" class="message message-error" style="display: none;"></div>
+        <div id="success-msg" class="message message-success" style="display: none;"></div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary btn-submit">
+            Xác Nhận Đặt Lịch
+        </button>
+    </div>
+</form>

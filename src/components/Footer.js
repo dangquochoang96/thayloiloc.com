@@ -1,15 +1,15 @@
 export function Footer() {
-  const footer = document.createElement('footer');
-  footer.style.backgroundColor = 'var(--secondary-color)';
-  footer.style.color = 'var(--text-light)';
-  footer.style.padding = '3rem 0';
-  footer.style.marginTop = 'auto';
+  const footer = document.createElement("footer");
+  footer.style.backgroundColor = "var(--secondary-color)";
+  footer.style.color = "var(--text-light)";
+  footer.style.padding = "3rem 0 1rem";
+  footer.style.marginTop = "auto";
 
   footer.innerHTML = ` 
     <div class="container">
       <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
         <div>
-          <h3 style="color: var(--primary-color); margin-bottom: 1rem;">HandymanService</h3>
+          <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Thayloiloc</h3>
           <p style="color: #94a3b8;">Professional home services at your doorstep. Reliable, fast, and affordable.</p>
         </div>
         <div>
@@ -27,7 +27,7 @@ export function Footer() {
         </div>
       </div>
       <div style="margin-top: 3rem; pt: 2rem; border-top: 1px solid #334155; text-align: center; color: #94a3b8;">
-        &copy; ${new Date().getFullYear()} HandymanService. All rights reserved.
+        &copy; ${new Date().getFullYear()} Thayloiloc. All rights reserved.
       </div>
     </div>
   `;

@@ -4,6 +4,13 @@ import { authService } from "../services/auth.service.js";
 import { servicesService } from "../services/services.service.js";
 import { productService } from "../services/product.service.js";
 
+// Import HTML templates
+import loginRequiredTemplate from "../templates/booking/login-required.html?raw";
+import bookingFormTemplate from "../templates/booking/booking-form.html?raw";
+
+// Import CSS styles
+import "../styles/booking/booking-form.css";
+
 export function BookingPage() {
   const container = document.createElement("div");
 
@@ -15,13 +22,7 @@ export function BookingPage() {
   main.style.minHeight = "60vh";
 
   if (!authService.isAuthenticated()) {
-    main.innerHTML = `
-       <div style="text-align: center; margin-top: 3rem;">
-         <h2>Please Login to Book a Service</h2>
-         <p style="margin-bottom: 2rem; color: var(--text-muted);">You need an account to schedule appointments.</p>
-         <a href="#/login" class="btn btn-primary">Login Now</a>
-       </div>
-     `;
+    main.innerHTML = loginRequiredTemplate;
     container.appendChild(main);
     container.appendChild(Footer());
     return container;
@@ -34,87 +35,24 @@ export function BookingPage() {
   title.style.marginBottom = "2rem";
   main.appendChild(title);
 
-  const form = document.createElement("form");
-  form.className = "card";
-  form.style.maxWidth = "700px";
-  form.id = "booking-form";
-
-  form.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      <!-- Loại dịch vụ -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Loại Dịch Vụ <span style="color: red;">*</span></label>
-        <select id="type_task" name="type_task" required style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);">
-          <option value="">-- Chọn loại dịch vụ --</option>
-          <option value="1">[VS Bảo dưỡng]</option>
-          <option value="2">[Thay lõi + VS]</option>
-          <option value="3">[Sửa máy + VS]</option>
-          <option value="4">[Lắp máy]</option>
-          <option value="5">[Chuyển máy]</option>
-        </select>
-      </div>
-
-      <!-- Sản phẩm -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Sản Phẩm <span style="color: red;">*</span></label>
-        <select id="product_id" name="product_id" required style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);">
-          <option value="">Đang tải...</option>
-        </select>
-      </div>
-
-      <!-- Thời gian bắt đầu -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Thời Gian Bắt Đầu <span style="color: red;">*</span></label>
-        <input type="datetime-local" id="time_star" name="time_star" required style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);">
-      </div>
-
-      <!-- Thời gian kết thúc -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Thời Gian Kết Thúc <span style="color: red;">*</span></label>
-        <input type="datetime-local" id="time_end" name="time_end" required style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);">
-      </div>
-
-      <!-- Địa chỉ -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Địa Chỉ <span style="color: red;">*</span></label>
-        <input type="text" id="address" name="address" required placeholder="Nhập địa chỉ của bạn" style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);">
-      </div>
-
-      <!-- Mô tả -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Mô Tả</label>
-        <textarea id="des" name="des" rows="4" placeholder="Mô tả chi tiết vấn đề hoặc yêu cầu của bạn..." style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);"></textarea>
-      </div>
-
-      <!-- Upload ảnh -->
-      <div>
-        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Hình Ảnh (Tùy chọn)</label>
-        <input type="file" id="images" name="images" multiple accept="image/*" style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: var(--radius-sm);">
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Bạn có thể upload nhiều ảnh để mô tả vấn đề</p>
-        <div id="image-preview" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;"></div>
-      </div>
-
-      <!-- Error/Success Messages -->
-      <div id="error-msg" style="color: red; font-size: 0.9rem; display: none;"></div>
-      <div id="success-msg" style="color: green; font-size: 0.9rem; display: none;"></div>
-
-      <!-- Submit Button -->
-      <button type="submit" class="btn btn-primary" style="padding: 0.75rem;">
-        Xác Nhận Đặt Lịch
-      </button>
-    </div>
-  `;
+  const formContainer = document.createElement("div");
+  formContainer.innerHTML = bookingFormTemplate;
+  const form = formContainer.querySelector("#booking-form");
 
   main.appendChild(form);
 
   // Load danh sách sản phẩm
   const productSelect = form.querySelector("#product_id");
+  const addressInput = form.querySelector("#address");
+  let productsData = []; // Store products data with addresses
+
   productService
     .getListProduct(user.id)
     .then((products) => {
       productSelect.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
 
       if (products && products.length > 0) {
+        productsData = products; // Store the products data
         products.forEach((product) => {
           const option = document.createElement("option");
           option.value = product.id;
@@ -124,7 +62,7 @@ export function BookingPage() {
         });
       } else {
         productSelect.innerHTML =
-          '<option value="">Không có sản phẩm nào</option>';
+          '<option value="">Chưa mua sản phẩm nào</option>';
       }
     })
     .catch((error) => {
@@ -132,6 +70,19 @@ export function BookingPage() {
       productSelect.innerHTML =
         '<option value="">Lỗi khi tải sản phẩm</option>';
     });
+
+  // Auto-fill address when product is selected
+  productSelect.addEventListener("change", (e) => {
+    const selectedProductId = e.target.value;
+    if (selectedProductId && productsData.length > 0) {
+      const selectedProduct = productsData.find(
+        (p) => p.id === parseInt(selectedProductId)
+      );
+      if (selectedProduct && selectedProduct.address) {
+        addressInput.value = selectedProduct.address;
+      }
+    }
+  });
 
   // Preview images
   const imageInput = form.querySelector("#images");
