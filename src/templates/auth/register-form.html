@@ -1,27 +1,26 @@
 <div class="card auth-card">
-    <h2 class="auth-title">Create Account</h2>
+    <h2 class="auth-title">Tạo tài khoản</h2>
     <form id="register-form" class="auth-form">
         <div class="form-group">
-            <label for="name">Name</label>
+            <label for="name">Tên</label>
             <input type="text" id="name" name="name" required>
         </div>
         <div class="form-group">
-            <label for="phone">Phone</label>
+            <label for="phone">Số điện thoại</label>
             <input type="text" id="phone" name="phone" required>
         </div>
         <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">Mật khẩu</label>
             <input type="password" id="password" name="password" required>
         </div>
 
         <div id="error-msg" class="message message-error" style="display: none;"></div>
-        <div id="success-msg" class="message message-success" style="display: none;">Registration successful!
-            Redirecting...</div>
+        <div id="success-msg" class="message message-success" style="display: none;">Đăng ký thành công...</div>
 
-        <button type="submit" class="btn btn-primary btn-submit">Register</button>
+        <button type="submit" class="btn btn-primary btn-submit">Đăng ký</button>
 
         <p class="auth-footer">
-            Already have an account? <a href="#/login" class="auth-link">Login</a>
+            Bạn đã có tài khoản ? <a href="#/login" class="auth-link">Đăng nhập</a>
         </p>
     </form>
 </div>

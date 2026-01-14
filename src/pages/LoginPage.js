@@ -42,7 +42,7 @@ export function LoginPage() {
       window.location.reload(); // To update header state
     } catch (err) {
       errorMsg.textContent =
-        err.message || "Login failed. Please check your credentials.";
+        err.message || "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập của bạn.";
       errorMsg.style.display = "block";
     }
   });

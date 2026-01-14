@@ -490,7 +490,7 @@ export function Header() {
   logo.className = "logo";
   
   const logoImg = document.createElement("img");
-  logoImg.src = "/LOGO.png";
+  logoImg.src = "/images/LOGO.png";
   logoImg.alt = "Logo";
   logo.appendChild(logoImg);
   

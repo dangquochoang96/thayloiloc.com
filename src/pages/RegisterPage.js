@@ -46,7 +46,7 @@ export function RegisterPage() {
         window.location.hash = "/login";
       }, 1500);
     } catch (err) {
-      errorMsg.textContent = err.message || "Registration failed.";
+      errorMsg.textContent = err.message || "Đăng ký thất bại.";
       errorMsg.style.display = "block";
     }
   });
