@@ -11,25 +11,40 @@ export function ServicesPage() {
   let allServices = [];
   let loading = true;
 
-  // Service icons mapping
+  // Service icons mapping with FontAwesome
   const serviceIcons = {
-    'góp ý': 'fa-comment-dots',
-    'khiếu nại': 'fa-comment-dots',
-    'quản lý': 'fa-clipboard-list',
-    'đơn hàng': 'fa-clipboard-list',
-    'vệ sinh': 'fa-broom',
-    'sửa': 'fa-wrench',
-    'thay': 'fa-sync-alt',
-    'lõi': 'fa-filter',
-    'bảo dưỡng': 'fa-tools',
-    'default': 'fa-cog'
+    'vệ sinh': 'fa-broom',           // Cleaning
+    'thay lõi': 'fa-filter',         // Filter replacement
+    'sửa chữa': 'fa-wrench',         // Repair
+    'sửa': 'fa-wrench',              // Repair (short form)
+    'bảo dưỡng': 'fa-tools',         // Maintenance
+    'lắp đặt': 'fa-hammer',          // Installation
+    'tư vấn': 'fa-comments',         // Consultation
+    'chuyển': 'fa-truck',            // Moving/Transfer
+    'default': 'fa-cog'              // Default
   };
 
-  const getServiceIcon = (name) => {
-    const lowerName = name.toLowerCase();
-    for (const [key, icon] of Object.entries(serviceIcons)) {
-      if (lowerName.includes(key)) return icon;
+  const getServiceIcon = (serviceName) => {
+    const lowerName = (serviceName || '').toLowerCase();
+    
+    // Priority order: check specific keywords first
+    const priorityOrder = [
+      'vệ sinh',
+      'thay lõi', 
+      'lắp đặt',
+      'bảo dưỡng',
+      'sửa chữa',
+      'sửa',
+      'tư vấn',
+      'chuyển'
+    ];
+    
+    for (const key of priorityOrder) {
+      if (lowerName.includes(key)) {
+        return serviceIcons[key];
+      }
     }
+    
     return serviceIcons.default;
   };
 
