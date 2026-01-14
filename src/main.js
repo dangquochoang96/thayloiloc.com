@@ -9,6 +9,7 @@ import { BookingPage } from './pages/BookingPage.js';
 import { BookingHistoryPage } from './pages/BookingHistoryPage.js';
 import { BookingDetailPage } from './pages/BookingDetailPage.js';
 import { FilterHistoryPage } from './pages/FilterHistoryPage.js';
+import { FilterHistoryDetailPage } from './pages/FilterHistoryDetailPage.js';
 import { ServicesPage } from './pages/ServicesPage.js';
 
 const routes = {
@@ -38,6 +39,9 @@ const routes = {
   },
   '/filter-history': {
     render: FilterHistoryPage
+  },
+  '/filter-history-detail': {
+    render: FilterHistoryDetailPage
   },
   '*': {
     render: () => {

@@ -2,6 +2,7 @@ import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
 import { bookingService } from "../services/booking.service.js";
+import { historyService } from "../services/history.service.js";
 
 // Import HTML template
 import bookingDetailTemplate from "../templates/booking/booking-detail.html?raw";
@@ -15,9 +16,6 @@ export function BookingDetailPage() {
 
   container.appendChild(Header());
 
-  const main = document.createElement("main");
-  main.className = "booking-detail-main";
-
   const bookingContainer = document.createElement("div");
   bookingContainer.innerHTML = bookingDetailTemplate;
   const bookingContent = bookingContainer.firstElementChild;
@@ -25,11 +23,7 @@ export function BookingDetailPage() {
   // Load booking detail
   loadBookingDetail(bookingContent);
 
-  // Setup event listeners
-  setupEventListeners(bookingContent);
-
-  main.appendChild(bookingContent);
-  container.appendChild(main);
+  container.appendChild(bookingContent);
   container.appendChild(Footer());
 
   return container;
@@ -39,291 +33,196 @@ async function loadBookingDetail(container) {
   const user = authService.getCurrentUser();
   
   if (!user) {
+    console.warn('User not authenticated, redirecting to login');
     window.location.hash = "/login";
     return;
   }
 
   // Get booking ID from URL hash
   const hash = window.location.hash;
+  console.log('Current hash:', hash);
   const bookingId = hash.split('/')[2]; // #/booking-detail/123
 
   if (!bookingId) {
-    showError(container, "Không tìm thấy thông tin đặt lịch");
+    console.error('No booking ID found in URL:', hash);
+    showError(container, 'Không tìm thấy mã đặt lịch trong URL');
     return;
   }
 
+  console.log('Loading booking detail for ID:', bookingId);
+
   try {
     // Show loading state
-    showLoading(container);
+    const loadingState = container.querySelector('#detailLoading');
+    const detailContent = container.querySelector('#detailContent');
+    const errorState = container.querySelector('#errorState');
+    
+    if (loadingState) loadingState.style.display = 'block';
+    if (detailContent) detailContent.style.display = 'none';
+    if (errorState) errorState.style.display = 'none';
 
-    // Fetch booking detail from API
-    const booking = await bookingService.getBookingDetail(bookingId);
+    // Use historyService to get booking detail (same as BookingHistoryPage)
+    console.log('Attempting to load booking detail using historyService...');
+    const booking = await historyService.getBookingDetail(bookingId);
+    console.log('Booking detail loaded successfully:', booking);
+    
+    // Handle different response formats
+    let bookingData;
+    if (booking && booking.data) {
+      bookingData = booking.data;
+    } else if (booking) {
+      bookingData = booking;
+    } else {
+      throw new Error('Không có dữ liệu booking');
+    }
     
     // Render booking detail
-    renderBookingDetail(container, booking);
+    renderBookingDetail(container, bookingData);
 
   } catch (error) {
     console.error('Error loading booking detail:', error);
-    showError(container, error.message || "Có lỗi xảy ra khi tải thông tin đặt lịch");
+    showError(container, error.message || 'Có lỗi xảy ra khi tải thông tin đặt lịch');
   }
 }
 
-function showLoading(container) {
-  const loadingHtml = `
-    <div class="loading-container">
-      <div class="loading-spinner">
-        <i class="fas fa-spinner fa-spin"></i>
-      </div>
-      <p>Đang tải thông tin đặt lịch...</p>
-    </div>
-  `;
-  container.innerHTML = loadingHtml;
+function showError(container, message = 'Không tìm thấy thông tin') {
+  const loadingState = container.querySelector('#detailLoading');
+  const detailContent = container.querySelector('#detailContent');
+  const errorState = container.querySelector('#errorState');
+  
+  if (loadingState) loadingState.style.display = 'none';
+  if (detailContent) detailContent.style.display = 'none';
+  if (errorState) {
+    errorState.style.display = 'block';
+    // Update error message if provided
+    const errorTitle = errorState.querySelector('h3');
+    if (errorTitle) errorTitle.textContent = message;
+  }
 }
 
-function showError(container, message) {
-  const errorHtml = `
-    <div class="error-container">
-      <div class="error-icon">
-        <i class="fas fa-exclamation-triangle"></i>
-      </div>
-      <h3>Có lỗi xảy ra</h3>
-      <p>${message}</p>
-      <div class="error-actions">
-        <button onclick="history.back()" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Quay lại
-        </button>
-        <button onclick="location.reload()" class="btn btn-primary">
-          <i class="fas fa-redo"></i> Thử lại
-        </button>
-      </div>
-    </div>
-  `;
-  container.innerHTML = errorHtml;
+// Status mapping functions - same as BookingHistoryPage
+function getStatusClass(status) {
+  const map = { '1': 'pending', '2': 'confirmed', '3': 'completed', '4': 'cancelled' };
+  return map[status] || 'pending';
+}
+
+function getStatusText(status) {
+  const map = { '1': 'Chờ xác nhận', '2': 'Đã xác nhận', '3': 'Hoàn thành', '4': 'Đã hủy' };
+  return map[status] || 'Chờ xử lý';
 }
 
 function renderBookingDetail(container, booking) {
-  const statusText = bookingService.getStatusText(booking.status);
-  const statusIcon = bookingService.getStatusIcon(booking.status);
-  const statusClass = bookingService.getStatusClass(booking.status);
+  console.log('Rendering booking detail:', booking);
+  
+  const loadingState = container.querySelector('#detailLoading');
+  const detailContent = container.querySelector('#detailContent');
+  const errorState = container.querySelector('#errorState');
+  
+  // Hide loading, show content
+  if (loadingState) loadingState.style.display = 'none';
+  if (detailContent) detailContent.style.display = 'block';
+  if (errorState) errorState.style.display = 'none';
 
-  const detailHtml = `
-    <div class="booking-detail-container">
-      <div class="container">
-        <!-- Header -->
-        <div class="detail-header">
-          <button onclick="history.back()" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-          </button>
-          <div class="header-info">
-            <h1>Chi tiết đặt lịch</h1>
-            <p>Mã đặt lịch: <strong>#${booking.id}</strong></p>
-          </div>
-          <div class="booking-status ${statusClass}">
-            <i class="fas ${statusIcon}"></i>
-            <span>${statusText}</span>
-          </div>
-        </div>
+  // Fill in the data with null checks
+  const bookingIdSpan = container.querySelector('#bookingId');
+  const timeValue = container.querySelector('#timeValue');
+  const taskName = container.querySelector('#taskName');
+  const productName = container.querySelector('#productName');
+  const description = container.querySelector('#description');
+  const address = container.querySelector('#address');
+  const status = container.querySelector('#status');
+  const staffName = container.querySelector('#staffName');
+  const staffPhone = container.querySelector('#staffPhone');
+  const notification = container.querySelector('#notification');
+  const mediaGallery = container.querySelector('#mediaGallery');
 
-        <!-- Main Content -->
-        <div class="detail-content">
-          <!-- Service Info -->
-          <div class="detail-card service-info">
-            <h3><i class="fas fa-cog"></i> Thông tin dịch vụ</h3>
-            <div class="service-details">
-              <div class="service-item">
-                <img src="${booking.service?.image || '/public/images/default-service.svg'}" alt="${booking.service?.name}" class="service-image">
-                <div class="service-content">
-                  <h4>${booking.service?.name || 'Dịch vụ không xác định'}</h4>
-                  <p class="service-description">${booking.service?.description || ''}</p>
-                  <div class="service-price">
-                    <span class="price">${formatPrice(booking.service?.price || 0)}</span>
-                    <span class="duration">${booking.service?.duration || 60} phút</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Booking Info -->
-          <div class="detail-card booking-info">
-            <h3><i class="fas fa-calendar-alt"></i> Thông tin đặt lịch</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <label><i class="fas fa-calendar"></i> Ngày hẹn</label>
-                <span>${formatDate(booking.appointment_date)}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="fas fa-clock"></i> Giờ hẹn</label>
-                <span>${booking.appointment_time}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="fas fa-map-marker-alt"></i> Địa chỉ</label>
-                <span>${booking.address}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="fas fa-phone"></i> Số điện thoại</label>
-                <span>${booking.phone}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="fas fa-sticky-note"></i> Ghi chú</label>
-                <span>${booking.notes || 'Không có ghi chú'}</span>
-              </div>
-              <div class="info-item">
-                <label><i class="fas fa-calendar-plus"></i> Ngày đặt</label>
-                <span>${formatDateTime(booking.created_at)}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Technician Info -->
-          ${booking.technician ? `
-            <div class="detail-card technician-info">
-              <h3><i class="fas fa-user-cog"></i> Thông tin kỹ thuật viên</h3>
-              <div class="technician-details">
-                <div class="technician-avatar">
-                  <img src="${booking.technician.avatar || '/public/images/default-avatar.svg'}" alt="${booking.technician.name}">
-                </div>
-                <div class="technician-content">
-                  <h4>${booking.technician.name}</h4>
-                  <p><i class="fas fa-phone"></i> ${booking.technician.phone}</p>
-                  <p><i class="fas fa-star"></i> Đánh giá: ${booking.technician.rating || 'Chưa có'}/5</p>
-                  <p><i class="fas fa-briefcase"></i> Kinh nghiệm: ${booking.technician.experience || 'N/A'} năm</p>
-                </div>
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- Payment Info -->
-          <div class="detail-card payment-info">
-            <h3><i class="fas fa-credit-card"></i> Thông tin thanh toán</h3>
-            <div class="payment-details">
-              <div class="payment-row">
-                <span>Giá dịch vụ:</span>
-                <span>${formatPrice(booking.service?.price || 0)}</span>
-              </div>
-              <div class="payment-row">
-                <span>Phí di chuyển:</span>
-                <span>${formatPrice(booking.travel_fee || 0)}</span>
-              </div>
-              <div class="payment-row">
-                <span>Giảm giá:</span>
-                <span class="discount">-${formatPrice(booking.discount || 0)}</span>
-              </div>
-              <div class="payment-row total">
-                <span>Tổng cộng:</span>
-                <span>${formatPrice(booking.total_amount || 0)}</span>
-              </div>
-              <div class="payment-method">
-                <span>Phương thức thanh toán:</span>
-                <span class="method">${getPaymentMethodText(booking.payment_method)}</span>
-              </div>
-              <div class="payment-status ${booking.payment_status}">
-                <i class="fas ${getPaymentStatusIcon(booking.payment_status)}"></i>
-                <span>${getPaymentStatusText(booking.payment_status)}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Timeline -->
-          ${booking.timeline ? `
-            <div class="detail-card timeline-info">
-              <h3><i class="fas fa-history"></i> Lịch sử trạng thái</h3>
-              <div class="timeline">
-                ${booking.timeline.map(item => `
-                  <div class="timeline-item">
-                    <div class="timeline-icon">
-                      <i class="fas ${bookingService.getStatusIcon(item.status)}"></i>
-                    </div>
-                    <div class="timeline-content">
-                      <h5>${bookingService.getStatusText(item.status)}</h5>
-                      <p>${item.note || ''}</p>
-                      <span class="timeline-date">${formatDateTime(item.created_at)}</span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- Actions -->
-          <div class="detail-actions">
-            ${getActionButtons(booking)}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = detailHtml;
-}
-
-function getActionButtons(booking) {
-  const buttons = [];
-
-  // Cancel button - only for pending/confirmed bookings
-  if (['pending', 'confirmed'].includes(booking.status)) {
-    buttons.push(`
-      <button class="btn btn-danger" onclick="cancelBooking(${booking.id})">
-        <i class="fas fa-times"></i> Hủy đặt lịch
-      </button>
-    `);
+  // Set booking data with safe access - same as BookingHistoryPage logic
+  if (bookingIdSpan) bookingIdSpan.textContent = `#${booking.id || 'N/A'}`;
+  
+  // Handle time display - same logic as BookingHistoryPage
+  let displayDate = 'N/A';
+  if (booking.time_star) {
+    displayDate = formatDate(booking.time_star);
+  } else if (booking.appointment_date) {
+    displayDate = formatDate(booking.appointment_date);
+  } else if (booking.created_at) {
+    displayDate = formatDate(booking.created_at);
   }
-
-  // Rate button - only for completed bookings without rating
-  if (booking.status === 'completed' && !booking.rating) {
-    buttons.push(`
-      <button class="btn btn-primary" onclick="showRatingModal(${booking.id})">
-        <i class="fas fa-star"></i> Đánh giá dịch vụ
-      </button>
-    `);
+  if (timeValue) timeValue.textContent = `${displayDate} - ${booking.appointment_time || '14:00'}`;
+  
+  // Task/Service name - same field priority as BookingHistoryPage
+  if (taskName) taskName.textContent = booking.name || booking.service?.name || booking.task_name || 'Dịch vụ bảo dưỡng';
+  
+  // Product name - same logic
+  const customer = booking.customer || {};
+  const product = booking.product_info || {};
+  if (productName) productName.textContent = product.name || booking.service?.product_name || booking.product_name || 'N/A';
+  
+  // Description - same field priority
+  if (description) description.textContent = booking.des || booking.service?.description || booking.description || booking.notes || 'Không có mô tả';
+  
+  // Address - prioritize product address over customer address
+  const displayAddress = product.address || booking.address || booking.installation_address || customer.address || 'Chưa cập nhật';
+  if (address) address.textContent = displayAddress;
+  
+  // Set status with styling - using same status mapping as BookingHistoryPage
+  if (status) {
+    const statusText = getStatusText(booking.status);
+    const statusClass = getStatusClass(booking.status);
+    status.innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
   }
+  
+  // Staff info - same field mapping
+  if (staffName) staffName.textContent = booking.technician?.name || booking.staff_name || customer.username || customer.name || 'Chưa phân công';
+  if (staffPhone) staffPhone.textContent = booking.technician?.phone || booking.staff_phone || customer.phone || booking.phone || 'N/A';
+  
+  // Notification - same field priority
+  if (notification) notification.textContent = booking.notification || booking.notes || booking.des || 'Không có thông báo';
 
-  // Rebook button - for completed bookings
-  if (booking.status === 'completed') {
-    buttons.push(`
-      <button class="btn btn-secondary" onclick="rebookService(${booking.service?.id})">
-        <i class="fas fa-redo"></i> Đặt lại dịch vụ
-      </button>
-    `);
-  }
-
-  return buttons.join('');
-}
-
-function setupEventListeners(container) {
-  // Global functions for button actions
-  window.cancelBooking = async (bookingId) => {
-    if (!confirm('Bạn có chắc chắn muốn hủy đặt lịch này?')) return;
-
-    try {
-      await bookingService.cancelBooking(bookingId);
-      showSuccessMessage('Hủy đặt lịch thành công!');
-      setTimeout(() => {
-        location.reload();
-      }, 1500);
-    } catch (error) {
-      showErrorMessage(error.message || 'Có lỗi xảy ra khi hủy đặt lịch');
+  // Handle media gallery
+  if (mediaGallery) {
+    if (booking.media && booking.media.length > 0) {
+      mediaGallery.innerHTML = booking.media.map(media => {
+        if (media.type === 'image') {
+          return `<img src="${media.url}" alt="Hình ảnh" class="media-item" onclick="openMediaModal('${media.url}')">`;
+        } else if (media.type === 'video') {
+          return `<video src="${media.url}" class="media-item" controls></video>`;
+        }
+        return '';
+      }).join('');
+    } else {
+      mediaGallery.innerHTML = '<p class="no-media">Chưa có hình ảnh hoặc video</p>';
     }
-  };
-
-  window.showRatingModal = (bookingId) => {
-    // Implementation for rating modal
-    console.log('Show rating modal for booking:', bookingId);
-  };
-
-  window.rebookService = (serviceId) => {
-    window.location.hash = `/booking?service=${serviceId}`;
-  };
+  }
+  
+  console.log('Booking detail rendered successfully');
 }
+
+// Global functions for button actions
+window.cancelBooking = async (bookingId) => {
+  if (!confirm('Bạn có chắc chắn muốn hủy đặt lịch này?')) return;
+
+  try {
+    await bookingService.cancelBooking(bookingId);
+    showSuccessMessage('Hủy đặt lịch thành công!');
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+  } catch (error) {
+    showErrorMessage(error.message || 'Có lỗi xảy ra khi hủy đặt lịch');
+  }
+};
+
+window.showRatingModal = (bookingId) => {
+  // Implementation for rating modal
+  console.log('Show rating modal for booking:', bookingId);
+};
+
+window.rebookService = (serviceId) => {
+  window.location.hash = `/booking?service=${serviceId}`;
+};
 
 // Helper functions
-function formatPrice(price) {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price);
-}
-
 function formatDate(dateString) {
   if (!dateString) return 'N/A';
   const date = new Date(dateString);
@@ -335,42 +234,6 @@ function formatDate(dateString) {
   });
 }
 
-function formatDateTime(dateString) {
-  if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return date.toLocaleString('vi-VN');
-}
-
-function getPaymentMethodText(method) {
-  const methods = {
-    'cash': 'Tiền mặt',
-    'card': 'Thẻ tín dụng',
-    'bank_transfer': 'Chuyển khoản',
-    'e_wallet': 'Ví điện tử'
-  };
-  return methods[method] || 'Không xác định';
-}
-
-function getPaymentStatusText(status) {
-  const statuses = {
-    'pending': 'Chờ thanh toán',
-    'paid': 'Đã thanh toán',
-    'failed': 'Thanh toán thất bại',
-    'refunded': 'Đã hoàn tiền'
-  };
-  return statuses[status] || 'Không xác định';
-}
-
-function getPaymentStatusIcon(status) {
-  const icons = {
-    'pending': 'fa-clock',
-    'paid': 'fa-check-circle',
-    'failed': 'fa-times-circle',
-    'refunded': 'fa-undo'
-  };
-  return icons[status] || 'fa-question-circle';
-}
-
 function showSuccessMessage(message) {
   // Implementation for success message
   alert(message);
@@ -380,3 +243,37 @@ function showErrorMessage(message) {
   // Implementation for error message
   alert(message);
 }
+
+// Global function for opening media modal
+window.openMediaModal = (url) => {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    cursor: pointer;
+  `;
+  
+  const img = document.createElement('img');
+  img.src = url;
+  img.style.cssText = `
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 12px;
+  `;
+  
+  modal.appendChild(img);
+  document.body.appendChild(modal);
+  
+  modal.addEventListener('click', () => {
+    document.body.removeChild(modal);
+  });
+};

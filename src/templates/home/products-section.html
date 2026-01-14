@@ -1,0 +1,35 @@
+<section class="products-section">
+  <div class="container">
+    <div class="section-header">
+      <h2><i class="fas fa-box"></i> Sản Phẩm Của Chúng Tôi</h2>
+      <p>Khám phá các sản phẩm máy lọc nước chất lượng cao</p>
+    </div>
+    
+    <div id="productsLoading" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Đang tải sản phẩm...</p>
+    </div>
+    
+    <div class="products-slider-container" style="display: none;">
+      <div class="products-slider-wrapper">
+        <button class="slider-btn slider-prev" onclick="slideProducts('prev')">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="products-slider" id="productsSlider">
+          <div class="products-track" id="productsTrack">
+            <!-- Products will be loaded here -->
+          </div>
+        </div>
+        
+        <button class="slider-btn slider-next" onclick="slideProducts('next')">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div class="slider-dots" id="sliderDots">
+        <!-- Dots will be generated here -->
+      </div>
+    </div>
+  </div>
+</section>

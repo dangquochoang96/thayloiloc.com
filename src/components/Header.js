@@ -278,6 +278,91 @@ export function Header() {
       margin: 8px 16px;
     }
     
+    /* Auth Buttons for non-logged in users */
+    .auth-buttons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .login-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      color: #64748b !important;
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .login-btn:hover::before {
+      left: 100%;
+    }
+    
+    .login-btn:hover {
+      color: #f97316 !important;
+      background: rgba(249, 115, 22, 0.1);
+      border-color: rgba(249, 115, 22, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    .register-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      color: white !important;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .register-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .register-btn:hover::before {
+      left: 100%;
+    }
+    
+    .register-btn:hover {
+      background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(249, 115, 22, 0.4);
+    }
+    
     /* Search Icon - Remove this section */
     
     /* Mobile Hamburger */
@@ -365,6 +450,21 @@ export function Header() {
         right: -10px;
         min-width: 200px;
       }
+      
+      .auth-buttons {
+        gap: 0.5rem;
+      }
+      
+      .login-btn span,
+      .register-btn span {
+        display: none;
+      }
+      
+      .login-btn,
+      .register-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+      }
     }
     
     @media (max-width: 480px) {
@@ -379,6 +479,16 @@ export function Header() {
       .user-btn {
         padding: 0.6rem 1rem;
         font-size: 0.85rem;
+      }
+      
+      .auth-buttons {
+        gap: 0.3rem;
+      }
+      
+      .login-btn,
+      .register-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
       }
     }
   `;
@@ -408,10 +518,16 @@ export function Header() {
   // Debug user data structure
   authService.debugUserData();
   
+  // Base navigation links - always show these
   const baseLinks = [
     { text: "Trang Chủ", href: "#/" },
     { text: "Dịch Vụ", href: "#/services" }
   ];
+
+  // Add history link for logged in users
+  if (isLoggedIn && user) {
+    baseLinks.push({ text: "Lịch Sử", href: "#/booking-history" });
+  }
 
   baseLinks.forEach((link) => {
     const a = document.createElement("a");
@@ -427,18 +543,13 @@ export function Header() {
     nav.appendChild(a);
   });
 
+  // Always add nav to center
+  navCenter.appendChild(nav);
+  container.appendChild(navCenter);
+
+  // Right side buttons - different based on login status
   if (isLoggedIn && user) {
-
-    const historyLink = document.createElement("a");
-    historyLink.href = "#/booking-history";
-    historyLink.className = "nav-link mobile-show";
-    historyLink.textContent = "Lịch Sử";
-    nav.appendChild(historyLink);
-
-    navCenter.appendChild(nav);
-    container.appendChild(navCenter);
-
-    // User dropdown (no search button)
+    // User dropdown for logged in users
     const userDropdown = document.createElement("div");
     userDropdown.className = "user-dropdown";
 
@@ -521,40 +632,33 @@ export function Header() {
     userDropdown.appendChild(userBtn);
     userDropdown.appendChild(dropdownMenu);
     container.appendChild(userDropdown);
-  } else if (isLoggedIn && !user) {
-    // Handle case where user is logged in but user data is missing
-    console.warn("User is authenticated but user data is missing");
-    authService.logout(); // Force logout to clear invalid state
-    
-    navCenter.appendChild(nav);
-    container.appendChild(navCenter);
-    
-    const loginLink = document.createElement("a");
-    loginLink.href = "#/login";
-    loginLink.className = "nav-link mobile-show";
-    loginLink.textContent = "Đăng Nhập";
-    container.appendChild(loginLink);
-
-    const registerLink = document.createElement("a");
-    registerLink.href = "#/register";
-    registerLink.className = "btn btn-primary";
-    registerLink.textContent = "Đăng Ký";
-    container.appendChild(registerLink);
   } else {
-    navCenter.appendChild(nav);
-    container.appendChild(navCenter);
-    
-    const loginLink = document.createElement("a");
-    loginLink.href = "#/login";
-    loginLink.className = "nav-link mobile-show";
-    loginLink.textContent = "Đăng Nhập";
-    container.appendChild(loginLink);
+    // Login and Register buttons for non-logged in users
+    const authButtons = document.createElement("div");
+    authButtons.className = "auth-buttons";
+    authButtons.style.display = "flex";
+    authButtons.style.alignItems = "center";
+    authButtons.style.gap = "1rem";
 
-    const registerLink = document.createElement("a");
-    registerLink.href = "#/register";
-    registerLink.className = "btn btn-primary";
-    registerLink.textContent = "Đăng Ký";
-    container.appendChild(registerLink);
+    const loginBtn = document.createElement("a");
+    loginBtn.href = "#/login";
+    loginBtn.className = "login-btn";
+    loginBtn.innerHTML = `
+      <i class="fas fa-sign-in-alt"></i>
+      <span>Đăng Nhập</span>
+    `;
+
+    const registerBtn = document.createElement("a");
+    registerBtn.href = "#/register";
+    registerBtn.className = "register-btn";
+    registerBtn.innerHTML = `
+      <i class="fas fa-user-plus"></i>
+      <span>Đăng Ký</span>
+    `;
+
+    authButtons.appendChild(loginBtn);
+    authButtons.appendChild(registerBtn);
+    container.appendChild(authButtons);
   }
 
   // Add hamburger menu for mobile

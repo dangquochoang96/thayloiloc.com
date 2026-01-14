@@ -2,6 +2,7 @@ import { Header } from '../components/Header.js';
 import { Footer } from '../components/Footer.js';
 import { authService } from '../services/auth.service.js';
 import { historyService } from '../services/history.service.js';
+import { bookingService } from '../services/booking.service.js';
 
 export function BookingHistoryPage() {
   console.log('BookingHistoryPage: Starting to load');
@@ -31,25 +32,25 @@ export function BookingHistoryPage() {
       }
 
       console.log('BookingHistoryPage: Calling historyService.getBookingHistory with userId:', currentUser.id);
+      console.log('BookingHistoryPage: API endpoint will be: /tasks/customer/' + currentUser.id);
       
-      let result;
-      try {
-        // Use historyService to get booking history
-        result = await historyService.getBookingHistory(currentUser.id);
-      } catch (serviceError) {
-        console.warn('BookingHistoryPage: historyService failed, falling back to direct fetch:', serviceError);
-        // Fallback to direct fetch if service fails
-        const response = await fetch(`https://api.chothuetatca.com/api/tasks/customer/${currentUser.id}`);
-        result = await response.json();
-      }
+      // Use historyService to get booking history
+      const result = await historyService.getBookingHistory(currentUser.id);
       
       console.log('BookingHistoryPage: Tasks by customer response:', result);
+      console.log('BookingHistoryPage: Response type:', typeof result);
+      console.log('BookingHistoryPage: Response keys:', result ? Object.keys(result) : 'null');
 
       let tasks = [];
-      if (result.data && Array.isArray(result.data)) {
+      if (result && result.data && Array.isArray(result.data)) {
         tasks = result.data;
-      } else if (Array.isArray(result)) {
+        console.log('BookingHistoryPage: Using result.data, length:', tasks.length);
+      } else if (result && Array.isArray(result)) {
         tasks = result;
+        console.log('BookingHistoryPage: Using direct result, length:', tasks.length);
+      } else {
+        console.warn('BookingHistoryPage: Unexpected response format:', result);
+        tasks = [];
       }
 
       console.log('BookingHistoryPage: Processed tasks:', tasks);
@@ -59,13 +60,20 @@ export function BookingHistoryPage() {
       updateDisplay();
     } catch (error) {
       console.error('BookingHistoryPage: Error loading history:', error);
+      console.error('BookingHistoryPage: Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       loading = false;
       // Show error state
       const loadingState = document.getElementById('historyLoading');
       if (loadingState) {
         loadingState.innerHTML = `
           <i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i>
-          <p>Không thể tải lịch sử. Vui lòng thử lại sau.</p>
+          <p>Không thể tải lịch sử: ${error.message}</p>
+          <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">API endpoint: /tasks/customer/{userId}</p>
+          <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #f97316; color: white; border: none; border-radius: 5px; cursor: pointer;">Thử lại</button>
         `;
       }
       updateDisplay();
@@ -107,7 +115,325 @@ export function BookingHistoryPage() {
   };
 
   const handleCardClick = (id) => {
-    window.location.hash = `#/booking-detail/${id}`;
+    showBookingDetailModal(id);
+  };
+
+  const showBookingDetailModal = async (bookingId) => {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.innerHTML = `
+      <div class="modal-content booking-detail-modal">
+        <div class="modal-header">
+          <h2><i class="fas fa-calendar-check"></i> Chi tiết đặt lịch #${bookingId}</h2>
+          <button class="modal-close" onclick="closeBookingModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Đang tải chi tiết...</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add modal to body
+    document.body.appendChild(modalOverlay);
+
+    // Add modal styles
+    if (!document.getElementById('modal-styles')) {
+      const modalStyles = document.createElement('style');
+      modalStyles.id = 'modal-styles';
+      modalStyles.textContent = `
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(5px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+          opacity: 0;
+          animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+          to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+          to { opacity: 0; }
+        }
+
+        .booking-detail-modal {
+          background: white;
+          border-radius: 20px;
+          max-width: 600px;
+          width: 90%;
+          max-height: 80vh;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          transform: scale(0.9);
+          animation: scaleIn 0.3s ease forwards;
+        }
+
+        @keyframes scaleIn {
+          to { transform: scale(1); }
+        }
+
+        .modal-header {
+          background: linear-gradient(135deg, #f97316, #fb923c);
+          color: white;
+          padding: 1.5rem 2rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          font-size: 1.3rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          color: white;
+          font-size: 1.5rem;
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 50%;
+          transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: rotate(90deg);
+        }
+
+        .modal-body {
+          padding: 2rem;
+          max-height: 60vh;
+          overflow-y: auto;
+        }
+
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: 1rem 0;
+          border-bottom: 1px solid #f1f3f4;
+          gap: 1rem;
+        }
+
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+
+        .detail-row.border-top {
+          border-top: 2px solid #f1f3f4;
+          margin-top: 1rem;
+          padding-top: 1.5rem;
+        }
+
+        .detail-label {
+          font-weight: 600;
+          color: #64748b;
+          min-width: 140px;
+          flex-shrink: 0;
+        }
+
+        .detail-value {
+          color: #1a1a2e;
+          font-weight: 500;
+          text-align: right;
+          flex: 1;
+        }
+
+        .detail-value.highlight {
+          color: #f97316;
+          font-weight: 700;
+        }
+
+        .status-badge {
+          padding: 0.3rem 0.8rem;
+          border-radius: 15px;
+          font-size: 0.9rem;
+          font-weight: 600;
+        }
+
+        .status-pending {
+          background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+          color: #856404;
+        }
+
+        .status-confirmed {
+          background: linear-gradient(135deg, #cce5ff, #b3d9ff);
+          color: #004085;
+        }
+
+        .status-completed {
+          background: linear-gradient(135deg, #d4edda, #c3e6cb);
+          color: #155724;
+        }
+
+        .status-cancelled {
+          background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+          color: #721c24;
+        }
+
+        .loading-state {
+          text-align: center;
+          padding: 3rem 2rem;
+        }
+
+        .loading-state i {
+          font-size: 2.5rem;
+          color: #f97316;
+          margin-bottom: 1rem;
+        }
+
+        .error-state {
+          text-align: center;
+          padding: 3rem 2rem;
+        }
+
+        .error-state i {
+          font-size: 3rem;
+          color: #dc3545;
+          margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+          .booking-detail-modal {
+            width: 95%;
+            max-height: 90vh;
+          }
+
+          .modal-header {
+            padding: 1rem 1.5rem;
+          }
+
+          .modal-header h2 {
+            font-size: 1.1rem;
+          }
+
+          .modal-body {
+            padding: 1.5rem;
+          }
+
+          .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+
+          .detail-label {
+            min-width: auto;
+          }
+
+          .detail-value {
+            text-align: left;
+          }
+        }
+      `;
+      document.head.appendChild(modalStyles);
+    }
+
+    // Load booking detail data
+    try {
+      const booking = await bookingService.getBookingDetail(bookingId);
+
+      // Prioritize product address
+      const product = booking.product_info || {};
+      const displayAddress = product.address || booking.address || booking.customer?.address || 'Chưa cập nhật';
+
+      // Update modal content
+      const modalBody = modalOverlay.querySelector('.modal-body');
+      modalBody.innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">Thời gian:</span>
+          <span class="detail-value highlight">${formatDate(booking.appointment_date || booking.time_star)} - ${booking.appointment_time || '14:00'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Công việc:</span>
+          <span class="detail-value">${booking.service?.name || booking.name || 'Dịch vụ bảo dưỡng'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Nội dung:</span>
+          <span class="detail-value">${booking.service?.description || booking.des || booking.description || 'Không có mô tả'}</span>
+        </div>
+        <div class="detail-row border-top">
+          <span class="detail-label">Vị trí:</span>
+          <span class="detail-value highlight">${displayAddress}</span>
+        </div>
+        <div class="detail-row border-top">
+          <span class="detail-label">Trạng thái:</span>
+          <span class="detail-value">
+            <span class="status-badge ${getStatusClass(booking.status)}">${getStatusText(booking.status)}</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Kỹ thuật viên:</span>
+          <span class="detail-value">${booking.technician?.name || booking.staff_name || 'Chưa phân công'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">SĐT KTV:</span>
+          <span class="detail-value">${booking.technician?.phone || booking.staff_phone || 'N/A'}</span>
+        </div>
+        <div class="detail-row border-top">
+          <span class="detail-label">Thông báo:</span>
+          <span class="detail-value">${booking.notification || booking.notes || 'Không có thông báo'}</span>
+        </div>
+      `;
+
+    } catch (error) {
+      console.error('Error loading booking detail:', error);
+      const modalBody = modalOverlay.querySelector('.modal-body');
+      modalBody.innerHTML = `
+        <div class="error-state">
+          <i class="fas fa-exclamation-circle"></i>
+          <h3>Không thể tải thông tin</h3>
+          <p>${error.message || 'Vui lòng thử lại sau'}</p>
+        </div>
+      `;
+    }
+
+    // Close modal when clicking overlay
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeBookingModal();
+      }
+    });
+
+    // Close modal with Escape key
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeBookingModal();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+  };
+
+  // Global function to close modal
+  window.closeBookingModal = () => {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+      modal.style.animation = 'fadeOut 0.3s ease forwards';
+      setTimeout(() => {
+        document.body.removeChild(modal);
+      }, 300);
+    }
   };
 
   const renderHistory = (history) => {
@@ -134,8 +460,11 @@ export function BookingHistoryPage() {
         displayDate = formatDate(item.created_at);
       }
 
+      // Prioritize product address over customer address
+      const displayAddress = product.address || item.address || customer.address || 'Chưa cập nhật';
+
       return `
-        <div class="history-card" onclick="window.location.hash='#/booking-detail/${item.id}'" style="cursor: pointer;">
+        <div class="history-card" onclick="handleCardClick(${item.id})" style="cursor: pointer;">
           <div class="history-header">
             <span class="history-date">
               <i class="fas fa-calendar"></i> ${displayDate}
@@ -148,7 +477,7 @@ export function BookingHistoryPage() {
             <h3>${item.name || 'Dịch vụ bảo dưỡng'}</h3>
             <p><i class="fas fa-user"></i> ${customer.username || customer.name || 'Khách hàng'}</p>
             <p><i class="fas fa-phone"></i> ${customer.phone || item.phone || ''}</p>
-            <p><i class="fas fa-map-marker-alt"></i> ${customer.address || item.address || ''}</p>
+            <p><i class="fas fa-map-marker-alt"></i> ${displayAddress}</p>
             ${product.order_id ? `<p><i class="fas fa-box"></i> Đơn hàng #${product.order_id}</p>` : ''}
             ${item.des ? `<p><i class="fas fa-sticky-note"></i> ${item.des}</p>` : ''}
           </div>
@@ -514,6 +843,9 @@ export function BookingHistoryPage() {
       console.error('BookingHistoryPage: Error in authentication check:', error);
     }
   }, 100);
+
+  // Make functions available globally
+  window.handleCardClick = handleCardClick;
 
   // Add Footer
   try {

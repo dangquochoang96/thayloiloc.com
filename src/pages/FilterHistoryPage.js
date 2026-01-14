@@ -105,7 +105,7 @@ export function FilterHistoryPage() {
       const filterCores = item.order_filter_cores || [];
 
       return `
-        <div class="product-filter-card" onclick="window.location.hash='#/product-detail/${item.id}'" style="cursor:pointer;">
+        <div class="product-filter-card" onclick="window.location.hash='#/filter-history-detail/${item.id}'" style="cursor:pointer;">
           <div class="product-header">
             <div class="product-info">
               <h3><i class="fas fa-tint"></i> ${product.name || 'Sản phẩm'}</h3>
@@ -133,7 +133,7 @@ export function FilterHistoryPage() {
           </div>
           <div class="card-footer">
             <span class="view-detail">
-              <i class="fas fa-eye"></i> Xem chi tiết sản phẩm
+              <i class="fas fa-eye"></i> Xem chi tiết nhật ký thay lõi
             </span>
           </div>
         </div>
