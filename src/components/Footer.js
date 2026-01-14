@@ -11,7 +11,7 @@ export function Footer() {
             <h4 class="footer-title">Về chúng tôi</h4>
             <div class="footer-brand-wrapper">
               <div class="footer-logo">
-                <img src="/images/LOGO.png" alt="Thayloiloc" style="height: 40px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <img src="/images/logo.png" alt="Thayloiloc" style="height: 40px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <h3 style="display: none; color: var(--primary-color); font-size: 1.5rem; font-weight: 700;">Thayloiloc</h3>
               </div>
               <p class="footer-description">Dịch vụ thay lõi lọc tại nhà chuyên nghiệp, tận nơi. Giải pháp đáng tin cậy, nhanh chóng và giá cả phải chăng cho mọi nhu cầu của bạn.</p>
