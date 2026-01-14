@@ -1,0 +1,279 @@
+.filter-detail-page {
+  padding: 100px 0 60px;
+  min-height: 80vh;
+  background: #f8f9fa;
+}
+
+.detail-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #F97316;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+}
+
+.back-button:hover {
+  gap: 12px;
+  color: #ea580c;
+}
+
+.back-button i {
+  font-size: 1.1rem;
+}
+
+.detail-header {
+  background: linear-gradient(135deg, #F97316, #fb923c);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 20px 20px 0 0;
+  margin-bottom: 0;
+}
+
+.detail-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-card {
+  background: white;
+  border-radius: 0 0 20px 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.info-table {
+  margin-bottom: 20px;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: linear-gradient(135deg, #F97316, #fb923c);
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+}
+
+.header-cell {
+  padding: 12px 15px;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  border-right: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-cell:last-child {
+  border-right: none;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid #F97316;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.cell {
+  padding: 15px;
+  text-align: center;
+  color: #333;
+  font-weight: 500;
+  border-right: 2px solid #e0e0e0;
+}
+
+.cell:last-child {
+  border-right: none;
+}
+
+.price-cell {
+  color: #F97316;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.info-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row.highlight {
+  background: #fff8f0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 2px solid #F97316;
+  margin: 10px 0;
+}
+
+.info-row .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.info-row .value {
+  color: #333;
+  font-weight: 600;
+}
+
+.price-highlight {
+  color: #F97316 !important;
+  font-size: 1.2rem !important;
+}
+
+.technician-info {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #F97316;
+}
+
+.tech-name {
+  color: #F97316 !important;
+  font-weight: 700 !important;
+}
+
+.rating-section {
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.rating-label {
+  color: #666;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 2rem;
+}
+
+.stars i {
+  color: #ffd700;
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
+}
+
+.images-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.images-label {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.order-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid #e0e0e0;
+}
+
+.order-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-color: #F97316;
+}
+
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.loading-state i {
+  font-size: 3rem;
+  color: #F97316;
+  margin-bottom: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-state i {
+  font-size: 3rem;
+  color: #dc3545;
+  margin-bottom: 20px;
+}
+
+.error-state h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.error-state p {
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr;
+  }
+
+  .header-cell,
+  .cell {
+    border-right: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .header-cell:last-child,
+  .cell:last-child {
+    border-bottom: none;
+  }
+
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .order-image {
+    height: 120px;
+  }
+}

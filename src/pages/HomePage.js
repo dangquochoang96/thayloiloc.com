@@ -8,6 +8,7 @@ import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
 import heroTemplate from "../templates/home/hero-section.html?raw";
 import servicesTemplate from "../templates/home/services-section.html?raw";
 import productsTemplate from "../templates/home/products-section.html?raw";
+import appDownloadTemplate from "../templates/home/app-download-section.html?raw";
 import newsTemplate from "../templates/home/news-section.html?raw";
 import contactTemplate from "../templates/home/contact-section.html?raw";
 import floatingButtonTemplate from "../templates/home/floating-button.html?raw";
@@ -16,6 +17,7 @@ import floatingButtonTemplate from "../templates/home/floating-button.html?raw";
 import "../styles/home/hero-section.css";
 import "../styles/home/services-section.css";
 import "../styles/home/products-section.css";
+import "../styles/home/app-download-section.css";
 import "../styles/home/news-section.css";
 import "../styles/home/contact-section.css";
 import "../styles/home/floating-button.css";
@@ -45,6 +47,11 @@ export function HomePage() {
 
   // Load products from API
   loadProducts();
+
+  // App Download Section
+  const appDownloadSection = document.createElement("div");
+  appDownloadSection.innerHTML = appDownloadTemplate;
+  main.appendChild(appDownloadSection.firstElementChild);
 
   // News Section
   const newsSection = document.createElement("div");
