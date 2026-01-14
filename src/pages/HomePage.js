@@ -119,7 +119,7 @@ function displayProductsSlider(products) {
   container.innerHTML = products
     .map((product) => {
       // Get image from product_images array (first image)
-      let imageUrl = '/public/images/default-service.svg';
+      let imageUrl = '/images/default-service.svg';
       if (product.product_images && product.product_images.length > 0) {
         imageUrl = getImageUrl(product.product_images[0].link);
       }

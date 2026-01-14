@@ -74,7 +74,7 @@ function loadUserProfile(container) {
   
   // Set avatar
   if (avatarImg) {
-    avatarImg.src = userAvatar || "/public/images/default-avatar.svg";
+    avatarImg.src = userAvatar || "/images/default-avatar.svg";
   }
 }
 
@@ -198,7 +198,7 @@ function setupEventListeners(container) {
           showMessage(errorMsg, error.message || "Có lỗi xảy ra khi tải ảnh lên");
           // Reset preview on error
           const user = authService.getCurrentUser();
-          avatarPreview.src = user?.avatar || "/public/images/default-avatar.svg";
+          avatarPreview.src = user?.avatar || "/images/default-avatar.svg";
         }
       }
     });
