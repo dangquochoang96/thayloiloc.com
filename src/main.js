@@ -9,6 +9,7 @@ import { BookingPage } from './pages/BookingPage.js';
 import { BookingHistoryPage } from './pages/BookingHistoryPage.js';
 import { BookingDetailPage } from './pages/BookingDetailPage.js';
 import { FilterHistoryPage } from './pages/FilterHistoryPage.js';
+import { ProductFilterHistoryPage } from './pages/ProductFilterHistoryPage.js';
 import { FilterHistoryDetailPage } from './pages/FilterHistoryDetailPage.js';
 import { ServicesPage } from './pages/ServicesPage.js';
 
@@ -39,6 +40,9 @@ const routes = {
   },
   '/filter-history': {
     render: FilterHistoryPage
+  },
+  '/product-filter-history': {
+    render: ProductFilterHistoryPage
   },
   '/filter-history-detail': {
     render: FilterHistoryDetailPage

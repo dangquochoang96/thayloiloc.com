@@ -42,28 +42,16 @@ export function Header() {
     }
     
     .logo {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #1a1a2e;
       text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
       transition: all 0.3s ease;
     }
     
-    .logo::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      background: #f97316;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.7; }
+    .logo img {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
     }
     
     .logo:hover {
@@ -472,8 +460,8 @@ export function Header() {
         padding: 0.8rem 1rem;
       }
       
-      .logo {
-        font-size: 1.5rem;
+      .logo img {
+        height: 40px;
       }
       
       .user-btn {
@@ -500,7 +488,12 @@ export function Header() {
   const logo = document.createElement("a");
   logo.href = "#/";
   logo.className = "logo";
-  logo.textContent = "Socbay";
+  
+  const logoImg = document.createElement("img");
+  logoImg.src = "/LOGO.png";
+  logoImg.alt = "Logo";
+  logo.appendChild(logoImg);
+  
   container.appendChild(logo);
 
   // Create center container for navigation

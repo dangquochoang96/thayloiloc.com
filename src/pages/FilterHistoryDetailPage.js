@@ -2,6 +2,7 @@ import { Header } from '../components/Header.js';
 import { Footer } from '../components/Footer.js';
 import { authService } from '../services/auth.service.js';
 import { historyService } from '../services/history.service.js';
+import { api } from '../services/api.js';
 
 export function FilterHistoryDetailPage() {
   const container = document.createElement('div');
@@ -48,217 +49,192 @@ export function FilterHistoryDetailPage() {
     }
 
     .detail-header {
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      margin-bottom: 25px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      background: linear-gradient(135deg, #F97316, #fb923c);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 20px 20px 0 0;
+      margin-bottom: 0;
     }
 
     .detail-header h1 {
-      color: #1a1a2e;
-      font-size: 1.8rem;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .detail-header h1 i {
-      color: #F97316;
-    }
-
-    .product-meta {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-    }
-
-    .meta-item {
+      margin: 0;
+      font-size: 1.5rem;
       display: flex;
       align-items: center;
       gap: 10px;
-      color: #666;
     }
 
-    .meta-item i {
-      color: #F97316;
-      width: 24px;
-      text-align: center;
-    }
-
-    .meta-item strong {
-      color: #333;
-    }
-
-    .filter-level-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #F97316, #34ce57);
-      color: white;
-      padding: 8px 20px;
-      border-radius: 25px;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-
-    .filter-cores-section {
+    .info-card {
       background: white;
-      border-radius: 20px;
-      padding: 30px;
+      border-radius: 0 0 20px 20px;
+      padding: 25px;
+      margin-bottom: 20px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
 
-    .section-title {
-      font-size: 1.4rem;
-      color: #1a1a2e;
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .info-table {
+      margin-bottom: 20px;
     }
 
-    .section-title i {
-      color: #F97316;
+    .table-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: linear-gradient(135deg, #F97316, #fb923c);
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
     }
 
-    .section-title .count {
-      background: #F97316;
+    .header-cell {
+      padding: 12px 15px;
       color: white;
-      padding: 4px 12px;
-      border-radius: 15px;
-      font-size: 0.9rem;
-      margin-left: auto;
+      font-weight: 600;
+      text-align: center;
+      border-right: 2px solid rgba(255, 255, 255, 0.3);
     }
 
-    .filter-timeline {
-      position: relative;
-      padding-left: 40px;
+    .header-cell:last-child {
+      border-right: none;
     }
 
-    .filter-timeline::before {
-      content: '';
-      position: absolute;
-      left: 15px;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: linear-gradient(to bottom, #F97316, #34ce57);
+    .table-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 2px solid #F97316;
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
     }
 
-    .timeline-item {
-      position: relative;
-      margin-bottom: 30px;
-      background: #f8f9fa;
-      border-radius: 15px;
-      padding: 20px;
-      border-left: 4px solid #F97316;
-      transition: all 0.3s;
+    .cell {
+      padding: 15px;
+      text-align: center;
+      color: #333;
+      font-weight: 500;
+      border-right: 2px solid #e0e0e0;
     }
 
-    .timeline-item:hover {
-      transform: translateX(5px);
-      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.15);
+    .cell:last-child {
+      border-right: none;
     }
 
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: -44px;
-      top: 25px;
-      width: 16px;
-      height: 16px;
-      background: white;
-      border: 4px solid #F97316;
-      border-radius: 50%;
-      box-shadow: 0 0 0 4px #fff;
+    .price-cell {
+      color: #F97316;
+      font-weight: 700;
+      font-size: 1.1rem;
     }
 
-    .timeline-item.status-completed::before {
-      background: #34ce57;
-      border-color: #34ce57;
+    .info-list {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
-    .timeline-item.status-confirmed::before {
-      background: #3b82f6;
-      border-color: #3b82f6;
-    }
-
-    .timeline-header {
+    .info-row {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-row.highlight {
+      background: #fff8f0;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 2px solid #F97316;
+      margin: 10px 0;
+    }
+
+    .info-row .label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .info-row .value {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .price-highlight {
+      color: #F97316 !important;
+      font-size: 1.2rem !important;
+    }
+
+    .technician-info {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #F97316;
+    }
+
+    .tech-name {
+      color: #F97316 !important;
+      font-weight: 700 !important;
+    }
+
+    .rating-section {
+      text-align: center;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+
+    .rating-label {
+      color: #666;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      font-size: 2rem;
+    }
+
+    .stars i {
+      color: #ffd700;
+      filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
+    }
+
+    .images-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #f0f0f0;
+    }
+
+    .images-label {
+      color: #333;
+      font-weight: 600;
       margin-bottom: 15px;
     }
 
-    .filter-name {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1a1a2e;
-      margin-bottom: 5px;
-    }
-
-    .filter-date {
-      color: #666;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .filter-date i {
-      color: #F97316;
-    }
-
-    .status-badge {
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .status-badge.status-pending {
-      background: #fff3cd;
-      color: #856404;
-    }
-
-    .status-badge.status-confirmed {
-      background: #cce5ff;
-      color: #004085;
-    }
-
-    .status-badge.status-completed {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .timeline-details {
+    .images-grid {
       display: grid;
-      gap: 10px;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px dashed #ddd;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
     }
 
-    .detail-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #666;
-      font-size: 0.95rem;
+    .order-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid #e0e0e0;
     }
 
-    .detail-row i {
-      color: #F97316;
-      width: 20px;
-    }
-
-    .detail-row strong {
-      color: #333;
-      margin-right: 5px;
+    .order-image:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border-color: #F97316;
     }
 
     .loading-state,
@@ -294,29 +270,29 @@ export function FilterHistoryDetailPage() {
       color: #666;
     }
 
-    .empty-timeline {
-      text-align: center;
-      padding: 60px 20px;
-      color: #999;
-    }
-
-    .empty-timeline i {
-      font-size: 3rem;
-      margin-bottom: 15px;
-      opacity: 0.5;
-    }
-
     @media (max-width: 768px) {
-      .product-meta {
+      .table-header,
+      .table-row {
         grid-template-columns: 1fr;
       }
 
-      .filter-timeline {
-        padding-left: 30px;
+      .header-cell,
+      .cell {
+        border-right: none;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
       }
 
-      .timeline-item::before {
-        left: -34px;
+      .header-cell:last-child,
+      .cell:last-child {
+        border-bottom: none;
+      }
+
+      .images-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+
+      .order-image {
+        height: 120px;
       }
     }
   `;
@@ -327,9 +303,9 @@ export function FilterHistoryDetailPage() {
 
   // Back button
   const backButton = document.createElement('a');
-  backButton.href = '#/filter-history';
+  backButton.href = 'javascript:history.back()';
   backButton.className = 'back-button';
-  backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Quay lại danh sách';
+  backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Quay lại';
   detailContainer.appendChild(backButton);
 
   // Loading state
@@ -378,37 +354,36 @@ async function loadFilterDetail(contentContainer, loadingState, errorState) {
     return;
   }
 
-  // Get product ID from URL
+  // Get history item ID from URL
   const hash = window.location.hash;
-  const productId = hash.split('/')[2];
+  const historyId = hash.split('/')[2];
 
-  if (!productId) {
-    showError(loadingState, errorState, 'Không tìm thấy mã sản phẩm');
+  if (!historyId) {
+    showError(loadingState, errorState, 'Không tìm thấy mã lịch sử');
     return;
   }
 
   try {
-    // Get all products with filter history
-    const result = await historyService.getFilterHistory(user.id);
+    // Get detail from /user/detailHistory/{id}
+    const result = await historyService.getFilterHistoryDetail(historyId);
     
-    let products = [];
-    if (result.data && result.data.listProducts) {
-      products = result.data.listProducts;
-    } else if (result.data && Array.isArray(result.data)) {
-      products = result.data;
-    } else if (Array.isArray(result)) {
-      products = result;
+    console.log('Filter history detail response:', result);
+
+    let historyItem = null;
+    
+    // Handle response structure
+    if (result.data) {
+      historyItem = result.data;
+    } else if (result) {
+      historyItem = result;
     }
 
-    // Find the specific product
-    const productData = products.find(p => p.id == productId);
-
-    if (!productData) {
-      showError(loadingState, errorState, 'Không tìm thấy thông tin sản phẩm');
+    if (!historyItem) {
+      showError(loadingState, errorState, 'Không tìm thấy thông tin lịch sử');
       return;
     }
 
-    renderFilterDetail(contentContainer, productData, loadingState);
+    renderFilterDetail(contentContainer, historyItem, user, loadingState);
 
   } catch (error) {
     console.error('Error loading filter detail:', error);
@@ -423,125 +398,167 @@ function showError(loadingState, errorState, message) {
   if (errorText) errorText.textContent = message;
 }
 
-function renderFilterDetail(container, productData, loadingState) {
+function renderFilterDetail(container, historyItem, user, loadingState) {
   loadingState.style.display = 'none';
   container.style.display = 'block';
 
-  const product = productData.product || {};
-  const filterCores = productData.order_filter_cores || [];
+  console.log('Rendering history item:', historyItem);
 
-  // Detail header
+  // Extract order data if exists
+  const order = historyItem.order || historyItem;
+  
+  // Extract data with multiple possible field names
+  // order_filter_core is an array
+  // First item (index 0) is current replacement
+  // Second item (index 1) is next replacement schedule
+  const filterCore = Array.isArray(order.order_filter_core) && order.order_filter_core.length > 0 
+    ? order.order_filter_core[0] 
+    : null;
+  const nextFilterCore = Array.isArray(order.order_filter_core) && order.order_filter_core.length > 1 
+    ? order.order_filter_core[1] 
+    : null;
+    
+  const filterCoreName = filterCore?.name || filterCore?.filter_core_name || order.filter_core_name || order.name || order.ten_loi || historyItem.filter_core_name || historyItem.name || 'Lõi lọc';
+  const replaceDate = order.created_at || order.ngay_thay || order.ngay_thuc_hien || historyItem.created_at;
+  
+  // Next replacement info from second item in array
+  const nextFilterCoreName = nextFilterCore?.name || filterCoreName;
+  const nextReplaceDate = nextFilterCore?.replace_date_promise || nextFilterCore?.replace_date || nextFilterCore?.ngay_thay_tiep_theo || order.next_replace_date || order.ngay_thay_tiep_theo || historyItem.next_replace_date;
+  
+  // Get technician info from staff array
+  const staff = Array.isArray(order.staff) && order.staff.length > 0 
+    ? order.staff[0] 
+    : null;
+  const technicianName = staff?.staff_info?.username || staff?.staff_info?.name || order.sale_id?.username || order.sale_id?.name || order.technician_name || order.ten_ky_thuat_vien || 'Chưa phân công';
+  
+  // Financial info from order
+  const price = parseInt(order.price) || parseInt(order.thanh_tien) || parseInt(order.gia) || 0;
+  const totalAmount = price; // tong_tien = price in this case
+  const discount = parseInt(order.chiet_khau) || parseInt(order.discount) || parseInt(order.giam_gia) || 0;
+  const previousPointsRaw = parseInt(order.tru_tich_diem) || parseInt(order.previous_points) || parseInt(order.diem_tru) || 0;
+  const previousPoints = previousPointsRaw * 1000;
+  
+  // Calculate final amount: price - discount - previousPoints
+  const finalAmount = price - discount - previousPoints;
+  
+  const earnedPointsRaw = parseInt(order.tich_diem) || parseInt(order.earned_points) || parseInt(order.diem_tich) || 0;
+  const earnedPoints = earnedPointsRaw * 1000;
+  
+  // Images - check in order object
+  let images = [];
+  if (Array.isArray(order.images) && order.images.length > 0) {
+    // Map images array to get image_link from each item
+    images = order.images.map(img => img.image_link || img.url || img.hinh_anh || img).filter(Boolean);
+  } else if (order.hinh_anh && Array.isArray(order.hinh_anh)) {
+    images = order.hinh_anh;
+  } else if (order.image_urls && Array.isArray(order.image_urls)) {
+    images = order.image_urls;
+  } else if (order.image_url) {
+    images = [order.image_url];
+  } else if (order.hinh_anh) {
+    images = [order.hinh_anh];
+  }
+
+  // Header
   const header = document.createElement('div');
   header.className = 'detail-header';
-  header.innerHTML = `
-    <h1>
-      <i class="fas fa-tint"></i>
-      ${product.name || 'Sản phẩm'}
-    </h1>
-    <div class="product-meta">
-      <div class="meta-item">
-        <i class="fas fa-map-marker-alt"></i>
-        <span><strong>Địa chỉ:</strong> ${productData.address || 'Chưa có địa chỉ'}</span>
+  header.innerHTML = `<h1><i class="fas fa-filter"></i> Chi tiết lần thay lõi</h1>`;
+  container.appendChild(header);
+
+  // Main card
+  const mainCard = document.createElement('div');
+  mainCard.className = 'info-card';
+  mainCard.innerHTML = `
+    <div class="info-table">
+      <div class="table-header">
+        <div class="header-cell">Tên lõi</div>
+        <div class="header-cell">Thành tiền</div>
       </div>
-      <div class="meta-item">
-        <i class="fas fa-calendar"></i>
-        <span><strong>Ngày mua:</strong> ${formatDate(productData.ngaymua)}</span>
+      <div class="table-row">
+        <div class="cell">${filterCoreName}</div>
+        <div class="cell price-cell">${formatPrice(price)}</div>
       </div>
-      <div class="meta-item">
-        <i class="fas fa-layer-group"></i>
-        <span class="filter-level-badge">Cấp ${productData.filter_core_level || '?'}</span>
+    </div>
+    
+    <div class="info-list">
+      <div class="info-row">
+        <span class="label">Ngày thực hiện:</span>
+        <span class="value">${formatDate(replaceDate)}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Tổng tiền:</span>
+        <span class="value">${formatPrice(totalAmount)}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Chiết khấu:</span>
+        <span class="value">${formatPrice(discount)}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Trừ tích điểm:</span>
+        <span class="value">${formatPrice(previousPoints)}</span>
+      </div>
+      <div class="info-row highlight">
+        <span class="label">Tổng tiền thanh toán:</span>
+        <span class="value price-highlight">${formatPrice(finalAmount)}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Tích điểm:</span>
+        <span class="value">${formatPoints(earnedPoints)}</span>
+      </div>
+    </div>
+
+    <div class="technician-info">
+      <div class="info-row">
+        <span class="label">Thông tin kỹ thuật viên:</span>
+        <span class="value tech-name">${technicianName}</span>
+      </div>
+    </div>
+
+    <div class="rating-section">
+      <div class="rating-label">Đánh giá và nhận xét dịch vụ</div>
+      <div class="stars">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
       </div>
     </div>
   `;
-  container.appendChild(header);
+  container.appendChild(mainCard);
 
-  // Filter cores section
-  const section = document.createElement('div');
-  section.className = 'filter-cores-section';
-  
-  const sectionTitle = document.createElement('div');
-  sectionTitle.className = 'section-title';
-  sectionTitle.innerHTML = `
-    <i class="fas fa-history"></i>
-    Lịch sử thay lõi
-    <span class="count">${filterCores.length} lần</span>
+  // Next replacement card
+  const nextCard = document.createElement('div');
+  nextCard.className = 'info-card';
+  nextCard.innerHTML = `
+    <div class="info-table">
+      <div class="table-header">
+        <div class="header-cell">Tên lõi</div>
+        <div class="header-cell">Ngày thay tiếp theo</div>
+      </div>
+      <div class="table-row">
+        <div class="cell">${nextFilterCoreName}</div>
+        <div class="cell">${nextReplaceDate ? formatDate(nextReplaceDate) : 'Chưa xác định'}</div>
+      </div>
+    </div>
+
+    ${images.length > 0 ? `
+      <div class="images-section">
+        <div class="images-label">Hình ảnh đơn hàng:</div>
+        <div class="images-grid">
+          ${images.map(imgPath => {
+            // Build full image URL using API base URL
+            // api.baseURL = "https://api.chothuetatca.com/api"
+            // Remove "/api" to get base domain, then add imgPath
+            const baseUrl = 'https://api.chothuetatca.com';
+            const imgUrl = imgPath.startsWith('http') ? imgPath : `${baseUrl}${imgPath}`;
+            return `<img src="${imgUrl}" alt="Hình ảnh đơn hàng" class="order-image" onclick="openImageModal('${imgUrl}')" onerror="this.style.display='none'">`;
+          }).join('')}
+        </div>
+      </div>
+    ` : ''}
   `;
-  section.appendChild(sectionTitle);
-
-  if (filterCores.length > 0) {
-    const timeline = document.createElement('div');
-    timeline.className = 'filter-timeline';
-    
-    // Sort by date (newest first)
-    const sortedCores = [...filterCores].sort((a, b) => {
-      const dateA = new Date(a.replace_date || a.ngay_thay || a.created_at || 0);
-      const dateB = new Date(b.replace_date || b.ngay_thay || b.created_at || 0);
-      return dateB - dateA;
-    });
-
-    sortedCores.forEach(core => {
-      const item = document.createElement('div');
-      const statusClass = getStatusClass(core.status);
-      item.className = `timeline-item status-${statusClass}`;
-      
-      item.innerHTML = `
-        <div class="timeline-header">
-          <div>
-            <div class="filter-name">${core.name || core.filter_core_name || core.ten_loi || 'Lõi lọc'}</div>
-            <div class="filter-date">
-              <i class="fas fa-clock"></i>
-              ${formatDate(core.replace_date || core.ngay_thay || core.created_at)}
-            </div>
-          </div>
-          <span class="status-badge status-${statusClass}">${getStatusText(core.status)}</span>
-        </div>
-        <div class="timeline-details">
-          ${core.technician_name ? `
-            <div class="detail-row">
-              <i class="fas fa-user-cog"></i>
-              <span><strong>Kỹ thuật viên:</strong> ${core.technician_name}</span>
-            </div>
-          ` : ''}
-          ${core.price ? `
-            <div class="detail-row">
-              <i class="fas fa-tag"></i>
-              <span><strong>Giá:</strong> ${formatPrice(core.price)}</span>
-            </div>
-          ` : ''}
-          ${core.notes || core.description ? `
-            <div class="detail-row">
-              <i class="fas fa-comment"></i>
-              <span><strong>Ghi chú:</strong> ${core.notes || core.description}</span>
-            </div>
-          ` : ''}
-        </div>
-      `;
-      
-      timeline.appendChild(item);
-    });
-
-    section.appendChild(timeline);
-  } else {
-    const empty = document.createElement('div');
-    empty.className = 'empty-timeline';
-    empty.innerHTML = `
-      <i class="fas fa-inbox"></i>
-      <p>Chưa có lịch sử thay lõi nào</p>
-    `;
-    section.appendChild(empty);
-  }
-
-  container.appendChild(section);
-}
-
-function getStatusClass(status) {
-  const map = { '1': 'pending', '2': 'confirmed', '3': 'completed' };
-  return map[status] || 'pending';
-}
-
-function getStatusText(status) {
-  const map = { '1': 'Chờ xác nhận', '2': 'Đã xác nhận', '3': 'Hoàn thành' };
-  return map[status] || 'Không xác định';
+  container.appendChild(nextCard);
 }
 
 function formatDate(dateStr) {
@@ -555,9 +572,48 @@ function formatDate(dateStr) {
 }
 
 function formatPrice(price) {
-  if (!price) return 'N/A';
+  if (!price) return '0 ₫';
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND'
   }).format(price);
 }
+
+function formatPoints(points) {
+  if (!points && points !== 0) return '0';
+  return new Intl.NumberFormat('vi-VN').format(points);
+}
+
+// Global function to open image modal
+window.openImageModal = (url) => {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    cursor: pointer;
+  `;
+  
+  const img = document.createElement('img');
+  img.src = url;
+  img.style.cssText = `
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 12px;
+  `;
+  
+  modal.appendChild(img);
+  document.body.appendChild(modal);
+  
+  modal.addEventListener('click', () => {
+    document.body.removeChild(modal);
+  });
+};

@@ -15,35 +15,97 @@ export function FilterHistoryPage() {
   const loadProducts = async () => {
     try {
       const currentUser = authService.getUser();
-      if (!currentUser || !currentUser.id) {
-        throw new Error('Không tìm thấy thông tin người dùng');
+      console.log('Current user data:', currentUser);
+      
+      if (!currentUser) {
+        throw new Error('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+      }
+      
+      if (!currentUser.id) {
+        throw new Error('Không tìm thấy ID người dùng');
+      }
+      
+      if (!currentUser.phone) {
+        throw new Error('Không tìm thấy số điện thoại người dùng. Vui lòng cập nhật thông tin tài khoản.');
       }
 
-      // Use historyService to get filter history (products with filter cores)
-      const result = await historyService.getFilterHistory(currentUser.id);
+      console.log('Fetching products list for user:', currentUser.id);
+
+      // Step 1: Get list of products from /user/listProduct/{userId}
+      const productsResult = await historyService.getFilterHistory(currentUser.id);
       
-      console.log('Filter history response:', result);
+      console.log('Products list response:', productsResult);
 
       let products = [];
-      if (result.data && result.data.listProducts) {
-        products = result.data.listProducts;
-      } else if (result.data && Array.isArray(result.data)) {
-        products = result.data;
-      } else if (Array.isArray(result)) {
-        products = result;
+      if (productsResult.data && productsResult.data.listProducts) {
+        products = productsResult.data.listProducts;
+      } else if (productsResult.data && Array.isArray(productsResult.data)) {
+        products = productsResult.data;
+      } else if (Array.isArray(productsResult)) {
+        products = productsResult;
       }
+
+      console.log('Found products:', products.length);
+
+      // Step 2: For each product, get its filter history count
+      let productsWithHistory = [];
       
-      allProducts = products || [];
+      for (const product of products) {
+        if (product.id) {
+          try {
+            console.log(`Fetching history for product ${product.id}`);
+            const historyResult = await historyService.getFilterCoreHistoryByPhone(product.id, currentUser.phone);
+            
+            console.log(`History for product ${product.id}:`, historyResult);
+
+            let historyCount = 0;
+            let historyItems = [];
+
+            // Extract history data from response
+            if (historyResult.data) {
+              // Check if history array exists
+              if (historyResult.data.history && Array.isArray(historyResult.data.history)) {
+                historyItems = historyResult.data.history;
+                historyCount = historyItems.length;
+              }
+              // Check if product has order_filter_cores
+              else if (historyResult.data.product?.order_filter_cores) {
+                historyItems = historyResult.data.product.order_filter_cores;
+                historyCount = historyItems.length;
+              }
+            }
+
+            productsWithHistory.push({
+              ...product,
+              historyCount: historyCount,
+              hasHistory: historyCount > 0
+            });
+          } catch (error) {
+            console.warn(`Failed to fetch history for product ${product.id}:`, error);
+            // Add product without history
+            productsWithHistory.push({
+              ...product,
+              historyCount: 0,
+              hasHistory: false
+            });
+          }
+        }
+      }
+
+      console.log('Products with history:', productsWithHistory);
+      
+      allProducts = productsWithHistory || [];
       loading = false;
       updateDisplay();
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Error loading filter history:', error);
       loading = false;
       const loadingState = document.getElementById('productsLoading');
       if (loadingState) {
         loadingState.innerHTML = `
           <i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i>
           <p>Không thể tải dữ liệu. Vui lòng thử lại.</p>
+          <p style="font-size: 0.85rem; color: #666; margin-top: 8px;">Lỗi: ${error.message}</p>
         `;
       }
     }
@@ -53,15 +115,8 @@ export function FilterHistoryPage() {
     if (status === 'all') {
       displayProducts(allProducts);
     } else {
-      // Filter products that have order_filter_cores with matching status
-      const filtered = allProducts.map(item => {
-        const filterCores = item.order_filter_cores || [];
-        const filteredCores = filterCores.filter(core => core.status === status);
-        return {
-          ...item,
-          order_filter_cores: filteredCores
-        };
-      }).filter(item => item.order_filter_cores.length > 0);
+      // Filter history items by status
+      const filtered = allProducts.filter(item => item.status === status);
 
       if (filtered.length > 0) {
         displayProducts(filtered);
@@ -99,41 +154,38 @@ export function FilterHistoryPage() {
     const container = document.getElementById('productsList');
     if (!container) return;
 
+    const currentUser = authService.getUser();
+    const userPhone = currentUser?.phone || 'N/A';
+
     container.style.display = 'block';
-    container.innerHTML = products.map(item => {
-      const product = item.product || {};
-      const filterCores = item.order_filter_cores || [];
+    container.innerHTML = products.map(product => {
+      const productName = product.product?.name || product.name || 'Sản phẩm';
+      const address = product.address || 'Chưa có địa chỉ';
+      const purchaseDate = product.ngaymua || product.created_at;
+      const filterLevel = product.filter_core_level || '?';
+      const historyCount = product.historyCount || 0;
 
       return `
-        <div class="product-filter-card" onclick="window.location.hash='#/filter-history-detail/${item.id}'" style="cursor:pointer;">
+        <div class="product-filter-card" onclick="window.location.hash='#/product-filter-history/${product.id}'" style="cursor:pointer;">
           <div class="product-header">
             <div class="product-info">
-              <h3><i class="fas fa-tint"></i> ${product.name || 'Sản phẩm'}</h3>
-              <p class="product-address"><i class="fas fa-map-marker-alt"></i> ${item.address || 'Chưa có địa chỉ'}</p>
-              <p class="product-date"><i class="fas fa-calendar"></i> Ngày mua: ${formatDate(item.ngaymua)}</p>
+              <h3><i class="fas fa-tint"></i> ${productName}</h3>
+              <p class="product-address"><i class="fas fa-map-marker-alt"></i> ${address}</p>
+              <p class="product-date"><i class="fas fa-calendar"></i> Ngày mua: ${formatDate(purchaseDate)}</p>
+              <p class="product-date"><i class="fas fa-phone"></i> SĐT: ${userPhone}</p>
+              <span class="filter-level">${filterLevel} Cấp lọc</span>
             </div>
-            <span class="filter-level">Cấp ${item.filter_core_level || '?'}</span>
+            
           </div>
-          <div class="filter-cores">
-            <h4><i class="fas fa-filter"></i> Lịch sử thay lõi (${filterCores.length} lần)</h4>
-            ${filterCores.length > 0 ? `
-              <div class="filter-list">
-                ${filterCores.slice(0, 3).map(core => `
-                  <div class="filter-item">
-                    <div class="filter-info">
-                      <span class="filter-name">${core.name || core.filter_core_name || core.ten_loi || 'Lõi lọc'}</span>
-                      <span class="filter-date">${formatDate(core.replace_date || core.ngay_thay || core.created_at)}</span>
-                    </div>
-                    <span class="filter-status status-${getStatusClass(core.status)}">${getStatusText(core.status)}</span>
-                  </div>
-                `).join('')}
-                ${filterCores.length > 3 ? `<p class="more-items">+ ${filterCores.length - 3} lần thay khác - Click để xem chi tiết</p>` : ''}
-              </div>
-            ` : '<p class="no-filter">Chưa có lịch sử thay lõi</p>'}
+          <div class="filter-details">
+            <div class="history-count-badge">
+              <i class="fas fa-history"></i>
+              <span><strong>${historyCount}</strong> lần thay lõi</span>
+            </div>
           </div>
           <div class="card-footer">
             <span class="view-detail">
-              <i class="fas fa-eye"></i> Xem chi tiết nhật ký thay lõi
+              <i class="fas fa-eye"></i> Xem lịch sử thay lõi
             </span>
           </div>
         </div>
@@ -353,14 +405,6 @@ export function FilterHistoryPage() {
       color: #F97316;
     }
 
-    .filter-level {
-      background: linear-gradient(135deg, #F97316, #34ce57);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
 
     .filter-cores h4 {
       color: #333;
@@ -371,6 +415,57 @@ export function FilterHistoryPage() {
     .filter-cores h4 i {
       color: #F97316;
       margin-right: 8px;
+    }
+
+    .filter-details {
+      display: grid;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .history-count-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 12px;
+      border-left: 4px solid #F97316;
+    }
+
+    .history-count-badge i {
+      font-size: 1.5rem;
+      color: #F97316;
+    }
+
+    .history-count-badge span {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .history-count-badge strong {
+      font-size: 1.3rem;
+      color: #F97316;
+    }
+
+    .detail-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .detail-row i {
+      color: #F97316;
+      width: 20px;
+    }
+
+    .detail-row strong {
+      color: #333;
+      margin-right: 5px;
     }
 
     .filter-list {
@@ -488,10 +583,9 @@ export function FilterHistoryPage() {
   `;
   containerDiv.appendChild(historyTabs);
 
-  // Filter toolbar (optional - can be added later if needed)
+  // Filter toolbar
   const filterToolbar = document.createElement('div');
   filterToolbar.className = 'filter-toolbar';
-  filterToolbar.style.display = 'none'; // Hidden for now
   
   const filterLabel = document.createElement('label');
   filterLabel.innerHTML = '<i class="fas fa-filter"></i> Lọc theo trạng thái:';

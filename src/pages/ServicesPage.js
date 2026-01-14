@@ -35,8 +35,7 @@ export function ServicesPage() {
 
   const loadServices = async () => {
     try {
-      const response = await fetch('/api/service/listService');
-      const result = await response.json();
+      const result = await servicesService.getListService();
       
       console.log('Services API Response:', result);
       

@@ -35,6 +35,16 @@ export const historyService = {
     return api.get(`/user/listProduct/${userId}`);
   },
 
+  // Get filter core replacement history by user ID and phone
+  getFilterCoreHistoryByPhone(userId, phone) {
+    return api.get(`/user/history/${userId}?phone=${phone}`);
+  },
+
+  // Get detail of a specific filter core replacement history
+  getFilterHistoryDetail(historyId) {
+    return api.get(`/user/detailHistory/${historyId}`);
+  },
+
   // Update booking status (if needed)
   updateBookingStatus(bookingId, status) {
     return api.put(`/tasks/${bookingId}/status`, { status });

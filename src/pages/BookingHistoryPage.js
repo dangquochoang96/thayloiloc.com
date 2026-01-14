@@ -390,10 +390,6 @@ export function BookingHistoryPage() {
           <span class="detail-label">SĐT KTV:</span>
           <span class="detail-value">${booking.technician?.phone || booking.staff_phone || 'N/A'}</span>
         </div>
-        <div class="detail-row border-top">
-          <span class="detail-label">Thông báo:</span>
-          <span class="detail-value">${booking.notification || booking.notes || 'Không có thông báo'}</span>
-        </div>
       `;
 
     } catch (error) {
