@@ -1,0 +1,228 @@
+/* Training Content Page Styles */
+.training-content-page {
+  min-height: 100vh;
+  padding-top: 100px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.training-content-page .process-main {
+  padding: 2rem 0 4rem;
+}
+
+.training-content-page .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.training-content-page .page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.training-content-page .page-header h1 {
+  font-size: 2.5rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.training-content-page .page-header h1 i {
+  color: #f97316;
+}
+
+.training-content-page .page-header p {
+  font-size: 1.1rem;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto 1.5rem;
+}
+
+.training-content-page .breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.training-content-page .breadcrumb a {
+  color: #f97316;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.training-content-page .breadcrumb a:hover {
+  color: #ea580c;
+  text-decoration: underline;
+}
+
+.training-content-page .breadcrumb i {
+  color: #94a3b8;
+  font-size: 0.7rem;
+}
+
+.training-content-page .breadcrumb span {
+  color: #64748b;
+}
+
+.training-content-page .process-content {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.training-content-page .content-card {
+  text-align: left;
+  padding: 3rem;
+}
+
+.training-content-page .content-card * {
+  text-align: left !important;
+}
+
+.training-content-page .content-icon {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 2rem 0;
+}
+
+.training-content-page .content-icon i {
+  font-size: 2.5rem;
+  color: #f97316;
+}
+
+.training-content-page .content-card h2,
+.training-content-page .content-card h3 {
+  color: #1e293b;
+  margin-bottom: 1rem;
+  text-align: center !important;
+}
+
+/* Training Table Styles */
+.training-table-wrapper {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+.training-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.training-table thead {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+}
+
+.training-table th {
+  color: white;
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border: 1px solid #ea580c;
+}
+
+.training-table td {
+  padding: 0.8rem 1rem;
+  border: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.training-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.training-table tbody tr:hover {
+  background: #fff7ed;
+}
+
+.training-table .stt-cell {
+  text-align: center;
+  font-weight: 600;
+  color: #f97316;
+  width: 60px;
+  vertical-align: middle;
+}
+
+.training-table .section-header td {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.training-table .summary-row td {
+  background: #dcfce7;
+}
+
+.training-table ul {
+  margin: 0.5rem 0;
+  padding-left: 1.2rem;
+}
+
+.training-table ul li {
+  margin: 0.3rem 0;
+  color: #64748b;
+}
+
+.training-table .sub-item {
+  padding-left: 2rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.training-table strong {
+  color: #1e293b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .training-content-page {
+    padding-top: 80px;
+  }
+
+  .training-content-page .container {
+    padding: 0 1rem;
+  }
+
+  .training-content-page .page-header h1 {
+    font-size: 1.8rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .training-content-page .process-content {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+  }
+
+  .training-content-page .content-card {
+    padding: 2rem 1rem;
+  }
+
+  .training-content-page .content-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .training-content-page .content-icon i {
+    font-size: 2rem;
+  }
+
+  .training-table {
+    font-size: 0.85rem;
+  }
+
+  .training-table th,
+  .training-table td {
+    padding: 0.6rem 0.5rem;
+  }
+}

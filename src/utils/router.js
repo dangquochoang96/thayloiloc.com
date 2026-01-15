@@ -11,7 +11,10 @@ export class Router {
   }
 
   async handleRoute() {
-    const hash = window.location.hash.slice(1) || '/';
+    const fullHash = window.location.hash.slice(1) || '/';
+    
+    // Separate path from query params
+    const [hash] = fullHash.split('?');
     
     // Handle exact routes first
     let route = this.routes[hash];

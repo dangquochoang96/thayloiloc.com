@@ -13,8 +13,14 @@ import { FilterHistoryPage } from './pages/FilterHistoryPage.js';
 import { ProductFilterHistoryPage } from './pages/ProductFilterHistoryPage.js';
 import { FilterHistoryDetailPage } from './pages/FilterHistoryDetailPage.js';
 import { ServicesPage } from './pages/ServicesPage.js';
+import { TrainingContentPage } from './pages/TrainingContentPage.js';
+import { CheckProcessPage } from './pages/CheckProcessPage.js';
+import { MaintenanceProcessPage } from './pages/MaintenanceProcessPage.js';
+import { FilterReplacementPage } from './pages/FilterReplacementPage.js';
 import { NewsPage } from './pages/NewsPage.js';
 import { NewsDetailPage } from './pages/NewsDetailPage.js';
+import { HotlinePage } from './pages/HotlinePage.js';
+import { TechnicianDetailPage } from './pages/TechnicianDetailPage.js';
 
 const routes = {
   '/': {
@@ -55,6 +61,30 @@ const routes = {
   },
   '/filter-history-detail': {
     render: FilterHistoryDetailPage
+  },
+  '/training-content': {
+    render: TrainingContentPage
+  },
+  '/check-process': {
+    render: CheckProcessPage
+  },
+  '/maintenance-process': {
+    render: MaintenanceProcessPage
+  },
+  '/filter-replacement': {
+    render: FilterReplacementPage
+  },
+  '/news': {
+    render: NewsPage
+  },
+  '/news-detail': {
+    render: NewsDetailPage
+  },
+  '/hotline': {
+    render: HotlinePage
+  },
+  '/technician-detail': {
+    render: TechnicianDetailPage
   },
   '*': {
     render: () => {
