@@ -108,6 +108,119 @@ export function Header() {
       font-weight: 600;
     }
     
+    /* Nav Dropdown Styles */
+    .nav-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .nav-dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    
+    .nav-dropdown-toggle > i:first-child {
+      color: #f97316;
+      font-size: 0.9rem;
+    }
+    
+    .nav-dropdown-toggle .dropdown-arrow {
+      font-size: 0.7rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .nav-dropdown.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      min-width: 280px;
+      border-radius: 16px;
+      z-index: 9999;
+      padding: 0.8rem 0;
+      border: 1px solid rgba(226, 232, 240, 0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: translateX(-50%) translateY(-10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .nav-dropdown.active .nav-dropdown-menu {
+      display: block;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    .nav-dropdown-menu::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(226, 232, 240, 0.5);
+      border-bottom: none;
+      border-right: none;
+      transform: translateX(-50%) rotate(45deg);
+    }
+    
+    .nav-dropdown-menu a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: #64748b !important;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .nav-dropdown-menu a i {
+      width: 20px;
+      color: #f97316;
+      font-size: 1rem;
+      transition: transform 0.2s ease;
+    }
+    
+    .nav-dropdown-menu a:hover i {
+      transform: scale(1.15);
+    }
+    
+    .nav-dropdown-menu a::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.1), transparent);
+      transition: width 0.3s ease;
+    }
+    
+    .nav-dropdown-menu a:hover::before {
+      width: 100%;
+    }
+    
+    .nav-dropdown-menu a:hover {
+      color: #f97316 !important;
+      background: rgba(249, 115, 22, 0.05);
+      padding-left: 25px;
+    }
+    
     .user-dropdown {
       position: relative;
       display: inline-block;
@@ -426,6 +539,39 @@ export function Header() {
         text-align: left;
       }
       
+      .nav-dropdown {
+        width: 100%;
+      }
+      
+      .nav-dropdown-toggle {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .nav-dropdown-menu {
+        position: static;
+        transform: none;
+        width: 100%;
+        min-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        background: rgba(248, 249, 250, 0.8);
+        padding: 0;
+      }
+      
+      .nav-dropdown.active .nav-dropdown-menu {
+        transform: none;
+      }
+      
+      .nav-dropdown-menu::before {
+        display: none;
+      }
+      
+      .nav-dropdown-menu a {
+        padding: 1rem 2rem 1rem 3rem;
+      }
+      
       .hamburger {
         display: flex;
       }
@@ -534,6 +680,37 @@ export function Header() {
     }
     
     nav.appendChild(a);
+  });
+
+  // Add "Quy Trình Sửa Chữa" dropdown
+  const repairDropdown = document.createElement("div");
+  repairDropdown.className = "nav-dropdown";
+  repairDropdown.innerHTML = `
+    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
+      Quy Trình Sửa Chữa
+      <i class="fas fa-chevron-down dropdown-arrow"></i>
+    </a>
+    <div class="nav-dropdown-menu">
+      <a href="#/training-content"><i class="fas fa-graduation-cap"></i> Nội dung đào tạo</a>
+      <a href="#/check-process"><i class="fas fa-search-plus"></i> Quy trình kiểm tra máy lọc nước</a>
+      <a href="#/maintenance-process"><i class="fas fa-broom"></i> Quy trình vệ sinh bảo dưỡng</a>
+      <a href="#/filter-replacement"><i class="fas fa-sync-alt"></i> Quy trình thay lõi lọc</a>
+    </div>
+  `;
+  nav.appendChild(repairDropdown);
+
+  // Dropdown toggle functionality
+  const dropdownToggle = repairDropdown.querySelector('.nav-dropdown-toggle');
+  dropdownToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    repairDropdown.classList.toggle('active');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!repairDropdown.contains(e.target)) {
+      repairDropdown.classList.remove('active');
+    }
   });
 
   // Always add nav to center
