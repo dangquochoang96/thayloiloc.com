@@ -171,6 +171,9 @@ function displayProductsSlider(products) {
 let currentSlide = 0;
 let totalSlides = 0;
 let slidesPerView = 3;
+let touchStartX = 0;
+let touchEndX = 0;
+let isDragging = false;
 
 function initializeSlider(productCount) {
   totalSlides = Math.ceil(productCount / slidesPerView);
@@ -187,6 +190,98 @@ function initializeSlider(productCount) {
   
   // Add resize listener
   window.addEventListener('resize', handleSliderResize);
+  
+  // Add touch/swipe listeners for mobile
+  initializeTouchEvents();
+}
+
+function initializeTouchEvents() {
+  const slider = document.querySelector('.products-slider');
+  if (!slider) return;
+  
+  // Touch events for mobile
+  slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+  slider.addEventListener('touchmove', handleTouchMove, { passive: true });
+  slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+  
+  // Mouse events for desktop (optional - for drag functionality)
+  slider.addEventListener('mousedown', handleMouseDown);
+  slider.addEventListener('mousemove', handleMouseMove);
+  slider.addEventListener('mouseup', handleMouseEnd);
+  slider.addEventListener('mouseleave', handleMouseEnd);
+}
+
+function handleTouchStart(e) {
+  touchStartX = e.touches[0].clientX;
+  isDragging = true;
+}
+
+function handleTouchMove(e) {
+  if (!isDragging) return;
+  touchEndX = e.touches[0].clientX;
+}
+
+function handleTouchEnd(e) {
+  if (!isDragging) return;
+  isDragging = false;
+  
+  const swipeThreshold = 50; // Minimum distance for swipe
+  const diff = touchStartX - touchEndX;
+  
+  if (Math.abs(diff) > swipeThreshold) {
+    if (diff > 0) {
+      // Swipe left - next slide
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSliderPosition();
+      }
+    } else {
+      // Swipe right - previous slide
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSliderPosition();
+      }
+    }
+  }
+  
+  touchStartX = 0;
+  touchEndX = 0;
+}
+
+function handleMouseDown(e) {
+  touchStartX = e.clientX;
+  isDragging = true;
+  e.preventDefault();
+}
+
+function handleMouseMove(e) {
+  if (!isDragging) return;
+  touchEndX = e.clientX;
+}
+
+function handleMouseEnd(e) {
+  if (!isDragging) return;
+  isDragging = false;
+  
+  const swipeThreshold = 50;
+  const diff = touchStartX - touchEndX;
+  
+  if (Math.abs(diff) > swipeThreshold) {
+    if (diff > 0) {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSliderPosition();
+      }
+    } else {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSliderPosition();
+      }
+    }
+  }
+  
+  touchStartX = 0;
+  touchEndX = 0;
 }
 
 function updateSlidesPerView() {

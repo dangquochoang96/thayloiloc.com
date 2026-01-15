@@ -68,11 +68,22 @@
   border-radius: 20px;
   position: relative;
   width: 100%;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.products-slider:active {
+  cursor: grabbing;
 }
 
 @media (max-width: 768px) {
   .products-slider {
     border-radius: 15px;
+    cursor: default;
+    touch-action: pan-y pinch-zoom;
   }
 }
 
@@ -80,11 +91,13 @@
   display: flex;
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   gap: 20px;
+  will-change: transform;
 }
 
 @media (max-width: 768px) {
   .products-track {
     gap: 0;
+    transition: transform 0.3s ease-out;
   }
 }
 
