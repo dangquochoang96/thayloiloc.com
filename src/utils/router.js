@@ -11,7 +11,10 @@ export class Router {
   }
 
   async handleRoute() {
-    const hash = window.location.hash.slice(1) || '/';
+    const fullHash = window.location.hash.slice(1) || '/';
+    
+    // Separate path from query params
+    const [hash] = fullHash.split('?');
     
     // Handle dynamic routes (e.g., /booking-detail/123)
     let route = this.routes[hash];

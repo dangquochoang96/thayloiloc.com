@@ -131,7 +131,7 @@ function displayProductsSlider(products) {
         <div class="product-slide">
           <div class="product-card" onclick="viewProductDetail(${product.id})" style="cursor:pointer;">
             <div class="product-image">
-              <img src="${imageUrl}" alt="${product.name || 'Sản phẩm'}" onerror="this.src='/public/images/default-service.svg'">
+              <img src="${imageUrl}" alt="${product.name || 'Sản phẩm'}" onerror="this.src='/images/default-service.svg'">
               ${product.is_featured ? '<div class="product-badge">Nổi bật</div>' : ''}
             </div>
             <div class="product-content">

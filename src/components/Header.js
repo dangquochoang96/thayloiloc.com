@@ -424,6 +424,56 @@ export function Header() {
       transform: translateY(-1px);
     }
     
+    .hotline-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      color: white !important;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hotline-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .hotline-btn:hover::before {
+      left: 100%;
+    }
+    
+    .hotline-btn:hover {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+    }
+    
+    .hotline-btn i {
+      animation: ring 2s ease-in-out infinite;
+    }
+    
+    @keyframes ring {
+      0%, 100% { transform: rotate(0deg); }
+      10%, 30% { transform: rotate(-10deg); }
+      20%, 40% { transform: rotate(10deg); }
+    }
+    
     .register-btn {
       display: flex;
       align-items: center;
@@ -590,12 +640,14 @@ export function Header() {
       }
       
       .login-btn span,
-      .register-btn span {
+      .register-btn span,
+      .hotline-btn span {
         display: none;
       }
       
       .login-btn,
-      .register-btn {
+      .register-btn,
+      .hotline-btn {
         padding: 0.6rem 1rem;
         font-size: 0.85rem;
       }
@@ -620,7 +672,8 @@ export function Header() {
       }
       
       .login-btn,
-      .register-btn {
+      .register-btn,
+      .hotline-btn {
         padding: 0.5rem 0.8rem;
         font-size: 0.8rem;
       }
@@ -660,7 +713,8 @@ export function Header() {
   // Base navigation links - always show these
   const baseLinks = [
     { text: "Trang Chủ", href: "#/" },
-    { text: "Dịch Vụ", href: "#/services" }
+    { text: "Dịch Vụ", href: "#/services" },
+    { text: "Hotline", href: "#/hotline" }
   ];
 
   // Add history link for logged in users
