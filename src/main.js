@@ -1,4 +1,5 @@
 import './styles/main.css';
+import './utils/navigation.js'; // Import global navigation functions
 import { Router } from './utils/router.js';
 import { ensureFontAwesome } from './utils/icons.js';
 import { HomePage } from './pages/HomePage.js';
@@ -12,6 +13,8 @@ import { FilterHistoryPage } from './pages/FilterHistoryPage.js';
 import { ProductFilterHistoryPage } from './pages/ProductFilterHistoryPage.js';
 import { FilterHistoryDetailPage } from './pages/FilterHistoryDetailPage.js';
 import { ServicesPage } from './pages/ServicesPage.js';
+import { NewsPage } from './pages/NewsPage.js';
+import { NewsDetailPage } from './pages/NewsDetailPage.js';
 
 const routes = {
   '/': {
@@ -28,6 +31,12 @@ const routes = {
   },
   '/services': {
     render: ServicesPage
+  },
+  '/news': {
+    render: NewsPage
+  },
+  '/news/:id': {
+    render: NewsDetailPage
   },
   '/booking': {
     render: BookingPage

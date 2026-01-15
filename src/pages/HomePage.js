@@ -3,6 +3,7 @@ import { Footer } from "../components/Footer.js";
 import { newsService } from "../services/news.service.js";
 import { productService } from "../services/product.service.js";
 import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
+import { navigateTo } from "../utils/navigation.js";
 
 // Import HTML templates
 import heroTemplate from "../templates/home/hero-section.html?raw";
@@ -79,9 +80,9 @@ export function HomePage() {
 }
 
 function loadGeyserecoNews() {
-  newsService.getGeyserecoNewsList("san-pham-dich-vu-2").then((news) => {
-    console.log("Geysereco News:", news);
-  });
+  // This function is now integrated into loadNews()
+  // Keep for backward compatibility but do nothing
+  console.log('Geysereco news loading is now handled in loadNews()');
 }
 
 // Products loading function using product service
@@ -372,6 +373,8 @@ function formatPrice(price) {
   return new Intl.NumberFormat('vi-VN').format(price);
 }
 
+// Global function for navigation - moved to utils/navigation.js
+
 // Global functions for product interactions
 window.viewProductDetail = (productId) => {
   // Navigate to product detail page or show modal
@@ -386,70 +389,260 @@ window.contactForProduct = (productId) => {
   alert('Vui lòng liên hệ hotline: 1900-xxxx để biết thêm chi tiết về sản phẩm này!');
 };
 
+// News slider state
+let newsCurrentSlide = 0;
+let newsTotalSlides = 0;
+let newsPerView = 3;
+
 function loadNews() {
+  // Load news from Geysereco API instead of main API
   newsService
-    .getNewsList()
+    .getGeyserecoNewsWithPagination("san-pham-dich-vu-2")
     .then((result) => {
       const newsLoading = document.getElementById("newsLoading");
-      const newsGrid = document.getElementById("newsGrid");
+      const newsSliderContainer = document.getElementById("newsSliderContainer");
 
       if (newsLoading) newsLoading.style.display = "none";
-      if (newsGrid) newsGrid.style.display = "grid";
+      if (newsSliderContainer) newsSliderContainer.style.display = "block";
 
       let news = [];
-      if (result.data && Array.isArray(result.data)) {
-        news = result.data.slice(0, 6); // Get 6 latest news
-      } else if (Array.isArray(result)) {
-        news = result.slice(0, 6);
+      if (result && Array.isArray(result)) {
+        news = result.slice(0, 9); // Get 9 latest news for slider
+      } else if (result && result.data && Array.isArray(result.data)) {
+        news = result.data.slice(0, 9);
       }
 
-      displayNews(news);
+      // If no Geysereco news, fallback to main API
+      if (news.length === 0) {
+        return newsService.getNewsList().then((mainResult) => {
+          if (mainResult.data && Array.isArray(mainResult.data)) {
+            news = mainResult.data.slice(0, 9);
+          } else if (Array.isArray(mainResult)) {
+            news = mainResult.slice(0, 9);
+          }
+          displayNewsSlider(news);
+          initializeNewsSlider(news.length);
+        });
+      } else {
+        displayNewsSlider(news);
+        initializeNewsSlider(news.length);
+      }
     })
     .catch((err) => {
-      console.log("Error loading news:", err);
-      const newsLoading = document.getElementById("newsLoading");
-      if (newsLoading) {
-        newsLoading.innerHTML =
-          '<p style="color:#666;">Không thể tải tin tức</p>';
-      }
+      console.log("Error loading Geysereco news, trying main API:", err);
+      // Fallback to main API if Geysereco fails
+      return newsService.getNewsList()
+        .then((result) => {
+          const newsLoading = document.getElementById("newsLoading");
+          const newsSliderContainer = document.getElementById("newsSliderContainer");
+
+          if (newsLoading) newsLoading.style.display = "none";
+          if (newsSliderContainer) newsSliderContainer.style.display = "block";
+
+          let news = [];
+          if (result.data && Array.isArray(result.data)) {
+            news = result.data.slice(0, 9);
+          } else if (Array.isArray(result)) {
+            news = result.slice(0, 9);
+          }
+
+          displayNewsSlider(news);
+          initializeNewsSlider(news.length);
+        })
+        .catch((mainErr) => {
+          console.log("Error loading both APIs:", mainErr);
+          const newsLoading = document.getElementById("newsLoading");
+          if (newsLoading) {
+            newsLoading.innerHTML = '<p style="color:#666;">Không thể tải tin tức</p>';
+          }
+        });
     });
 }
 
-function displayNews(news) {
-  const container = document.getElementById("newsGrid");
+function displayNewsSlider(news) {
+  const container = document.getElementById("newsTrack");
   if (!container) return;
 
   if (news.length === 0) {
     container.innerHTML =
-      '<p style="text-align:center; color:#666; grid-column:1/-1;">Chưa có tin tức</p>';
+      '<p style="text-align:center; color:#666; width:100%; padding: 40px;">Chưa có tin tức</p>';
     return;
   }
 
   container.innerHTML = news
     .map((item) => {
-      const imageUrl = getImageUrl(item.image || item.thumbnail || item.avatar);
-      const detailLink = `news-detail.html?id=${item.id}`;
+      // Handle different image field names from Geysereco API
+      const imageUrl = getImageUrl(
+        item.image || 
+        item.thumbnail || 
+        item.avatar || 
+        item.featured_image ||
+        item.cover_image
+      );
+      
+      // Handle different title field names
+      const title = item.title || item.name || item.headline || "Tin tức";
+      
+      // Handle different description field names
+      const description = item.description || 
+        item.content || 
+        item.des || 
+        item.excerpt || 
+        item.summary || 
+        "";
+      
+      // Handle different date field names
+      const date = item.created_at || 
+        item.date || 
+        item.published_at || 
+        item.publish_date ||
+        new Date().toISOString();
+      
+      // Create detail link - handle different ID formats
+      const itemId = item.id || item.slug || item.uuid || Math.random();
+      const detailLink = `#/news/${itemId}`;
 
       return `
-      <div class="news-card" onclick="window.location.href='${detailLink}'" style="cursor:pointer;">
-        <div class="news-image">
-          <img src="${imageUrl}" alt="${
-        item.title || item.name || "Tin tức"
-      }" onerror="this.src='/images/logo.png'">
-        </div>
-        <div class="news-content">
-          <span class="news-date"><i class="fas fa-calendar"></i> ${formatDate(
-            item.created_at || item.date
-          )}</span>
-          <h3>${item.title || item.name || "Tin tức"}</h3>
-          <p>${truncateText(
-            item.description || item.content || item.des || "",
-            100
-          )}</p>
-          <a href="${detailLink}" class="news-link">Xem thêm <i class="fas fa-arrow-right"></i></a>
+      <div class="news-slide">
+        <div class="news-card" onclick="window.location.href='${detailLink}'" style="cursor:pointer;">
+          <div class="news-image">
+            <img src="${imageUrl}" alt="${title}" onerror="this.src='/images/logo.png'">
+          </div>
+          <div class="news-content">
+            <span class="news-date"><i class="fas fa-calendar"></i> ${formatDate(date)}</span>
+            <h3>${title}</h3>
+            <p>${truncateText(description, 100)}</p>
+            <a href="${detailLink}" class="news-link">Xem thêm <i class="fas fa-arrow-right"></i></a>
+          </div>
         </div>
       </div>
     `;
     })
     .join("");
 }
+
+function initializeNewsSlider(newsCount) {
+  updateNewsPerView();
+  newsTotalSlides = Math.ceil(newsCount / newsPerView);
+  newsCurrentSlide = 0;
+  
+  generateNewsSliderDots();
+  updateNewsSliderPosition();
+  
+  window.addEventListener('resize', handleNewsSliderResize);
+  initializeNewsTouchEvents();
+}
+
+function updateNewsPerView() {
+  const width = window.innerWidth;
+  if (width <= 768) {
+    newsPerView = 1;
+  } else if (width <= 1024) {
+    newsPerView = 2;
+  } else {
+    newsPerView = 3;
+  }
+  
+  const newsCount = document.querySelectorAll('.news-slide').length;
+  newsTotalSlides = Math.ceil(newsCount / newsPerView);
+  
+  if (newsCurrentSlide >= newsTotalSlides) {
+    newsCurrentSlide = Math.max(0, newsTotalSlides - 1);
+  }
+}
+
+function generateNewsSliderDots() {
+  const dotsContainer = document.getElementById("newsSliderDots");
+  if (!dotsContainer || newsTotalSlides <= 1) {
+    if (dotsContainer) dotsContainer.style.display = 'none';
+    return;
+  }
+  
+  dotsContainer.style.display = 'flex';
+  dotsContainer.innerHTML = Array.from({ length: newsTotalSlides }, (_, i) => 
+    `<button class="news-slider-dot ${i === newsCurrentSlide ? 'active' : ''}" onclick="goToNewsSlide(${i})"></button>`
+  ).join('');
+}
+
+function updateNewsSliderPosition() {
+  const track = document.getElementById("newsTrack");
+  if (!track) return;
+  
+  const slideWidth = 100 / newsPerView;
+  const translateX = -(newsCurrentSlide * slideWidth * newsPerView);
+  track.style.transform = `translateX(${translateX}%)`;
+  
+  // Update dots
+  const dots = document.querySelectorAll('.news-slider-dot');
+  dots.forEach((dot, index) => {
+    dot.classList.toggle('active', index === newsCurrentSlide);
+  });
+  
+  // Update button states
+  const prevBtn = document.querySelector('.news-slider-prev');
+  const nextBtn = document.querySelector('.news-slider-next');
+  
+  if (prevBtn) prevBtn.disabled = newsCurrentSlide === 0;
+  if (nextBtn) nextBtn.disabled = newsCurrentSlide >= newsTotalSlides - 1;
+}
+
+function handleNewsSliderResize() {
+  updateNewsPerView();
+  generateNewsSliderDots();
+  updateNewsSliderPosition();
+}
+
+let newsTouchStartX = 0;
+let newsTouchEndX = 0;
+let newsIsDragging = false;
+
+function initializeNewsTouchEvents() {
+  const slider = document.querySelector('.news-slider-wrapper');
+  if (!slider) return;
+  
+  slider.addEventListener('touchstart', (e) => {
+    newsTouchStartX = e.touches[0].clientX;
+    newsIsDragging = true;
+  }, { passive: true });
+  
+  slider.addEventListener('touchmove', (e) => {
+    if (!newsIsDragging) return;
+    newsTouchEndX = e.touches[0].clientX;
+  }, { passive: true });
+  
+  slider.addEventListener('touchend', () => {
+    if (!newsIsDragging) return;
+    newsIsDragging = false;
+    
+    const swipeThreshold = 50;
+    const diff = newsTouchStartX - newsTouchEndX;
+    
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0 && newsCurrentSlide < newsTotalSlides - 1) {
+        newsCurrentSlide++;
+        updateNewsSliderPosition();
+      } else if (diff < 0 && newsCurrentSlide > 0) {
+        newsCurrentSlide--;
+        updateNewsSliderPosition();
+      }
+    }
+    
+    newsTouchStartX = 0;
+    newsTouchEndX = 0;
+  }, { passive: true });
+}
+
+// Global news slider functions
+window.slideNews = (direction) => {
+  if (direction === 'next' && newsCurrentSlide < newsTotalSlides - 1) {
+    newsCurrentSlide++;
+  } else if (direction === 'prev' && newsCurrentSlide > 0) {
+    newsCurrentSlide--;
+  }
+  updateNewsSliderPosition();
+};
+
+window.goToNewsSlide = (slideIndex) => {
+  newsCurrentSlide = slideIndex;
+  updateNewsSliderPosition();
+};
