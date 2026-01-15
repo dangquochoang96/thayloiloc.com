@@ -18,6 +18,8 @@ import { MaintenanceProcessPage } from './pages/MaintenanceProcessPage.js';
 import { FilterReplacementPage } from './pages/FilterReplacementPage.js';
 import { NewsPage } from './pages/NewsPage.js';
 import { NewsDetailPage } from './pages/NewsDetailPage.js';
+import { HotlinePage } from './pages/HotlinePage.js';
+import { TechnicianDetailPage } from './pages/TechnicianDetailPage.js';
 
 const routes = {
   '/': {
@@ -70,6 +72,12 @@ const routes = {
   },
   '/news-detail': {
     render: NewsDetailPage
+  },
+  '/hotline': {
+    render: HotlinePage
+  },
+  '/technician-detail': {
+    render: TechnicianDetailPage
   },
   '*': {
     render: () => {

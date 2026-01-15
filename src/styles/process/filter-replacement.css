@@ -81,7 +81,11 @@
   padding: 3rem;
 }
 
-.filter-replacement-page .content-card * {
+.filter-replacement-page .content-card p,
+.filter-replacement-page .content-card h2,
+.filter-replacement-page .content-card h3,
+.filter-replacement-page .content-card h4,
+.filter-replacement-page .content-card li {
   text-align: left !important;
 }
 
@@ -152,7 +156,8 @@
 
 .filter-replacement-page .content-card img {
   display: block;
-  margin: 1rem auto;
+  margin: 1.5rem auto;
   max-width: 100%;
   height: auto;
+  text-align: center !important;
 }

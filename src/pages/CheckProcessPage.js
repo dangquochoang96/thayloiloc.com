@@ -38,7 +38,7 @@ export function CheckProcessPage() {
     <div class="content-card" style="text-align: left;">
       
       <h2 style="text-align: left; font-weight: bold;">I. QUY TRÌNH KIỂM TRA MÁY LỌC NƯỚC RO </h2>
-      <img src="/public/images/Screenshot 2026-01-08 160633.png">
+      <img src="/images/Screenshot 2026-01-08 160633.png">
       <p>Kiểm tra máy trước khi thay lõi lọc là công việc cần thiết để phát hiện máy có bị lỗi gì không? Từ đó thông báo với khách hàng để có hướng xử lý, rồi sau đó mới thay lõi lọc nước. Kiểm tra máy lọc nước bao gồm kiểm tra các bộ phận: nước có ra không, màng RO, bình áp, bơm nguồn, chế độ đóng ngắt của máy. 
 
  
@@ -79,7 +79,7 @@ Kiểm tra vòi ra máy lọc nước: Nếu vòi rỉ nước không khóa lạ
 
 <h3>7.Kiểm tra hệ thống nước cấp, đường nước thải của bồn chậu rửa:</h3> Trong trường hợp hệ thống cũ, han rỉ dễ động vào dễ gây hư hỏng cần thông báo trước cho khách, tránh trường hợp không may đụng hỏng mới báo khách. </p>
 <h2>II. QUY TRÌNH KIỂM TRA MÁY LỌC NƯỚC NANO</h2>
-<img src="/public/images/Screenshot 2026-01-08 160649.png">
+<img src="/images/Screenshot 2026-01-08 160649.png">
 <p><h3>1.Kiểm tra nước có ra hay chảy yếu không?:</h3> Để nguyên máy mở vòi nước xem nước:  
 
 Nước không ra hoặc chảy nhỏ thì khả năng do lõi lọc Nano (Aragon) bị tắc, nếu dùng trên 2 năm thì cần thay. Nếu chưa đến 2 năm thì cần vệ sinh lõi lọc Nano Aragon bằng cách lấy giấy giáp đánh sạch bề mặt, sau đó dùng chanh tươi vệ sinh bề mặt lõi. Tuyệt đối không dùng hóa chất lạ vệ sinh lõi dẫn đến nguy hại cho khách hàng. 

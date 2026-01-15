@@ -39,10 +39,10 @@ export function FilterReplacementPage() {
       
       
       </div>
-      <img src="/public/images/Screenshot 2026-01-08 160523.png">
+      <img src="/images/Screenshot 2026-01-08 160523.png" style="display: block; margin: 1rem auto; max-width: 100%;">
       <h2>QUY TRÌNH THAY LÕI LỌC NƯỚC</h2>
       <p>Bao gồm 7 bước như hình dưới - Quý Khách Hàng hãy cùng kiểm tra quy trình Thay lõi lọc nước ngay tại nhà mình cùng với SOCBAY.</p>
-      <img src="/public/images/Screenshot 2026-01-09 093327.png">
+      <img src="/images/Screenshot 2026-01-09 093327.png" style="display: block; margin: 1rem auto; max-width: 100%;">
       <h3>MÔ HÌNH 5S - NHẬT BẢN ĐƯỢC ÁP DỤNG CHO THAY LÕI LỌC NƯỚC TẠI NHÀ</h3>
 
     </div>
