@@ -1,4 +1,6 @@
 import { api } from '../services/api.js';
+import { SupportService } from '../services/support.service.js';
+import { getImageUrl } from '../utils/helpers.js';
 import '../styles/hotline/technician-detail.css';
 
 export function TechnicianDetailPage() {
@@ -49,10 +51,11 @@ export function TechnicianDetailPage() {
 }
 
 function loadTechnicianDetail(techId, mainEl) {
-  api.get('/user/support')
+  SupportService.getSupportTechnicians()
     .then(data => {
       const technicians = data.data || data || [];
       const tech = technicians.find(t => t.id == techId);
+      console.log('Technician data:', tech);
       
       if (tech) {
         renderTechnicianDetail(tech, mainEl);
@@ -66,7 +69,8 @@ function loadTechnicianDetail(techId, mainEl) {
         `;
       }
     })
-    .catch(() => {
+    .catch((e) => {
+      console.error('Error loading technician detail:', e);
       mainEl.innerHTML = `
         <div class="error-state">
           <i class="fas fa-exclamation-triangle"></i>
@@ -79,7 +83,7 @@ function loadTechnicianDetail(techId, mainEl) {
 
 function renderTechnicianDetail(tech, mainEl) {
   const avatarUrl = tech.avartar 
-    ? `https://api.chothuetatca.com${tech.avartar}` 
+    ? getImageUrl(tech.avartar)
     : null;
 
   mainEl.innerHTML = `
@@ -195,13 +199,16 @@ function renderStars(rating) {
 
 function renderReviewItem(review) {
   // Handle both API format and local format
-  const avatarUrl = review.user_avatar || review.avartar || review.avatar
-    ? `https://api.chothuetatca.com${review.user_avatar || review.avartar || review.avatar}` 
+  const avatarUrl = review.user.avartar
+    ? getImageUrl(review.user.avartar) 
     : null;
+  console.log('Review data:', getImageUrl(review.user.avartar));
   
-  const userName = review.user_name || review.username || review.name || 'Người dùng';
-  const rating = review.rating || review.star || 0;
+  const userName =review.user.username || 'Người dùng';
+  const rating = review.rate || 0;
   const comment = review.comment || review.content || review.note || '';
+
+  console.log('Review data:', review.rate);
   
   return `
     <div class="review-item">
@@ -228,13 +235,15 @@ function loadReviews(techId, mainEl) {
   const reviewsList = mainEl.querySelector('#reviewsList');
   const techRating = mainEl.querySelector('#techRating');
   
-  api.get(`/order/get-list-order-rating-by-staff?staff_id=${techId}`)
+  SupportService.getListOrderRating(techId)
     .then(data => {
       const reviews = data.data || data || [];
+      console.log('Reviews data:', reviews);
       
       // Update rating display
       if (reviews.length > 0) {
-        const avgRating = reviews.reduce((sum, r) => sum + (r.rating || r.star || 0), 0) / reviews.length;
+        const avgRating = reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / reviews.length;
+        console.log('Average rating:', avgRating);
         techRating.innerHTML = `
           ${renderStars(avgRating)}
           <span class="rating-count">(${reviews.length} đánh giá)</span>

@@ -1,11 +1,11 @@
 import { api } from './api.js';
 
-export class SupportService {
+export const SupportService = {
   /**
    * Lấy danh sách kỹ thuật viên hỗ trợ
    * @returns {Promise<Array>} Danh sách kỹ thuật viên với thông tin liên hệ
    */
-  static async getSupportTechnicians() {
+  async getSupportTechnicians() {
     try {
       const response = await api.get('/user/support');
       return response.data || response;
@@ -13,13 +13,24 @@ export class SupportService {
       console.error('Lỗi khi lấy danh sách kỹ thuật viên:', error);
       throw error;
     }
-  }
+  },
+
+  async getListOrderRating(techId) {
+    try {
+      const response = await api.get(`/order/get-list-order-rating-by-staff?user_id=${techId}`);
+      console.log('List of order ratings:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách đơn hàng đánh giá:', error);
+      throw error;
+    }
+  },
 
   /**
    * Lấy danh sách số điện thoại kỹ thuật viên
    * @returns {Promise<Array>} Mảng các số điện thoại
    */
-  static async getTechnicianPhones() {
+  async getTechnicianPhones() {
     try {
       const technicians = await this.getSupportTechnicians();
       return technicians
@@ -35,14 +46,14 @@ export class SupportService {
       console.error('Lỗi khi lấy số điện thoại kỹ thuật viên:', error);
       throw error;
     }
-  }
+  },
 
   /**
    * Lọc kỹ thuật viên theo khu vực
    * @param {string} area - Khu vực cần lọc
    * @returns {Promise<Array>} Danh sách kỹ thuật viên theo khu vực
    */
-  static async getTechniciansByArea(area) {
+  async getTechniciansByArea(area) {
     try {
       const phones = await this.getTechnicianPhones();
       return phones.filter(tech => 
@@ -52,5 +63,5 @@ export class SupportService {
       console.error('Lỗi khi lọc kỹ thuật viên theo khu vực:', error);
       throw error;
     }
-  }
+  },
 }

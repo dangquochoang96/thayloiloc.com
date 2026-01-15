@@ -1,6 +1,7 @@
 import { Header } from '../components/Header.js';
 import { Footer } from '../components/Footer.js';
 import { api } from '../services/api.js';
+import { SupportService } from '../services/support.service.js';
 import '../styles/hotline/hotline-page.css';
 
 export function HotlinePage() {
@@ -79,14 +80,14 @@ export function HotlinePage() {
           <i class="fas fa-building"></i>
           <div>
             <strong>Trụ sở chính</strong>
-            <p>123 Đường ABC, Quận XYZ, TP.HCM</p>
+            <p>CTT1 - 03, Khu Biệt Thự Liền kề Kiến Hưng Luxury, P. Phúc La, Hà Đông, Hà Nội, Việt Nam</p>
           </div>
         </div>
         <div class="info-item">
           <i class="fas fa-map-marked-alt"></i>
           <div>
-            <strong>Chi nhánh</strong>
-            <p>456 Đường DEF, Quận GHI, Hà Nội</p>
+            <strong>Chi nhánh miền Nam</strong>
+            <p>Số 178 đường Nguyễn Trãi, kp Thống Nhất 1, P Dĩ An, Tp Dĩ An, Bình Dương</p>
           </div>
         </div>
       </div>
@@ -132,7 +133,7 @@ function initializeTechnicians() {
     gridEl.innerHTML = '';
 
     // Gọi API qua api service
-    api.get('/user/support')
+    SupportService.getSupportTechnicians()
       .then(data => {
         let technicians = data.data || data || [];
 
