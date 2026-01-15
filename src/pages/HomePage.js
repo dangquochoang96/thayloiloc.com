@@ -60,6 +60,7 @@ export function HomePage() {
 
   // Load news from API
   loadNews();
+  loadGeyserecoNews();
 
   // Contact Section
   const contactSection = document.createElement("div");
@@ -75,6 +76,12 @@ export function HomePage() {
   container.appendChild(floatingButton.firstElementChild);
 
   return container;
+}
+
+function loadGeyserecoNews() {
+  newsService.getGeyserecoNewsList("san-pham-dich-vu-2").then((news) => {
+    console.log("Geysereco News:", news);
+  });
 }
 
 // Products loading function using product service
@@ -378,6 +385,7 @@ window.contactForProduct = (productId) => {
   // Can implement contact modal or redirect to contact form
   alert('Vui lòng liên hệ hotline: 1900-xxxx để biết thêm chi tiết về sản phẩm này!');
 };
+
 function loadNews() {
   newsService
     .getNewsList()

@@ -1,4 +1,6 @@
 import { api } from "./api.js";
+import { geyserecoApi } from "./api.js";
+
 
 export const newsService = {
   getNewsList() {
@@ -7,5 +9,9 @@ export const newsService = {
 
   getNewsDetail(id) {
     return api.get(`/blog/detail/${id}`);
+  },
+
+  getGeyserecoNewsList(slug) {
+    return geyserecoApi.get(`/blogs/category/${slug}`);
   },
 };
