@@ -32,6 +32,11 @@ export function LoginPage() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMsg.style.display = "none";
+    
+    const submitBtn = form.querySelector(".btn-submit");
+    submitBtn.classList.add("loading");
+    submitBtn.disabled = true;
+    
     const phone = form.phone.value;
     const pass = form.password.value;
 
@@ -41,6 +46,8 @@ export function LoginPage() {
       window.location.hash = "/";
       window.location.reload(); // To update header state
     } catch (err) {
+      submitBtn.classList.remove("loading");
+      submitBtn.disabled = false;
       errorMsg.textContent =
         err.message || "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập của bạn.";
       errorMsg.style.display = "block";

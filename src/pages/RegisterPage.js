@@ -35,17 +35,25 @@ export function RegisterPage() {
     errorMsg.style.display = "none";
     successMsg.style.display = "none";
 
+    const submitBtn = form.querySelector(".btn-submit");
+    submitBtn.classList.add("loading");
+    submitBtn.disabled = true;
+
     const name = form.name.value;
     const phone = form.phone.value;
     const pass = form.password.value;
 
     try {
       await authService.register(phone, name, pass);
+      submitBtn.classList.remove("loading");
+      submitBtn.disabled = false;
       successMsg.style.display = "block";
       setTimeout(() => {
         window.location.hash = "/login";
       }, 1500);
     } catch (err) {
+      submitBtn.classList.remove("loading");
+      submitBtn.disabled = false;
       errorMsg.textContent = err.message || "Đăng ký thất bại.";
       errorMsg.style.display = "block";
     }
