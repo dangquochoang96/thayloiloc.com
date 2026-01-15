@@ -29,3 +29,41 @@
 .float-btn.booking i {
   font-size: 1.2rem;
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .floating-buttons {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .float-btn.booking {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+
+  .float-btn.booking i {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-buttons {
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .float-btn.booking {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+
+  .float-btn.booking span {
+    display: none;
+  }
+
+  .float-btn.booking i {
+    font-size: 1.3rem;
+  }
+}

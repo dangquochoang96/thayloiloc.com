@@ -71,7 +71,7 @@ export function Footer() {
                 <i class="fas fa-phone-alt"></i>
                 <div>
                   <strong>Điện Thoại</strong>
-                  <a href="tel:1900xxxx">1900 xxxx</a>
+                  <a href="tel:0963456911">0963456911</a>
                 </div>
               </li>
               <li>

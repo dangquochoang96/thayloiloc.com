@@ -402,7 +402,7 @@ export function Header() {
       .nav-links {
         position: fixed;
         left: -100%;
-        top: 80px;
+        top: 70px;
         flex-direction: column;
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(20px);
@@ -413,6 +413,7 @@ export function Header() {
         border: none;
         border-top: 1px solid rgba(226, 232, 240, 0.5);
         gap: 0.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       }
       
       .nav-links.active {
@@ -428,6 +429,15 @@ export function Header() {
       
       .hamburger {
         display: flex;
+        order: 3;
+      }
+      
+      .user-dropdown {
+        order: 2;
+      }
+      
+      .auth-buttons {
+        order: 2;
       }
       
       .user-btn span {
@@ -464,6 +474,16 @@ export function Header() {
         height: 40px;
       }
       
+      .nav-links {
+        top: 65px;
+        padding: 1.5rem 0;
+      }
+      
+      .nav-link {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+      }
+      
       .user-btn {
         padding: 0.6rem 1rem;
         font-size: 0.85rem;
@@ -477,6 +497,14 @@ export function Header() {
       .register-btn {
         padding: 0.5rem 0.8rem;
         font-size: 0.8rem;
+      }
+      
+      .hamburger {
+        padding: 0.375rem;
+      }
+      
+      .hamburger span {
+        width: 22px;
       }
     }
   `;
