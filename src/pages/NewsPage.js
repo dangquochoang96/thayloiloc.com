@@ -1,30 +1,29 @@
-import { Header } from '../components/Header.js';
-import { Footer } from '../components/Footer.js';
-import { newsService } from '../services/news.service.js';
-import { getImageUrl, formatDate, truncateText } from '../utils/helpers.js';
-import '../styles/news/news-page.css';
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
+import { newsService } from "../services/news.service.js";
+import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
+import { navigateTo } from "../utils/navigation.js";
+
+// Import CSS styles
+import "../styles/news/news-page.css";
 
 export function NewsPage() {
-  const container = document.createElement('div');
-  container.appendChild(Header());
+  const container = document.createElement("div");
 
-  const page = document.createElement('main');
-  page.className = 'news-page';
+  const header = Header();
+  container.appendChild(header);
 
-  const main = document.createElement('div');
-  main.className = 'news-main';
+  const main = document.createElement("main");
+  main.className = "news-page";
 
-  const containerDiv = document.createElement('div');
-  containerDiv.className = 'container';
-
-  // Page header
-  const pageHeader = document.createElement('div');
-  pageHeader.className = 'page-header';
+  // Page Header
+  const pageHeader = document.createElement("div");
+  pageHeader.className = "page-header";
   pageHeader.innerHTML = `
     <h1><i class="fas fa-newspaper"></i> Tin Tức & Sự Kiện</h1>
-    <p>Cập nhật những tin tức mới nhất về sản phẩm, dịch vụ và chương trình khuyến mãi</p>
+    <p>Cập nhật những thông tin mới nhất về sản phẩm và dịch vụ của chúng tôi</p>
     <div class="breadcrumb">
-      <a href="#/">Trang chủ</a>
+      <a href="#/" onclick="event.preventDefault(); navigateTo('/')">Trang chủ</a>
       <i class="fas fa-chevron-right"></i>
       <span>Tin tức</span>
     </div>

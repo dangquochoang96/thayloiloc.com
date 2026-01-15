@@ -5,8 +5,6 @@
  * @returns {string} Full image URL
  */
 export function getImageUrl(imagePath, fallbackImage = "/images/logo.png") {
-  const baseUrl = import.meta.env.VITE_API_URL;
-
   if (!imagePath) {
     return fallbackImage;
   }
@@ -16,7 +14,13 @@ export function getImageUrl(imagePath, fallbackImage = "/images/logo.png") {
     return imagePath;
   }
 
-  // Otherwise, prepend base URL
+  // Handle Geysereco API images (they start with /public/uploads/)
+  if (imagePath.startsWith("/public/uploads/")) {
+    return "https://geysereco.com" + imagePath;
+  }
+
+  // Handle other API images with base URL
+  const baseUrl = import.meta.env.VITE_API_URL;
   return baseUrl + imagePath;
 }
 

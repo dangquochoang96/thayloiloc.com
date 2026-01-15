@@ -1,10 +1,32 @@
 <section id="news" class="news-section">
     <div class="container">
-        <h2 class="section-title">Tin Tức Nổi Bật</h2>
+        <div class="section-header">
+            <h2 class="section-title">Tin Tức Nổi Bật</h2>
+            <a href="#/news" class="view-all-btn" onclick="event.preventDefault(); navigateTo('/news')">
+                Xem tất cả <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
         <div id="newsLoading" style="text-align:center; padding:40px;">
             <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:#f97316;"></i>
             <p style="margin-top:10px; color:#666;">Đang tải tin tức...</p>
         </div>
-        <div class="news-grid" id="newsGrid" style="display:none;"></div>
+        
+        <!-- News Slider Container -->
+        <div class="news-slider-container" id="newsSliderContainer" style="display:none;">
+            <div class="news-slider">
+                <button class="news-slider-btn news-slider-prev" onclick="slideNews('prev')">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="news-slider-wrapper">
+                    <div class="news-slider-track" id="newsTrack">
+                        <!-- News slides will be loaded here -->
+                    </div>
+                </div>
+                <button class="news-slider-btn news-slider-next" onclick="slideNews('next')">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="news-slider-dots" id="newsSliderDots"></div>
+        </div>
     </div>
 </section>
