@@ -54,8 +54,8 @@ export const historyService = {
   },
 
   // Get filter core replacement history by user ID and phone
-  getFilterCoreHistoryByPhone(userId, phone) {
-    return api.get(`/user/history/${userId}?phone=${phone}`);
+  getFilterCoreHistoryByPhone(productId, phone) {
+    return api.get(`/user/history/${productId}?phone=${phone}`);
   },
 
   // Get detail of a specific filter core replacement history

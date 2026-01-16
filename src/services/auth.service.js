@@ -4,12 +4,13 @@ export const authService = {
   async login(phone, pass) {
     try {
       const response = await api.post("/user/login", { phone, pass });
-      if (response.code === 1 && response.data) {
-        console.log(response.data);
+      if (response.code === 1 && response.data.type == 1) {
         localStorage.setItem("user_info", JSON.stringify(response.data));
         return response;
+      } else if (response.data.type == 2) {
+        throw new Error("Bạn không phải là khách hàng");
       } else {
-        throw new Error(response.message || "Login failed");
+        throw new Error(response.message || "Đăng nhập thất bại");
       }
     } catch (error) {
       throw error;
