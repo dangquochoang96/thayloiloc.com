@@ -338,13 +338,6 @@ async function loadBookingHistory(container) {
   }
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return 'N/A';
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('vi-VN');
-}
-
 function formatPrice(price) {
   if (!price) return 'N/A';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);

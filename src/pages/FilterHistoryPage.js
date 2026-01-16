@@ -166,28 +166,47 @@ export function FilterHistoryPage() {
       const filterLevel = product.filter_core_level || '?';
       const historyCount = product.historyCount || 0;
 
+      // Lấy ảnh từ product_images array
+      let productImage = '/images/default-service.svg';
+      
+      if (product.product?.product_images && product.product.product_images.length > 0) {
+        const imgLink = product.product.product_images[0].link;
+        // Thử nhiều domain khác nhau
+        productImage = imgLink.startsWith('http') ? imgLink : `https://api.chothuetatca.com${imgLink}`;
+      } else if (product.product?.image) {
+        productImage = product.product.image.startsWith('http') ? product.product.image : `https://api.chothuetatca.com${product.product.image}`;
+      }
+
       return `
         <div class="product-filter-card" onclick="window.location.hash='#/product-filter-history/${product.id}'" style="cursor:pointer;">
-          <div class="product-header">
-            <div class="product-info">
-              <h3><i class="fas fa-tint"></i> ${productName}</h3>
-              <p class="product-address"><i class="fas fa-map-marker-alt"></i> ${address}</p>
-              <p class="product-date"><i class="fas fa-calendar"></i> Ngày mua: ${formatDate(purchaseDate)}</p>
-              <p class="product-date"><i class="fas fa-phone"></i> SĐT: ${userPhone}</p>
-              <span class="filter-level">${filterLevel} Cấp lọc</span>
+          <div class="product-card-content">
+            <div class="product-card-left">
+              <div class="product-header">
+                <div class="product-info">
+                  <h3><i class="fas fa-tint"></i> ${productName}</h3>
+                  <p class="product-address"><i class="fas fa-map-marker-alt"></i> ${address}</p>
+                  <p class="product-date"><i class="fas fa-calendar"></i> Ngày mua: ${formatDate(purchaseDate)}</p>
+                  <p class="product-date"><i class="fas fa-phone"></i> SĐT: ${userPhone}</p>
+                  <span class="filter-level">${filterLevel} Cấp lọc</span>
+                </div>
+              </div>
+              <div class="filter-details">
+                <div class="history-count-badge">
+                  <i class="fas fa-history"></i>
+                  <span><strong>${historyCount}</strong> lần thay lõi</span>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span class="view-detail">
+                  <i class="fas fa-eye"></i> Xem lịch sử thay lõi
+                </span>
+              </div>
             </div>
-            
-          </div>
-          <div class="filter-details">
-            <div class="history-count-badge">
-              <i class="fas fa-history"></i>
-              <span><strong>${historyCount}</strong> lần thay lõi</span>
+            <div class="product-card-right">
+              <div class="product-image-wrapper">
+                <img src="${productImage}" alt="${productName}" onerror="this.src='/images/default-service.svg'" />
+              </div>
             </div>
-          </div>
-          <div class="card-footer">
-            <span class="view-detail">
-              <i class="fas fa-eye"></i> Xem lịch sử thay lõi
-            </span>
           </div>
         </div>
       `;

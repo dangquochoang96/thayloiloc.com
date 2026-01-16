@@ -21,6 +21,7 @@ import { NewsPage } from './pages/NewsPage.js';
 import { NewsDetailPage } from './pages/NewsDetailPage.js';
 import { HotlinePage } from './pages/HotlinePage.js';
 import { TechnicianDetailPage } from './pages/TechnicianDetailPage.js';
+import { FeedbackPage } from './pages/FeedbackPage.js';
 
 const routes = {
   '/': {
@@ -85,6 +86,9 @@ const routes = {
   },
   '/technician-detail': {
     render: TechnicianDetailPage
+  },
+  '/feedback': {
+    render: FeedbackPage
   },
   '*': {
     render: () => {

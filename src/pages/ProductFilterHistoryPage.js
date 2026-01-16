@@ -135,30 +135,46 @@ function renderProductHistory(container, product, historyItems, user, loadingSta
   const filterLevel = product.filter_core_level || '?';
   const userPhone = user?.phone || 'N/A';
 
+  // Lấy ảnh từ product_images array
+  let productImage = '/images/default-service.svg';
+  if (product.product?.product_images && product.product.product_images.length > 0) {
+    const imgLink = product.product.product_images[0].link;
+    productImage = imgLink.startsWith('http') ? imgLink : `https://api.chothuetatca.com${imgLink}`;
+  } else if (product.product?.image) {
+    productImage = product.product.image.startsWith('http') ? product.product.image : `https://api.chothuetatca.com${product.product.image}`;
+  }
+
   // Product header
   const header = document.createElement('div');
   header.className = 'product-header-card';
   header.innerHTML = `
-    <h1>
-      <i class="fas fa-tint"></i>
-      ${productName}
-    </h1>
-    <div class="product-meta-grid">
-      <div class="meta-item">
-        <i class="fas fa-map-marker-alt"></i>
-        <span><strong>Địa chỉ:</strong> ${address}</span>
+    <div class="product-header-content">
+      <div class="product-header-info">
+        <h1>
+          <i class="fas fa-tint"></i>
+          ${productName}
+        </h1>
+        <div class="product-meta-grid">
+          <div class="meta-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span><strong>Địa chỉ:</strong> ${address}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-calendar"></i>
+            <span><strong>Ngày mua:</strong> ${formatDate(purchaseDate)}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-phone"></i>
+            <span><strong>SĐT:</strong> ${userPhone}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-layer-group"></i>
+            <span><strong>Cấp lõi:</strong> ${filterLevel}</span>
+          </div>
+        </div>
       </div>
-      <div class="meta-item">
-        <i class="fas fa-calendar"></i>
-        <span><strong>Ngày mua:</strong> ${formatDate(purchaseDate)}</span>
-      </div>
-      <div class="meta-item">
-        <i class="fas fa-phone"></i>
-        <span><strong>SĐT:</strong> ${userPhone}</span>
-      </div>
-      <div class="meta-item">
-        <i class="fas fa-layer-group"></i>
-        <span><strong>Cấp lõi:</strong> ${filterLevel}</span>
+      <div class="product-header-image">
+        <img src="${productImage}" alt="${productName}" onerror="this.src='/images/default-service.svg'" />
       </div>
     </div>
   `;
