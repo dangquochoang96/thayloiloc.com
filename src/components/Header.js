@@ -814,7 +814,7 @@ export function Header() {
       </a>
       <div class="nav-dropdown-menu">
         <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
-        <a href="#/feedback"><i class="fas fa-comment-dots"></i> Gửi phản hồi</a>
+        <a href="#/feedback"><i class="fas fa-comment-dots"></i> Góp ý, khiếu nại</a>
       </div>
     `;
     nav.appendChild(contactDropdown);
