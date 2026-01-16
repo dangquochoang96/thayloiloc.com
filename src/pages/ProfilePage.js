@@ -272,7 +272,7 @@ async function loadBookingHistory(container) {
     bookingList.innerHTML = `
       <div class="loading-state" style="text-align: center; padding: 2rem;">
         <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #f97316;"></i>
-        <p style="margin-top: 1rem; color: #666;">Đang tải lịch sử đặt lịch...</p>
+        <p style="margin-top: 1rem; color: #666;">Đang tải lịch sử thay lõi...</p>
       </div>
     `;
 
@@ -325,11 +325,11 @@ async function loadBookingHistory(container) {
     }
 
   } catch (error) {
-    console.error('Error loading booking history:', error);
+    console.error('Error loading filter history:', error);
     bookingList.innerHTML = `
       <div class="error-state" style="text-align: center; padding: 2rem;">
         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc3545; margin-bottom: 1rem;"></i>
-        <p style="color: #666;">Có lỗi xảy ra khi tải lịch sử đặt lịch</p>
+        <p style="color: #666;">Có lỗi xảy ra khi tải lịch sử thay lõi</p>
         <button onclick="location.reload()" class="btn btn-secondary" style="margin-top: 1rem;">
           <i class="fas fa-redo"></i> Thử lại
         </button>
@@ -338,20 +338,39 @@ async function loadBookingHistory(container) {
   }
 }
 
-function getStatusIcon(status) {
+function formatPrice(price) {
+  if (!price) return 'N/A';
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+function getFilterStatus(expireDate) {
+  if (!expireDate) return 'pending';
+  const expire = new Date(expireDate);
+  const now = new Date();
+  const diffDays = Math.ceil((expire - now) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return 'expired';
+  if (diffDays <= 30) return 'warning';
+  return 'active';
+}
+
+function getFilterStatusIcon(expireDate) {
+  const status = getFilterStatus(expireDate);
   switch (status) {
-    case 'completed': return 'fa-check-circle';
-    case 'pending': return 'fa-clock';
-    case 'cancelled': return 'fa-times-circle';
+    case 'expired': return 'fa-times-circle';
+    case 'warning': return 'fa-exclamation-circle';
+    case 'active': return 'fa-check-circle';
     default: return 'fa-question-circle';
   }
 }
 
-function getStatusText(status) {
+function getFilterStatusText(expireDate) {
+  const status = getFilterStatus(expireDate);
   switch (status) {
-    case 'completed': return 'Hoàn thành';
-    case 'pending': return 'Đang chờ';
-    case 'cancelled': return 'Đã hủy';
+    case 'expired': return 'Đã hết hạn';
+    case 'warning': return 'Sắp hết hạn';
+    case 'active': return 'Còn hạn';
     default: return 'Không xác định';
   }
 }
+

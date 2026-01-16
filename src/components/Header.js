@@ -60,25 +60,29 @@ export function Header() {
     
     .nav-links {
       display: flex;
+      flex-wrap: nowrap;
       gap: 0;
       align-items: center;
       background: rgba(248, 249, 250, 0.8);
       border-radius: 50px;
-      padding: 0.5rem;
+      padding: 0.3rem;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.3);
+      white-space: nowrap;
     }
     
     .nav-link {
       color: #64748b;
       text-decoration: none;
       font-weight: 500;
-      font-size: 0.95rem;
-      padding: 0.8rem 1.5rem;
+      font-size: 0.85rem;
+      padding: 0.6rem 0.9rem;
       border-radius: 25px;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     
     .nav-link::before {
@@ -747,7 +751,6 @@ export function Header() {
   // Add history link for logged in users
   if (isLoggedIn && user) {
     baseLinks.push({ text: "Lịch Sử", href: "#/booking-history" });
-    baseLinks.push({ text: "Liên Hệ", href: "#/hotline" });
   }
 
   baseLinks.push({ text: "Tin Tức", href: "#/news" });
@@ -786,17 +789,49 @@ export function Header() {
   `;
   nav.appendChild(repairDropdown);
 
-  // Dropdown toggle functionality
+  // Dropdown toggle functionality for Quy Trình
   const dropdownToggle = repairDropdown.querySelector(".nav-dropdown-toggle");
   dropdownToggle.addEventListener("click", (e) => {
     e.preventDefault();
+    // Close contact dropdown if open
+    const contactDropdown = nav.querySelector(".nav-dropdown:last-of-type");
+    if (contactDropdown && contactDropdown !== repairDropdown) {
+      contactDropdown.classList.remove("active");
+    }
     repairDropdown.classList.toggle("active");
   });
 
-  // Close dropdown when clicking outside
+  // Add "Liên Hệ" dropdown
+  const contactDropdown = document.createElement("div");
+  contactDropdown.className = "nav-dropdown";
+  contactDropdown.innerHTML = `
+    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
+      Liên Hệ
+      <i class="fas fa-chevron-down dropdown-arrow"></i>
+    </a>
+    <div class="nav-dropdown-menu">
+      <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
+      <a href="#/feedback"><i class="fas fa-comment-dots"></i> Gửi phản hồi</a>
+    </div>
+  `;
+  nav.appendChild(contactDropdown);
+
+  // Dropdown toggle functionality for Liên Hệ
+  const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
+  contactToggle.addEventListener("click", (e) => {
+    e.preventDefault();
+    // Close repair dropdown if open
+    repairDropdown.classList.remove("active");
+    contactDropdown.classList.toggle("active");
+  });
+
+  // Close dropdowns when clicking outside
   document.addEventListener("click", (e) => {
     if (!repairDropdown.contains(e.target)) {
       repairDropdown.classList.remove("active");
+    }
+    if (!contactDropdown.contains(e.target)) {
+      contactDropdown.classList.remove("active");
     }
   });
 
