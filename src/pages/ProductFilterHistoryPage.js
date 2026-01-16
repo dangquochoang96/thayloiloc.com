@@ -139,9 +139,9 @@ function renderProductHistory(container, product, historyItems, user, loadingSta
   let productImage = '/images/default-service.svg';
   if (product.product?.product_images && product.product.product_images.length > 0) {
     const imgLink = product.product.product_images[0].link;
-    productImage = imgLink.startsWith('http') ? imgLink : `https://api.chothuetatca.com${imgLink}`;
+    productImage = imgLink.startsWith('http') ? imgLink : `${getImgLink(imgLink)}`;
   } else if (product.product?.image) {
-    productImage = product.product.image.startsWith('http') ? product.product.image : `https://api.chothuetatca.com${product.product.image}`;
+    productImage = product.product.image.startsWith('http') ? product.product.image : `${getImgLink(product.product.image)}`;
   }
 
   // Product header

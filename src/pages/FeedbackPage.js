@@ -2,7 +2,7 @@ import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
 import { historyService } from "../services/history.service.js";
-import { mobileApi } from "../services/api.js";
+import { api } from "../services/api.js";
 
 import "../styles/feedback/feedback-page.css";
 
@@ -243,7 +243,7 @@ function setupFeedbackEvents(container, user) {
         if (imageFiles.length > 0) {
           submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải ảnh...';
           try {
-            imageUrls = await mobileApi.uploadMultipleImages(imageFiles);
+            imageUrls = await api.uploadMultipleImages(imageFiles);
           } catch (uploadError) {
             console.error("Error uploading images:", uploadError);
             showErrorMessage(container, "Không thể tải ảnh lên. Vui lòng thử lại.");
@@ -267,7 +267,7 @@ function setupFeedbackEvents(container, user) {
           });
         }
 
-        const res = await mobileApi.postFormData("/feedbacks", formData);
+        const res = await api.postFormData("/feedbacks", formData);
         console.log(res);
         
         showSuccessMessage(container);
