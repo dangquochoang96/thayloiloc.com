@@ -772,6 +772,9 @@ export function Header() {
     nav.appendChild(a);
   });
 
+  // Declare contactDropdown variable at the top of the nav section
+  let contactDropdown = null;
+  
   // Add "Quy Trình Sửa Chữa" dropdown
   const repairDropdown = document.createElement("div");
   repairDropdown.className = "nav-dropdown";
@@ -794,43 +797,47 @@ export function Header() {
   dropdownToggle.addEventListener("click", (e) => {
     e.preventDefault();
     // Close contact dropdown if open
-    const contactDropdown = nav.querySelector(".nav-dropdown:last-of-type");
     if (contactDropdown && contactDropdown !== repairDropdown) {
       contactDropdown.classList.remove("active");
     }
     repairDropdown.classList.toggle("active");
   });
 
-  // Add "Liên Hệ" dropdown
-  const contactDropdown = document.createElement("div");
-  contactDropdown.className = "nav-dropdown";
-  contactDropdown.innerHTML = `
-    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
-      Liên Hệ
-      <i class="fas fa-chevron-down dropdown-arrow"></i>
-    </a>
-    <div class="nav-dropdown-menu">
-      <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
-      <a href="#/feedback"><i class="fas fa-comment-dots"></i> Gửi phản hồi</a>
-    </div>
-  `;
-  nav.appendChild(contactDropdown);
+  // Add "Liên Hệ" dropdown - only for logged in users
+  if (isLoggedIn && user) {
+    contactDropdown = document.createElement("div");
+    contactDropdown.className = "nav-dropdown";
+    contactDropdown.innerHTML = `
+      <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
+        Liên Hệ
+        <i class="fas fa-chevron-down dropdown-arrow"></i>
+      </a>
+      <div class="nav-dropdown-menu">
+        <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
+        <a href="#/feedback"><i class="fas fa-comment-dots"></i> Gửi phản hồi</a>
+      </div>
+    `;
+    nav.appendChild(contactDropdown);
+  }
 
-  // Dropdown toggle functionality for Liên Hệ
-  const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
-  contactToggle.addEventListener("click", (e) => {
-    e.preventDefault();
-    // Close repair dropdown if open
-    repairDropdown.classList.remove("active");
-    contactDropdown.classList.toggle("active");
-  });
+  // Dropdown toggle functionality for Liên Hệ - only if contactDropdown exists
+  if (contactDropdown) {
+    const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
+    contactToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Close repair dropdown if open
+      repairDropdown.classList.remove("active");
+      contactDropdown.classList.toggle("active");
+    });
+  }
 
   // Close dropdowns when clicking outside
   document.addEventListener("click", (e) => {
     if (!repairDropdown.contains(e.target)) {
       repairDropdown.classList.remove("active");
     }
-    if (!contactDropdown.contains(e.target)) {
+    // Only check contact dropdown if it exists
+    if (contactDropdown && !contactDropdown.contains(e.target)) {
       contactDropdown.classList.remove("active");
     }
   });

@@ -1,6 +1,7 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
+import { historyService } from "../services/history.service.js";
 import { mobileApi } from "../services/api.js";
 
 import "../styles/feedback/feedback-page.css";
@@ -13,26 +14,6 @@ export function FeedbackPage() {
 
   const main = document.createElement("main");
   main.className = "feedback-main";
-
-  // Check if user is logged in
-  const user = authService.getCurrentUser();
-  if (!user) {
-    main.innerHTML = `
-      <div class="feedback-container">
-        <div class="login-required">
-          <i class="fas fa-lock"></i>
-          <h2>Vui lòng đăng nhập</h2>
-          <p>Bạn cần đăng nhập để gửi phản hồi</p>
-          <a href="#/login" class="btn-login">
-            <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
-          </a>
-        </div>
-      </div>
-    `;
-    container.appendChild(main);
-    container.appendChild(Footer());
-    return container;
-  }
 
   main.innerHTML = `
     <div class="feedback-container">
@@ -99,6 +80,7 @@ export function FeedbackPage() {
   container.appendChild(Footer());
 
   // Setup event listeners after DOM is ready
+  const user = authService.getCurrentUser();
   setTimeout(() => setupFeedbackEvents(container, user), 0);
 
   return container;
@@ -110,7 +92,7 @@ async function loadUserOrders(container, user) {
 
   try {
     const userId = user.id || user.user_id || user.userId;
-    const result = await mobileApi.get(`/order/list-order-by-customer/${userId}`);
+    const result = await historyService.getListOrderByCustomer(userId);
     
     const orders = result.data || [];
 
@@ -135,33 +117,100 @@ function setupFeedbackEvents(container, user) {
   const form = container.querySelector("#feedback-form");
   const imageInput = container.querySelector("#images");
   const imagePreview = container.querySelector("#image-preview");
+  
+  // Store selected files at function scope level
+  let selectedFiles = [];
 
   // Load user orders
   loadUserOrders(container, user);
 
   // Image preview functionality
   if (imageInput) {
+    
     imageInput.addEventListener("change", (e) => {
-      imagePreview.innerHTML = "";
-      const files = e.target.files;
+      const files = Array.from(e.target.files);
       
-      Array.from(files).forEach((file, index) => {
-        if (file.type.startsWith("image/")) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const previewItem = document.createElement("div");
-            previewItem.className = "preview-item";
-            previewItem.innerHTML = `
-              <img src="${e.target.result}" alt="Preview ${index + 1}">
-              <button type="button" class="remove-image" data-index="${index}">
-                <i class="fas fa-times"></i>
-              </button>
-            `;
-            imagePreview.appendChild(previewItem);
-          };
-          reader.readAsDataURL(file);
+      // Add new files, but limit to 4 total
+      files.forEach(file => {
+        if (file.type.startsWith("image/") && selectedFiles.length < 4) {
+          selectedFiles.push(file);
         }
       });
+      
+      // Refresh the preview
+      renderImagePreviews();
+    });
+    
+    // Function to render image previews
+    function renderImagePreviews() {
+      imagePreview.innerHTML = "";
+      
+      selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const previewItem = document.createElement("div");
+          previewItem.className = "preview-item";
+          previewItem.innerHTML = `
+            <img src="${e.target.result}" alt="Preview ${index + 1}">
+            <button type="button" class="remove-image" data-index="${index}">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          
+          // Add event listener to remove button
+          const removeButton = previewItem.querySelector(".remove-image");
+          removeButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            // Remove the file from selectedFiles array using the data-index attribute
+            const currentIndex = parseInt(removeButton.getAttribute("data-index"));
+            selectedFiles.splice(currentIndex, 1);
+            
+            // Update the file input value to reflect removed files
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            imageInput.files = dt.files;
+            
+            // Re-render previews
+            renderImagePreviews();
+          });
+          
+          imagePreview.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      // Update the file input to reflect current selected files
+      const dt = new DataTransfer();
+      selectedFiles.forEach(file => dt.items.add(file));
+      imageInput.files = dt.files;
+    }
+    
+    // Handle drag and drop
+    const uploadContainer = container.querySelector(".image-upload-container");
+    uploadContainer.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadContainer.classList.add("drag-over");
+    });
+    
+    uploadContainer.addEventListener("dragleave", () => {
+      uploadContainer.classList.remove("drag-over");
+    });
+    
+    uploadContainer.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadContainer.classList.remove("drag-over");
+      
+      const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith("image/"));
+      
+      // Add new files, but limit to 4 total
+      files.forEach(file => {
+        if (selectedFiles.length < 4) {
+          selectedFiles.push(file);
+        }
+      });
+      
+      // Refresh the preview
+      renderImagePreviews();
     });
   }
 
@@ -188,7 +237,7 @@ function setupFeedbackEvents(container, user) {
         }
 
         // Upload images first and get URLs
-        const imageFiles = form.querySelector("#images").files;
+        const imageFiles = imageInput.files;
         let imageUrls = [];
         
         if (imageFiles.length > 0) {
@@ -218,11 +267,16 @@ function setupFeedbackEvents(container, user) {
           });
         }
 
-        await mobileApi.postFormData("/feedbacks", formData);
-
+        const res = await mobileApi.postFormData("/feedbacks", formData);
+        console.log(res);
+        
         showSuccessMessage(container);
         form.reset();
         imagePreview.innerHTML = "";
+        // Clear the image input
+        imageInput.value = "";
+        // Reset selected files array
+        selectedFiles = [];
         // Reload orders dropdown
         loadUserOrders(container, user);
       } catch (error) {
