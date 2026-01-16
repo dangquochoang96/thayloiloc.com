@@ -2,6 +2,7 @@ import { Header } from '../components/Header.js';
 import { Footer } from '../components/Footer.js';
 import { authService } from '../services/auth.service.js';
 import { historyService } from '../services/history.service.js';
+import { getImageUrl } from '../utils/helpers.js';
 import '../styles/history/product-filter-history.css';
 
 export function ProductFilterHistoryPage() {
@@ -139,9 +140,9 @@ function renderProductHistory(container, product, historyItems, user, loadingSta
   let productImage = '/images/default-service.svg';
   if (product.product?.product_images && product.product.product_images.length > 0) {
     const imgLink = product.product.product_images[0].link;
-    productImage = imgLink.startsWith('http') ? imgLink : `${getImgLink(imgLink)}`;
+    productImage = imgLink.startsWith('http') ? imgLink : `${getImageUrl(imgLink)}`;
   } else if (product.product?.image) {
-    productImage = product.product.image.startsWith('http') ? product.product.image : `${getImgLink(product.product.image)}`;
+    productImage = product.product.image.startsWith('http') ? product.product.image : `${getImageUrl(product.product.image)}`;
   }
 
   // Product header
