@@ -1,6 +1,7 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
+import { api } from "../services/api.js";
 
 // Import HTML template
 import profileTemplate from "../templates/auth/profile.html?raw";
@@ -269,76 +270,52 @@ async function loadBookingHistory(container) {
     bookingList.innerHTML = `
       <div class="loading-state" style="text-align: center; padding: 2rem;">
         <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #f97316;"></i>
-        <p style="margin-top: 1rem; color: #666;">Đang tải lịch sử đặt lịch...</p>
+        <p style="margin-top: 1rem; color: #666;">Đang tải lịch sử thay lõi...</p>
       </div>
     `;
 
-    // Get user booking history (you'll need to implement this API call)
     const user = authService.getCurrentUser();
     if (!user) return;
 
-    // For now, show sample data - replace with actual API call
-    const sampleBookings = [
-      {
-        id: 1,
-        service: "Thay lõi lọc nước RO",
-        date: "15/01/2024",
-        time: "09:00",
-        address: "123 Nguyễn Văn A, Q.1, TP.HCM",
-        status: "completed"
-      },
-      {
-        id: 2,
-        service: "Vệ sinh máy lọc nước",
-        date: "20/01/2024",
-        time: "14:00",
-        address: "456 Lê Văn B, Q.3, TP.HCM",
-        status: "pending"
-      },
-      {
-        id: 3,
-        service: "Sửa chữa máy lọc nước",
-        date: "25/01/2024",
-        time: "10:30",
-        address: "789 Trần Văn C, Q.7, TP.HCM",
-        status: "cancelled"
-      }
-    ];
+    // Gọi API lấy lịch sử thay lõi gần nhất
+    const userId = user.id || user.user_id || user.userId;
+    const response = await api.get(`/order/last-replace-filter-core/${userId}`);
+    const historyData = response.data || response;
 
-    // Render booking history
-    if (sampleBookings.length === 0) {
+    // Render lịch sử thay lõi
+    if (!historyData || (Array.isArray(historyData) && historyData.length === 0)) {
       bookingList.innerHTML = `
         <div class="empty-state" style="text-align: center; padding: 3rem;">
-          <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-          <h4 style="color: #666; margin-bottom: 0.5rem;">Chưa có lịch sử đặt lịch</h4>
-          <p style="color: #999;">Bạn chưa đặt lịch dịch vụ nào</p>
-          <a href="#/booking" class="btn btn-primary" style="margin-top: 1rem;">
-            <i class="fas fa-plus"></i> Đặt lịch ngay
-          </a>
+          <i class="fas fa-filter" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+          <h4 style="color: #666; margin-bottom: 0.5rem;">Chưa có lịch sử thay lõi</h4>
+          <p style="color: #999;">Bạn chưa có lịch sử thay lõi lọc nào</p>
         </div>
       `;
     } else {
-      bookingList.innerHTML = sampleBookings.map(booking => `
+      // Lấy 3 lần thay lõi gần nhất
+      const historyItems = Array.isArray(historyData) ? historyData.slice(0, 3) : [historyData];
+      bookingList.innerHTML = historyItems.map(item => `
         <div class="booking-item">
           <div class="booking-info">
-            <h4>${booking.service}</h4>
-            <p><i class="fas fa-calendar"></i> ${booking.date} - ${booking.time}</p>
-            <p><i class="fas fa-map-marker-alt"></i> ${booking.address}</p>
+            <h4>${item.name || 'Lõi lọc'}</h4>
+            <p><i class="fas fa-calendar"></i> Ngày thay: ${formatDate(item.replace_date)}</p>
+            <p><i class="fas fa-clock"></i> Ngày hẹn thay tiếp: ${formatDate(item.replace_date_promise)}</p>
+            ${item.price && item.price !== "0.00" ? `<p><i class="fas fa-money-bill"></i> Giá: ${formatPrice(item.price)}</p>` : ''}
           </div>
-          <div class="booking-status ${booking.status}">
-            <i class="fas ${getStatusIcon(booking.status)}"></i>
-            ${getStatusText(booking.status)}
+          <div class="booking-status ${getFilterStatus(item.replace_date_promise)}">
+            <i class="fas ${getFilterStatusIcon(item.replace_date_promise)}"></i>
+            ${getFilterStatusText(item.replace_date_promise)}
           </div>
         </div>
       `).join('');
     }
 
   } catch (error) {
-    console.error('Error loading booking history:', error);
+    console.error('Error loading filter history:', error);
     bookingList.innerHTML = `
       <div class="error-state" style="text-align: center; padding: 2rem;">
         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc3545; margin-bottom: 1rem;"></i>
-        <p style="color: #666;">Có lỗi xảy ra khi tải lịch sử đặt lịch</p>
+        <p style="color: #666;">Có lỗi xảy ra khi tải lịch sử thay lõi</p>
         <button onclick="location.reload()" class="btn btn-secondary" style="margin-top: 1rem;">
           <i class="fas fa-redo"></i> Thử lại
         </button>
@@ -347,20 +324,46 @@ async function loadBookingHistory(container) {
   }
 }
 
-function getStatusIcon(status) {
+function formatDate(dateStr) {
+  if (!dateStr) return 'N/A';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('vi-VN');
+}
+
+function formatPrice(price) {
+  if (!price) return 'N/A';
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+function getFilterStatus(expireDate) {
+  if (!expireDate) return 'pending';
+  const expire = new Date(expireDate);
+  const now = new Date();
+  const diffDays = Math.ceil((expire - now) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return 'expired';
+  if (diffDays <= 30) return 'warning';
+  return 'active';
+}
+
+function getFilterStatusIcon(expireDate) {
+  const status = getFilterStatus(expireDate);
   switch (status) {
-    case 'completed': return 'fa-check-circle';
-    case 'pending': return 'fa-clock';
-    case 'cancelled': return 'fa-times-circle';
+    case 'expired': return 'fa-times-circle';
+    case 'warning': return 'fa-exclamation-circle';
+    case 'active': return 'fa-check-circle';
     default: return 'fa-question-circle';
   }
 }
 
-function getStatusText(status) {
+function getFilterStatusText(expireDate) {
+  const status = getFilterStatus(expireDate);
   switch (status) {
-    case 'completed': return 'Hoàn thành';
-    case 'pending': return 'Đang chờ';
-    case 'cancelled': return 'Đã hủy';
+    case 'expired': return 'Đã hết hạn';
+    case 'warning': return 'Sắp hết hạn';
+    case 'active': return 'Còn hạn';
     default: return 'Không xác định';
   }
 }
+
