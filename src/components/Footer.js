@@ -64,7 +64,7 @@ export function Footer() {
                 <i class="fas fa-envelope"></i>
                 <div>
                   <strong>Email</strong>
-                  <a href="mailto:support@chothuetatca.com">support@chothuetatca.com</a>
+                  <a href="mailto:nanogeyser29@gmail.com">nanogeyser29@gmail.com</a>
                 </div>
               </li>
               <li>
@@ -91,7 +91,7 @@ export function Footer() {
     <div class="footer-bottom">
       <div class="container">
         <div class="footer-bottom-content">
-          <p>&copy; ${new Date().getFullYear()} Thayloiloc. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} Socbay. All rights reserved.</p>
           <div class="footer-bottom-links">
             <a href="#/privacy">Privacy Policy</a>
             <span class="separator">•</span>

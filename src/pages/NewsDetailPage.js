@@ -1,7 +1,7 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { newsService } from "../services/news.service.js";
-import { getImageUrl, formatDate } from "../utils/helpers.js";
+import { getImageUrl, formatDate, fixRelativeUrls } from "../utils/helpers.js";
 import { navigateTo } from "../utils/navigation.js";
 
 // Import CSS styles
@@ -151,26 +151,7 @@ function loadNewsDetail(newsId) {
     })
     .catch((err) => {
       console.log("Error loading news detail:", err.message);
-      showSampleNewsData(newsId);
     });
-}
-
-function showSampleNewsData(newsId) {
-  // Re-get DOM elements
-  const loadingEl = document.getElementById("newsDetailLoading");
-  const detailEl = document.getElementById("newsDetail");
-  
-  // Show sample data as fallback
-
-  
-  if (loadingEl) loadingEl.style.display = "none";
-  if (detailEl) detailEl.style.display = "block";
-  
-  console.log('Using sample news data due to API error/timeout');
-  displayNewsDetail(sampleNewsData);
-  loadRelatedNews();
-  
-  isLoading = false;
 }
 
 function displayNewsDetail(newsData) {
@@ -184,7 +165,7 @@ function displayNewsDetail(newsData) {
 
   const imageUrl = getImageUrl(newsData.image || newsData.thumbnail || newsData.avatar);
   const title = newsData.name || newsData.title || 'Tin tức';
-  const content = newsData.content || newsData.description || newsData.des || 'Nội dung đang được cập nhật...';
+  const content = fixRelativeUrls(newsData.des || newsData.content || newsData.description) || 'Nội dung đang được cập nhật...';
   const date = newsData.created_at || newsData.date || newsData.published_at || new Date().toISOString();
   const status = newsData.status || 1;
 

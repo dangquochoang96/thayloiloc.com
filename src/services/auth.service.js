@@ -43,19 +43,30 @@ export const authService = {
     return this.getUser();
   },
 
+  getUserFromServer(id) {
+    return api.get(`/user/${id}`);
+  },
+
   getUserDisplayName() {
     const user = this.getUser();
-    if (!user) return 'Người dùng';
-    
+    if (!user) return "Người dùng";
+
     // Try different possible field names for user name
-    return user.name || user.fullName || user.username || user.ten || user.ho_ten || 'Người dùng';
+    return (
+      user.name ||
+      user.fullName ||
+      user.username ||
+      user.ten ||
+      user.ho_ten ||
+      "Người dùng"
+    );
   },
 
   // Debug method to check user data structure
   debugUserData() {
     const userInfo = localStorage.getItem("user_info");
     console.log("Raw user_info from localStorage:", userInfo);
-    
+
     if (userInfo) {
       try {
         const parsed = JSON.parse(userInfo);
@@ -79,7 +90,7 @@ export const authService = {
 
       const response = await api.put("/user/profile", {
         ...userData,
-        id: user.id
+        id: user.id,
       });
 
       if (response.code === 1) {
@@ -105,7 +116,7 @@ export const authService = {
       const response = await api.put("/user/change-password", {
         id: user.id,
         currentPassword,
-        newPassword
+        newPassword,
       });
 
       if (response.code === 1) {
@@ -142,10 +153,5 @@ export const authService = {
     } catch (error) {
       throw error;
     }
-  }
-
-  // getUserId() {
-  //   const user = this.getUser();
-  //   return user ? user.id : null;
-  // }
+  },
 };

@@ -20,7 +20,7 @@ export function NewsPage() {
   const pageHeader = document.createElement("div");
   pageHeader.className = "page-header";
   pageHeader.innerHTML = `
-    <h1><i class="fas fa-newspaper"></i> Tin Tức & Sự Kiện</h1>
+    <h1><i class="fas fa-newspaper"></i> Sản Phẩm và Dịch Vụ</h1>
     <p>Cập nhật những thông tin mới nhất về sản phẩm và dịch vụ của chúng tôi</p>
     <div class="breadcrumb">
       <a href="#/" onclick="event.preventDefault(); navigateTo('/')">Trang chủ</a>
@@ -92,8 +92,8 @@ export function NewsPage() {
 }
 
 let currentPage = 1;
-let currentCategory = 'all';
-let currentSearch = '';
+let currentCategory = "all";
+let currentSearch = "";
 let allNews = [];
 let filteredNews = [];
 let totalPages = 1;
@@ -116,7 +116,7 @@ function loadAllNews() {
 
 function loadNewsPage(page = 1) {
   if (isLoading) return;
-  
+
   isLoading = true;
   const newsLoading = document.getElementById("newsLoading");
   const newsGrid = document.getElementById("newsGrid");
@@ -128,11 +128,11 @@ function loadNewsPage(page = 1) {
   newsService
     .getGeyserecoNewsWithPagination("san-pham-dich-vu-2", page, itemsPerPage)
     .then((result) => {
-      console.log('Geysereco API result:', result);
-      
+      console.log("Geysereco API result:", result);
+
       let newsData = [];
       let pagination = {};
-      
+
       // Handle Geysereco API response structure
       if (result && result.data && Array.isArray(result.data)) {
         newsData = result.data;
@@ -140,7 +140,7 @@ function loadNewsPage(page = 1) {
           current_page: result.current_page || page,
           last_page: result.last_page || 1,
           total: result.total || newsData.length,
-          per_page: result.per_page || itemsPerPage
+          per_page: result.per_page || itemsPerPage,
         };
       } else if (Array.isArray(result)) {
         newsData = result;
@@ -148,17 +148,17 @@ function loadNewsPage(page = 1) {
           current_page: page,
           last_page: Math.ceil(result.length / itemsPerPage),
           total: result.length,
-          per_page: itemsPerPage
+          per_page: itemsPerPage,
         };
       } else {
         // No data from API, use sample news
-        console.log('No data from Geysereco API, using sample news');
+        console.log("No data from Geysereco API, using sample news");
         newsData = getSampleNews();
         pagination = {
           current_page: 1,
           last_page: Math.ceil(newsData.length / itemsPerPage),
           total: newsData.length,
-          per_page: itemsPerPage
+          per_page: itemsPerPage,
         };
       }
 
@@ -166,8 +166,8 @@ function loadNewsPage(page = 1) {
       const processedNews = newsData.map((item, index) => ({
         ...item,
         id: item.id || item.slug || `news-${page}-${index}`,
-        category: item.category || 'product', // Default to product for Geysereco
-        source: 'geysereco'
+        category: item.category || "product", // Default to product for Geysereco
+        source: "geysereco",
       }));
 
       // For server-side pagination, replace all news with current page data
@@ -196,54 +196,53 @@ function loadNewsPage(page = 1) {
       // Display current page data (no client-side pagination needed for server-side pagination)
       displayNews(allNews);
       updatePagination();
-      
+
       isLoading = false;
     })
     .catch((err) => {
       console.log("Error loading news from Geysereco API:", err);
-      
+
       // Fallback to sample news only on first page
       if (page === 1) {
         allNews = getSampleNews();
         // Simulate pagination with sample news (16 items, 8 per page = 2 pages)
         totalPages = Math.ceil(allNews.length / itemsPerPage);
         currentPage = 1;
-        
+
         if (newsLoading) newsLoading.style.display = "none";
         if (newsGrid) newsGrid.style.display = "grid";
-        
+
         // Add mock categories for sample news
         allNews = allNews.map((item, index) => ({
           ...item,
           id: item.id || `sample-${index}`,
           category: item.category || getRandomCategory(),
-          source: 'geysereco'
+          source: "geysereco",
         }));
-        
-        console.log('Using sample news due to API error:', allNews);
-        console.log('Sample news total pages:', totalPages);
-        
+
+        console.log("Using sample news due to API error:", allNews);
+        console.log("Sample news total pages:", totalPages);
+
         // For sample news, use client-side pagination
         displayNews(allNews);
         updatePagination();
       }
-      
+
       isLoading = false;
     });
 }
 
-
 function setupSearch() {
-  const searchInput = document.getElementById('newsSearch');
+  const searchInput = document.getElementById("newsSearch");
   if (!searchInput) {
-    console.log('Search input not found, retrying...');
+    console.log("Search input not found, retrying...");
     setTimeout(setupSearch, 200);
     return;
   }
-  
+
   let searchTimeout;
 
-  searchInput.addEventListener('input', (e) => {
+  searchInput.addEventListener("input", (e) => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       currentSearch = e.target.value.toLowerCase().trim();
@@ -253,26 +252,28 @@ function setupSearch() {
   });
 }
 
-
 function getRandomCategory() {
-  const categories = ['product', 'service', 'event', 'promotion'];
+  const categories = ["product", "service", "event", "promotion"];
   return categories[Math.floor(Math.random() * categories.length)];
 }
 
 function filterNews() {
   if (!allNews || allNews.length === 0) {
-    console.log('No news data available for filtering');
+    console.log("No news data available for filtering");
     return;
   }
-  
+
   // For server-side pagination, we don't filter on client side
   // Just display the current page data
-  filteredNews = allNews.filter(item => {
+  filteredNews = allNews.filter((item) => {
     // Search filter only (category filtering would require new API calls)
-    const searchMatch = !currentSearch || 
-      (item.title || item.name || '').toLowerCase().includes(currentSearch) ||
-      (item.description || item.content || item.des || '').toLowerCase().includes(currentSearch);
-    
+    const searchMatch =
+      !currentSearch ||
+      (item.title || item.name || "").toLowerCase().includes(currentSearch) ||
+      (item.description || item.content || item.des || "")
+        .toLowerCase()
+        .includes(currentSearch);
+
     return searchMatch;
   });
 
@@ -310,29 +311,46 @@ function displayNews(news) {
   // For server-side pagination, show all items from current page
   // For client-side pagination (sample news), slice the array
   let itemsToShow = news;
-  
+
   // If using sample news (fallback), apply client-side pagination
-  if (news.length > itemsPerPage && news.some(item => item.id && item.id.startsWith('sample-'))) {
+  if (
+    news.length > itemsPerPage &&
+    news.some((item) => item.id && item.id.startsWith("sample-"))
+  ) {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     itemsToShow = news.slice(startIndex, endIndex);
-    console.log(`Client-side pagination: showing items ${startIndex}-${endIndex-1} of ${news.length} total`);
+    console.log(
+      `Client-side pagination: showing items ${startIndex}-${endIndex - 1} of ${
+        news.length
+      } total`
+    );
   } else {
-    console.log(`Server-side pagination: showing ${news.length} items for page ${currentPage}`);
+    console.log(
+      `Server-side pagination: showing ${news.length} items for page ${currentPage}`
+    );
   }
 
   // Generate HTML for news items
-  const newsHTML = itemsToShow.map((item, index) => {
-    const imageUrl = getImageUrl(item.image || item.thumbnail || item.avatar);
-    const categoryLabel = getCategoryLabel(item.category);
-    const categoryClass = item.category || 'general';
-    const newsId = item.id || item.slug || `news-${index}`;
-    const title = item.title || item.name || 'Tin tức';
-    const description = item.description || item.content || item.des || item.excerpt || '';
-    const date = item.created_at || item.date || item.published_at || new Date().toISOString();
+  const newsHTML = itemsToShow
+    .map((item, index) => {
+      const imageUrl = getImageUrl(item.image || item.thumbnail || item.avatar);
+      const categoryLabel = getCategoryLabel(item.category);
+      const categoryClass = item.category || "general";
+      const newsId = item.id || item.slug || `news-${index}`;
+      const title = item.title || item.name || "Tin tức";
+      const description =
+        item.description || item.content || item.des || item.excerpt || "";
+      const date =
+        item.created_at ||
+        item.date ||
+        item.published_at ||
+        new Date().toISOString();
 
-    return `
-      <article class="news-card" onclick="viewNewsDetail('${newsId}')" data-category="${item.category}">
+      return `
+      <article class="news-card" onclick="viewNewsDetail('${newsId}')" data-category="${
+        item.category
+      }">
         <div class="news-image">
           <img src="${imageUrl}" alt="${title}" 
                onerror="this.src='/images/logo.png'">
@@ -344,7 +362,11 @@ function displayNews(news) {
               <i class="fas fa-calendar"></i> 
               ${formatDate(date)}
             </span>
-            ${item.source === 'geysereco' ? '<span class="news-source">Geysereco</span>' : ''}
+            ${
+              item.source === "geysereco"
+                ? '<span class="news-source">Geysereco</span>'
+                : ""
+            }
           </div>
           <h3 class="news-title">${title}</h3>
           <p class="news-description">
@@ -358,7 +380,8 @@ function displayNews(news) {
         </div>
       </article>
     `;
-  }).join("");
+    })
+    .join("");
 
   // Update container content
   container.innerHTML = newsHTML;
@@ -373,29 +396,31 @@ function updatePagination() {
   const nextPageBtn = document.getElementById("nextPageBtn");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-  console.log(`updatePagination called: currentPage=${currentPage}, totalPages=${totalPages}`);
+  console.log(
+    `updatePagination called: currentPage=${currentPage}, totalPages=${totalPages}`
+  );
 
   if (totalPages <= 1) {
-    console.log('Hiding pagination because totalPages <= 1');
+    console.log("Hiding pagination because totalPages <= 1");
     if (paginationSection) paginationSection.style.display = "none";
     if (loadMoreSection) loadMoreSection.style.display = "none";
     return;
   }
 
-  console.log('Showing pagination');
+  console.log("Showing pagination");
   // Show pagination
   if (paginationSection) {
     paginationSection.style.display = "block";
-    console.log('Pagination section made visible');
+    console.log("Pagination section made visible");
   } else {
-    console.log('Pagination section not found!');
+    console.log("Pagination section not found!");
   }
-  
+
   if (loadMoreSection) {
     loadMoreSection.style.display = "flex";
-    console.log('Load more section made visible');
+    console.log("Load more section made visible");
   } else {
-    console.log('Load more section not found!');
+    console.log("Load more section not found!");
   }
 
   // Update pagination info
@@ -434,7 +459,7 @@ function generatePaginationNumbers() {
   const paginationNumbers = document.getElementById("paginationNumbers");
   if (!paginationNumbers) return;
 
-  let numbersHTML = '';
+  let numbersHTML = "";
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -454,7 +479,7 @@ function generatePaginationNumbers() {
 
   // Page numbers
   for (let i = startPage; i <= endPage; i++) {
-    const activeClass = i === currentPage ? 'active' : '';
+    const activeClass = i === currentPage ? "active" : "";
     numbersHTML += `<button class="page-number ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
   }
 
@@ -471,11 +496,10 @@ function generatePaginationNumbers() {
 
 function getCategoryLabel(category) {
   const labels = {
-    'general': 'Tin tức',
+    general: "Tin tức",
   };
-  return labels[category] || 'Tin tức';
+  return labels[category] || "Tin tức";
 }
-
 
 window.goToPage = (page) => {
   if (page >= 1 && page <= totalPages && page !== currentPage && !isLoading) {

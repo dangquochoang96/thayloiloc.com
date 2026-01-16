@@ -59,6 +59,20 @@ export const bookingService = {
     }
   },
 
+  async getLastReplaceFilterCore(id) {
+    try {
+      const response = await api.get(`/order/last-replace-filter-core/${id}`);
+      if (response.code == 200) {
+        return response.data;
+      } else {
+        throw new Error(response.message || "Không thể lấy thông tin lần thay gần nhất");
+      }
+    } catch (error) {
+      console.error('getLastReplaceFilterCore error:', error);
+      throw error;
+    }
+  },
+
   // Hủy booking
   async cancelBooking(bookingId, reason = "") {
     try {

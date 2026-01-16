@@ -1,13 +1,15 @@
-import { api } from '../services/api.js';
-import '../styles/hotline/technician-detail.css';
+import { SupportService } from "../services/support.service.js";
+import { authService } from "../services/auth.service.js";
+import { getImageUrl } from "../utils/helpers.js";
+import "../styles/hotline/technician-detail.css";
 
 export function TechnicianDetailPage() {
-  const container = document.createElement('div');
-  container.className = 'technician-detail-wrapper';
+  const container = document.createElement("div");
+  container.className = "technician-detail-wrapper";
 
   // Header with back button
-  const header = document.createElement('header');
-  header.className = 'tech-detail-header';
+  const header = document.createElement("header");
+  header.className = "tech-detail-header";
   header.innerHTML = `
     <button class="back-btn" onclick="history.back()">
       <i class="fas fa-arrow-left"></i>
@@ -17,8 +19,8 @@ export function TechnicianDetailPage() {
   `;
   container.appendChild(header);
 
-  const main = document.createElement('main');
-  main.className = 'tech-detail-main';
+  const main = document.createElement("main");
+  main.className = "tech-detail-main";
   main.innerHTML = `
     <div class="loading-state">
       <i class="fas fa-spinner fa-spin"></i>
@@ -29,9 +31,11 @@ export function TechnicianDetailPage() {
 
   // Get technician ID from URL
   setTimeout(() => {
-    const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
-    const techId = urlParams.get('id');
-    
+    const urlParams = new URLSearchParams(
+      window.location.hash.split("?")[1] || ""
+    );
+    const techId = urlParams.get("id");
+
     if (techId) {
       loadTechnicianDetail(techId, main);
     } else {
@@ -48,12 +52,17 @@ export function TechnicianDetailPage() {
   return container;
 }
 
+// function getUserById(id) {
+//   return authService.getUserFromServer(id).then((data) => console.log(data));
+// }
+
 function loadTechnicianDetail(techId, mainEl) {
-  api.get('/user/support')
-    .then(data => {
-      const technicians = data.data || data || [];
-      const tech = technicians.find(t => t.id == techId);
-      
+  authService
+    .getUserFromServer(techId)
+    .then((data) => {
+      const tech = data.data || data || [];
+      console.log("Technician data:", tech);
+
       if (tech) {
         renderTechnicianDetail(tech, mainEl);
       } else {
@@ -66,7 +75,8 @@ function loadTechnicianDetail(techId, mainEl) {
         `;
       }
     })
-    .catch(() => {
+    .catch((e) => {
+      console.error("Error loading technician detail:", e);
       mainEl.innerHTML = `
         <div class="error-state">
           <i class="fas fa-exclamation-triangle"></i>
@@ -78,22 +88,21 @@ function loadTechnicianDetail(techId, mainEl) {
 }
 
 function renderTechnicianDetail(tech, mainEl) {
-  const avatarUrl = tech.avartar 
-    ? `https://api.chothuetatca.com${tech.avartar}` 
-    : null;
+  const avatarUrl = tech.avartar ? getImageUrl(tech.avartar) : null;
 
   mainEl.innerHTML = `
     <!-- Profile Card -->
     <div class="tech-profile-card">
       <div class="profile-avatar">
-        ${avatarUrl 
-          ? `<img src="${avatarUrl}" alt="${tech.username}">` 
-          : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`
+        ${
+          avatarUrl
+            ? `<img src="${avatarUrl}" alt="${tech.username}">`
+            : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`
         }
       </div>
       <div class="profile-info">
-        <h2 class="tech-name">${tech.username || 'Kỹ thuật viên'}</h2>
-        <a href="tel:${tech.phone}" class="tech-phone">${tech.phone || ''}</a>
+        <h2 class="tech-name">${tech.username || "Kỹ thuật viên"}</h2>
+        <a href="tel:${tech.phone}" class="tech-phone">${tech.phone || ""}</a>
         <div class="tech-rating" id="techRating">
           <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
           <span class="rating-count">(0 đánh giá)</span>
@@ -104,12 +113,18 @@ function renderTechnicianDetail(tech, mainEl) {
     <!-- Technical Info -->
     <div class="info-section">
       <h3 class="section-title">Thông tin kỹ thuật</h3>
-      <div class="info-item ${tech.phone_verified ? 'verified' : 'not-verified'}">
-        <i class="fas fa-${tech.phone_verified ? 'check-circle' : 'times-circle'}"></i>
+      <div class="info-item ${
+        tech.phone != null ? "verified" : "not-verified"
+      }">
+        <i class="fas fa-${
+          tech.phone != null ? "check-circle" : "times-circle"
+        }"></i>
         <span>Đã xác minh số điện thoại</span>
       </div>
-      <div class="info-item ${tech.id_verified ? 'verified' : 'not-verified'}">
-        <i class="fas fa-${tech.id_verified ? 'check-circle' : 'times-circle'}"></i>
+      <div class="info-item ${tech.cmt != null ? "verified" : "not-verified"}">
+        <i class="fas fa-${
+          tech.cmt != null ? "check-circle" : "times-circle"
+        }"></i>
         <span>Đã xác minh chứng minh thư</span>
       </div>
     </div>
@@ -118,9 +133,12 @@ function renderTechnicianDetail(tech, mainEl) {
     <div class="info-section">
       <h3 class="section-title">Dịch vụ cung cấp</h3>
       <div class="services-list">
-        ${tech.services && tech.services.length > 0 
-          ? tech.services.map(s => `<span class="service-tag">${s}</span>`).join('')
-          : '<span class="empty-text">Trống!</span>'
+        ${
+          tech.services && tech.services.length > 0
+            ? tech.services
+                .map((s) => `<span class="service-tag">${s}</span>`)
+                .join("")
+            : '<span class="empty-text">Trống!</span>'
         }
       </div>
     </div>
@@ -129,9 +147,12 @@ function renderTechnicianDetail(tech, mainEl) {
     <div class="info-section">
       <h3 class="section-title">Khu vực</h3>
       <div class="area-list">
-        ${tech.areas && tech.areas.length > 0 
-          ? tech.areas.map(a => `<span class="area-tag">${a}</span>`).join('')
-          : '<span class="empty-text">Chưa cập nhật</span>'
+        ${
+          tech.location && tech.location.length > 0
+            ? tech.location
+                .map((a) => `<span class="area-tag">${a}</span>`)
+                .join("")
+            : '<span class="empty-text">Chưa cập nhật</span>'
         }
       </div>
     </div>
@@ -139,8 +160,10 @@ function renderTechnicianDetail(tech, mainEl) {
     <!-- Favorite -->
     <div class="favorite-section">
       <span>Lưu vào mục ưa thích</span>
-      <button class="favorite-btn ${tech.is_favorite ? 'active' : ''}" data-tech-id="${tech.id}">
-        <i class="fa${tech.is_favorite ? 's' : 'r'} fa-heart"></i>
+      <button class="favorite-btn ${
+        tech.is_favorite ? "active" : ""
+      }" data-tech-id="${tech.id}">
+        <i class="fa${tech.is_favorite ? "s" : "r"} fa-heart"></i>
       </button>
     </div>
 
@@ -158,15 +181,15 @@ function renderTechnicianDetail(tech, mainEl) {
   `;
 
   // Add favorite button event
-  const favoriteBtn = mainEl.querySelector('.favorite-btn');
+  const favoriteBtn = mainEl.querySelector(".favorite-btn");
   if (favoriteBtn) {
-    favoriteBtn.addEventListener('click', () => {
-      favoriteBtn.classList.toggle('active');
-      const icon = favoriteBtn.querySelector('i');
-      if (favoriteBtn.classList.contains('active')) {
-        icon.className = 'fas fa-heart';
+    favoriteBtn.addEventListener("click", () => {
+      favoriteBtn.classList.toggle("active");
+      const icon = favoriteBtn.querySelector("i");
+      if (favoriteBtn.classList.contains("active")) {
+        icon.className = "fas fa-heart";
       } else {
-        icon.className = 'far fa-heart';
+        icon.className = "far fa-heart";
       }
     });
   }
@@ -179,8 +202,8 @@ function renderStars(rating) {
   const fullStars = Math.floor(rating);
   const hasHalf = rating % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-  
-  let html = '';
+
+  let html = "";
   for (let i = 0; i < fullStars; i++) {
     html += '<i class="fas fa-star"></i>';
   }
@@ -195,20 +218,24 @@ function renderStars(rating) {
 
 function renderReviewItem(review) {
   // Handle both API format and local format
-  const avatarUrl = review.user_avatar || review.avartar || review.avatar
-    ? `https://api.chothuetatca.com${review.user_avatar || review.avartar || review.avatar}` 
+  const avatarUrl = review.user.avartar
+    ? getImageUrl(review.user.avartar)
     : null;
-  
-  const userName = review.user_name || review.username || review.name || 'Người dùng';
-  const rating = review.rating || review.star || 0;
-  const comment = review.comment || review.content || review.note || '';
-  
+  console.log("Review data:", getImageUrl(review.user.avartar));
+
+  const userName = review.user.username || "Người dùng";
+  const rating = review.rate || 0;
+  const comment = review.comment || review.content || review.note || "";
+
+  console.log("Review data:", review.rate);
+
   return `
     <div class="review-item">
       <div class="review-avatar">
-        ${avatarUrl 
-          ? `<img src="${avatarUrl}" alt="${userName}">` 
-          : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`
+        ${
+          avatarUrl
+            ? `<img src="${avatarUrl}" alt="${userName}">`
+            : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`
         }
       </div>
       <div class="review-content">
@@ -225,27 +252,34 @@ function renderReviewItem(review) {
 }
 
 function loadReviews(techId, mainEl) {
-  const reviewsList = mainEl.querySelector('#reviewsList');
-  const techRating = mainEl.querySelector('#techRating');
-  
-  api.get(`/order/get-list-order-rating-by-staff?staff_id=${techId}`)
-    .then(data => {
+  const reviewsList = mainEl.querySelector("#reviewsList");
+  const techRating = mainEl.querySelector("#techRating");
+
+  SupportService.getListOrderRating(techId)
+    .then((data) => {
       const reviews = data.data || data || [];
-      
+      console.log("Reviews data:", reviews);
+
       // Update rating display
       if (reviews.length > 0) {
-        const avgRating = reviews.reduce((sum, r) => sum + (r.rating || r.star || 0), 0) / reviews.length;
+        const avgRating =
+          reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
+          reviews.length;
+        console.log("Average rating:", avgRating);
         techRating.innerHTML = `
           ${renderStars(avgRating)}
           <span class="rating-count">(${reviews.length} đánh giá)</span>
         `;
-        reviewsList.innerHTML = reviews.map(review => renderReviewItem(review)).join('');
+        reviewsList.innerHTML = reviews
+          .map((review) => renderReviewItem(review))
+          .join("");
       } else {
-        reviewsList.innerHTML = '<p class="empty-text">Chưa có đánh giá nào</p>';
+        reviewsList.innerHTML =
+          '<p class="empty-text">Chưa có đánh giá nào</p>';
       }
     })
-    .catch(error => {
-      console.error('Error loading reviews:', error);
+    .catch((error) => {
+      console.error("Error loading reviews:", error);
       reviewsList.innerHTML = '<p class="empty-text">Chưa có đánh giá nào</p>';
     });
 }

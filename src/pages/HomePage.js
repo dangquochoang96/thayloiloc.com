@@ -61,7 +61,6 @@ export function HomePage() {
 
   // Load news from API
   loadNews();
-  loadGeyserecoNews();
 
   // Contact Section
   const contactSection = document.createElement("div");
@@ -77,12 +76,6 @@ export function HomePage() {
   container.appendChild(floatingButton.firstElementChild);
 
   return container;
-}
-
-function loadGeyserecoNews() {
-  // This function is now integrated into loadNews()
-  // Keep for backward compatibility but do nothing
-  console.log('Geysereco news loading is now handled in loadNews()');
 }
 
 // Products loading function using product service

@@ -1,33 +1,33 @@
-import { Header } from '../components/Header.js';
-import { Footer } from '../components/Footer.js';
-import { authService } from '../services/auth.service.js';
-import { historyService } from '../services/history.service.js';
-import { api } from '../services/api.js';
-import '../styles/history/filter-history-detail.css';
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
+import { authService } from "../services/auth.service.js";
+import { historyService } from "../services/history.service.js";
+import "../styles/history/filter-history-detail.css";
+import { getImageUrl } from "../utils/helpers.js";
 
 export function FilterHistoryDetailPage() {
-  const container = document.createElement('div');
-  container.className = 'page-container';
-  
+  const container = document.createElement("div");
+  container.className = "page-container";
+
   container.appendChild(Header());
 
-  const page = document.createElement('main');
-  page.className = 'filter-detail-page';
+  const page = document.createElement("main");
+  page.className = "filter-detail-page";
 
-  const detailContainer = document.createElement('div');
-  detailContainer.className = 'detail-container';
+  const detailContainer = document.createElement("div");
+  detailContainer.className = "detail-container";
 
   // Back button
-  const backButton = document.createElement('a');
-  backButton.href = 'javascript:history.back()';
-  backButton.className = 'back-button';
+  const backButton = document.createElement("a");
+  backButton.href = "javascript:history.back()";
+  backButton.className = "back-button";
   backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Quay lại';
   detailContainer.appendChild(backButton);
 
   // Loading state
-  const loadingState = document.createElement('div');
-  loadingState.className = 'loading-state';
-  loadingState.id = 'loadingState';
+  const loadingState = document.createElement("div");
+  loadingState.className = "loading-state";
+  loadingState.id = "loadingState";
   loadingState.innerHTML = `
     <i class="fas fa-spinner"></i>
     <p>Đang tải thông tin...</p>
@@ -35,10 +35,10 @@ export function FilterHistoryDetailPage() {
   detailContainer.appendChild(loadingState);
 
   // Error state
-  const errorState = document.createElement('div');
-  errorState.className = 'error-state';
-  errorState.id = 'errorState';
-  errorState.style.display = 'none';
+  const errorState = document.createElement("div");
+  errorState.className = "error-state";
+  errorState.id = "errorState";
+  errorState.style.display = "none";
   errorState.innerHTML = `
     <i class="fas fa-exclamation-triangle"></i>
     <h3>Không thể tải thông tin</h3>
@@ -47,9 +47,9 @@ export function FilterHistoryDetailPage() {
   detailContainer.appendChild(errorState);
 
   // Detail content
-  const detailContent = document.createElement('div');
-  detailContent.id = 'detailContent';
-  detailContent.style.display = 'none';
+  const detailContent = document.createElement("div");
+  detailContent.id = "detailContent";
+  detailContent.style.display = "none";
   detailContainer.appendChild(detailContent);
 
   page.appendChild(detailContainer);
@@ -64,29 +64,29 @@ export function FilterHistoryDetailPage() {
 
 async function loadFilterDetail(contentContainer, loadingState, errorState) {
   const user = authService.getCurrentUser();
-  
+
   if (!user) {
-    window.location.hash = '/login';
+    window.location.hash = "/login";
     return;
   }
 
   // Get history item ID from URL
   const hash = window.location.hash;
-  const historyId = hash.split('/')[2];
+  const historyId = hash.split("/")[2];
 
   if (!historyId) {
-    showError(loadingState, errorState, 'Không tìm thấy mã lịch sử');
+    showError(loadingState, errorState, "Không tìm thấy mã lịch sử");
     return;
   }
 
   try {
     // Get detail from /user/detailHistory/{id}
     const result = await historyService.getFilterHistoryDetail(historyId);
-    
-    console.log('Filter history detail response:', result);
+
+    console.log("Filter history detail response:", result);
 
     let historyItem = null;
-    
+
     // Handle response structure
     if (result.data) {
       historyItem = result.data;
@@ -95,76 +95,121 @@ async function loadFilterDetail(contentContainer, loadingState, errorState) {
     }
 
     if (!historyItem) {
-      showError(loadingState, errorState, 'Không tìm thấy thông tin lịch sử');
+      showError(loadingState, errorState, "Không tìm thấy thông tin lịch sử");
       return;
     }
 
     renderFilterDetail(contentContainer, historyItem, user, loadingState);
-
   } catch (error) {
-    console.error('Error loading filter detail:', error);
-    showError(loadingState, errorState, error.message || 'Có lỗi xảy ra');
+    console.error("Error loading filter detail:", error);
+    showError(loadingState, errorState, error.message || "Có lỗi xảy ra");
   }
 }
 
 function showError(loadingState, errorState, message) {
-  loadingState.style.display = 'none';
-  errorState.style.display = 'block';
-  const errorText = errorState.querySelector('p');
+  loadingState.style.display = "none";
+  errorState.style.display = "block";
+  const errorText = errorState.querySelector("p");
   if (errorText) errorText.textContent = message;
 }
 
 function renderFilterDetail(container, historyItem, user, loadingState) {
-  loadingState.style.display = 'none';
-  container.style.display = 'block';
+  loadingState.style.display = "none";
+  container.style.display = "block";
 
-  console.log('Rendering history item:', historyItem);
+  console.log("Rendering history item:", historyItem);
 
   // Extract order data if exists
   const order = historyItem.order || historyItem;
-  
+
   // Extract data with multiple possible field names
   // order_filter_core is an array
   // First item (index 0) is current replacement
   // Second item (index 1) is next replacement schedule
-  const filterCore = Array.isArray(order.order_filter_core) && order.order_filter_core.length > 0 
-    ? order.order_filter_core[0] 
-    : null;
-  const nextFilterCore = Array.isArray(order.order_filter_core) && order.order_filter_core.length > 1 
-    ? order.order_filter_core[1] 
-    : null;
-    
-  const filterCoreName = filterCore?.name || filterCore?.filter_core_name || order.filter_core_name || order.name || order.ten_loi || historyItem.filter_core_name || historyItem.name || 'Lõi lọc';
-  const replaceDate = order.created_at || order.ngay_thay || order.ngay_thuc_hien || historyItem.created_at;
-  
+  const filterCore =
+    Array.isArray(order.order_filter_core) && order.order_filter_core.length > 0
+      ? order.order_filter_core[0]
+      : null;
+  const nextFilterCore =
+    Array.isArray(order.order_filter_core) && order.order_filter_core.length > 1
+      ? order.order_filter_core[1]
+      : null;
+
+  const filterCoreName =
+    filterCore?.name ||
+    filterCore?.filter_core_name ||
+    order.filter_core_name ||
+    order.name ||
+    order.ten_loi ||
+    historyItem.filter_core_name ||
+    historyItem.name ||
+    "Lõi lọc";
+  const replaceDate =
+    order.created_at ||
+    order.ngay_thay ||
+    order.ngay_thuc_hien ||
+    historyItem.created_at;
+
   // Next replacement info from second item in array
   const nextFilterCoreName = nextFilterCore?.name || filterCoreName;
-  const nextReplaceDate = nextFilterCore?.replace_date_promise || nextFilterCore?.replace_date || nextFilterCore?.ngay_thay_tiep_theo || order.next_replace_date || order.ngay_thay_tiep_theo || historyItem.next_replace_date;
-  
+  const nextReplaceDate =
+    nextFilterCore?.replace_date_promise ||
+    nextFilterCore?.replace_date ||
+    nextFilterCore?.ngay_thay_tiep_theo ||
+    order.next_replace_date ||
+    order.ngay_thay_tiep_theo ||
+    historyItem.next_replace_date;
+
   // Get technician info from staff array
-  const staff = Array.isArray(order.staff) && order.staff.length > 0 
-    ? order.staff[0] 
-    : null;
-  const technicianName = staff?.staff_info?.username || staff?.staff_info?.name || order.sale_id?.username || order.sale_id?.name || order.technician_name || order.ten_ky_thuat_vien || 'Chưa phân công';
-  
+  const staff =
+    Array.isArray(order.staff) && order.staff.length > 0
+      ? order.staff[0]
+      : null;
+  const technicianName =
+    staff?.staff_info?.username ||
+    staff?.staff_info?.name ||
+    order.sale_id?.username ||
+    order.sale_id?.name ||
+    order.technician_name ||
+    order.ten_ky_thuat_vien ||
+    "Chưa phân công";
+
   // Financial info from order
-  const price = parseInt(order.price) || parseInt(order.thanh_tien) || parseInt(order.gia) || 0;
+  const price =
+    parseInt(order.price) ||
+    parseInt(order.thanh_tien) ||
+    parseInt(order.gia) ||
+    0;
   const totalAmount = price; // tong_tien = price in this case
-  const discount = parseInt(order.chiet_khau) || parseInt(order.discount) || parseInt(order.giam_gia) || 0;
-  const previousPointsRaw = parseInt(order.tru_tich_diem) || parseInt(order.previous_points) || parseInt(order.diem_tru) || 0;
+  const discount =
+    parseInt(order.chiet_khau) ||
+    parseInt(order.discount) ||
+    parseInt(order.giam_gia) ||
+    0;
+  const previousPointsRaw =
+    parseInt(order.tru_tich_diem) ||
+    parseInt(order.previous_points) ||
+    parseInt(order.diem_tru) ||
+    0;
   const previousPoints = previousPointsRaw * 1000;
-  
+
   // Calculate final amount: price - discount - previousPoints
   const finalAmount = price - discount - previousPoints;
-  
-  const earnedPointsRaw = parseInt(order.tich_diem) || parseInt(order.earned_points) || parseInt(order.diem_tich) || 0;
+
+  const earnedPointsRaw =
+    parseInt(order.tich_diem) ||
+    parseInt(order.earned_points) ||
+    parseInt(order.diem_tich) ||
+    0;
   const earnedPoints = earnedPointsRaw * 1000;
-  
+
   // Images - check in order object
   let images = [];
   if (Array.isArray(order.images) && order.images.length > 0) {
     // Map images array to get image_link from each item
-    images = order.images.map(img => img.image_link || img.url || img.hinh_anh || img).filter(Boolean);
+    images = order.images
+      .map((img) => img.image_link || img.url || img.hinh_anh || img)
+      .filter(Boolean);
   } else if (order.hinh_anh && Array.isArray(order.hinh_anh)) {
     images = order.hinh_anh;
   } else if (order.image_urls && Array.isArray(order.image_urls)) {
@@ -176,14 +221,14 @@ function renderFilterDetail(container, historyItem, user, loadingState) {
   }
 
   // Header
-  const header = document.createElement('div');
-  header.className = 'detail-header';
+  const header = document.createElement("div");
+  header.className = "detail-header";
   header.innerHTML = `<h1><i class="fas fa-filter"></i> Chi tiết lần thay lõi</h1>`;
   container.appendChild(header);
 
   // Main card
-  const mainCard = document.createElement('div');
-  mainCard.className = 'info-card';
+  const mainCard = document.createElement("div");
+  mainCard.className = "info-card";
   mainCard.innerHTML = `
     <div class="info-table">
       <div class="table-header">
@@ -244,8 +289,8 @@ function renderFilterDetail(container, historyItem, user, loadingState) {
   container.appendChild(mainCard);
 
   // Next replacement card
-  const nextCard = document.createElement('div');
-  nextCard.className = 'info-card';
+  const nextCard = document.createElement("div");
+  nextCard.className = "info-card";
   nextCard.innerHTML = `
     <div class="info-table">
       <div class="table-header">
@@ -254,55 +299,59 @@ function renderFilterDetail(container, historyItem, user, loadingState) {
       </div>
       <div class="table-row">
         <div class="cell">${nextFilterCoreName}</div>
-        <div class="cell">${nextReplaceDate ? formatDate(nextReplaceDate) : 'Chưa xác định'}</div>
+        <div class="cell">${
+          nextReplaceDate ? formatDate(nextReplaceDate) : "Chưa xác định"
+        }</div>
       </div>
     </div>
 
-    ${images.length > 0 ? `
+    ${
+      images.length > 0
+        ? `
       <div class="images-section">
         <div class="images-label">Hình ảnh đơn hàng:</div>
         <div class="images-grid">
-          ${images.map(imgPath => {
-            // Build full image URL using API base URL
-            // api.baseURL = "https://api.chothuetatca.com/api"
-            // Remove "/api" to get base domain, then add imgPath
-            const baseUrl = 'https://api.chothuetatca.com';
-            const imgUrl = imgPath.startsWith('http') ? imgPath : `${baseUrl}${imgPath}`;
-            return `<img src="${imgUrl}" alt="Hình ảnh đơn hàng" class="order-image" onclick="openImageModal('${imgUrl}')" onerror="this.style.display='none'">`;
-          }).join('')}
+          ${images
+            .map((imgPath) => {
+              const imgUrl = getImageUrl(imgPath);
+              return `<img src="${imgUrl}" alt="Hình ảnh đơn hàng" class="order-image" onclick="openImageModal('${imgUrl}')" onerror="this.style.display='none'">`;
+            })
+            .join("")}
         </div>
       </div>
-    ` : ''}
+    `
+        : ""
+    }
   `;
   container.appendChild(nextCard);
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return 'N/A';
+  if (!dateStr) return "N/A";
   const date = new Date(dateStr);
-  return date.toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return date.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
 function formatPrice(price) {
-  if (!price) return '0 ₫';
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
+  if (!price) return "0 ₫";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
   }).format(price);
 }
 
 function formatPoints(points) {
-  if (!points && points !== 0) return '0';
-  return new Intl.NumberFormat('vi-VN').format(points);
+  if (!points && points !== 0) return "0";
+  return new Intl.NumberFormat("vi-VN").format(points);
 }
 
 // Global function to open image modal
 window.openImageModal = (url) => {
-  const modal = document.createElement('div');
+  const modal = document.createElement("div");
   modal.style.cssText = `
     position: fixed;
     top: 0;
@@ -316,8 +365,8 @@ window.openImageModal = (url) => {
     z-index: 10000;
     cursor: pointer;
   `;
-  
-  const img = document.createElement('img');
+
+  const img = document.createElement("img");
   img.src = url;
   img.style.cssText = `
     max-width: 90%;
@@ -325,11 +374,11 @@ window.openImageModal = (url) => {
     object-fit: contain;
     border-radius: 12px;
   `;
-  
+
   modal.appendChild(img);
   document.body.appendChild(modal);
-  
-  modal.addEventListener('click', () => {
+
+  modal.addEventListener("click", () => {
     document.body.removeChild(modal);
   });
 };

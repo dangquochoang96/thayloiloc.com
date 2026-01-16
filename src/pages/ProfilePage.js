@@ -1,7 +1,8 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
-import { api } from "../services/api.js";
+import { bookingService } from "../services/booking.service.js";
+import { formatDate } from "../utils/helpers.js";
 
 // Import HTML template
 import profileTemplate from "../templates/auth/profile.html?raw";
@@ -26,6 +27,7 @@ export function ProfilePage() {
   loadUserProfile(profileContent);
 
   // Load booking history
+  const user = authService.getCurrentUser();
   loadBookingHistory(profileContent);
 
   // Handle form submissions
@@ -277,37 +279,49 @@ async function loadBookingHistory(container) {
     const user = authService.getCurrentUser();
     if (!user) return;
 
-    // Gọi API lấy lịch sử thay lõi gần nhất
-    const userId = user.id || user.user_id || user.userId;
-    const response = await api.get(`/order/last-replace-filter-core/${userId}`);
-    const historyData = response.data || response;
+    // Get user booking history
+    const bookingHistory = await bookingService.getLastReplaceFilterCore(user.id);
+    console.log('Booking history:', bookingHistory);
 
-    // Render lịch sử thay lõi
-    if (!historyData || (Array.isArray(historyData) && historyData.length === 0)) {
+    // Get the first booking if exists
+    if (bookingHistory && bookingHistory.length > 0) {
+      const firstBooking = bookingHistory[0];
+      
+      // Render the first booking
       bookingList.innerHTML = `
-        <div class="empty-state" style="text-align: center; padding: 3rem;">
-          <i class="fas fa-filter" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-          <h4 style="color: #666; margin-bottom: 0.5rem;">Chưa có lịch sử thay lõi</h4>
-          <p style="color: #999;">Bạn chưa có lịch sử thay lõi lọc nào</p>
+        <div class="booking-item" data-order-id="${firstBooking.order_id}" style="cursor: pointer;">
+          <div class="booking-info">
+            <h4>Đơn hàng #${firstBooking.order_id}</h4>
+            <p><i class="fas fa-calendar"></i> Ngày thay: ${formatDate(firstBooking.replace_date)}</p>
+            <p><i class="fas fa-clock"></i> Ngày hẹn thay tiếp: ${formatDate(firstBooking.replace_date_promise)}</p>
+          </div>
+          <div class="booking-status pending">
+            <i class="fas fa-clock"></i>
+            Đang chờ
+          </div>
         </div>
       `;
+      
+      // Add click event listener to the booking item
+      const bookingItem = bookingList.querySelector('.booking-item');
+      if (bookingItem) {
+        bookingItem.addEventListener('click', () => {
+          const orderId = bookingItem.getAttribute('data-order-id');
+          window.location.hash = `/filter-history-detail/${orderId}`;
+        });
+      }
     } else {
-      // Lấy 3 lần thay lõi gần nhất
-      const historyItems = Array.isArray(historyData) ? historyData.slice(0, 3) : [historyData];
-      bookingList.innerHTML = historyItems.map(item => `
-        <div class="booking-item">
-          <div class="booking-info">
-            <h4>${item.name || 'Lõi lọc'}</h4>
-            <p><i class="fas fa-calendar"></i> Ngày thay: ${formatDate(item.replace_date)}</p>
-            <p><i class="fas fa-clock"></i> Ngày hẹn thay tiếp: ${formatDate(item.replace_date_promise)}</p>
-            ${item.price && item.price !== "0.00" ? `<p><i class="fas fa-money-bill"></i> Giá: ${formatPrice(item.price)}</p>` : ''}
-          </div>
-          <div class="booking-status ${getFilterStatus(item.replace_date_promise)}">
-            <i class="fas ${getFilterStatusIcon(item.replace_date_promise)}"></i>
-            ${getFilterStatusText(item.replace_date_promise)}
-          </div>
+      // No bookings found
+      bookingList.innerHTML = `
+        <div class="empty-state" style="text-align: center; padding: 3rem;">
+          <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+          <h4 style="color: #666; margin-bottom: 0.5rem;">Chưa có lịch sử đặt lịch</h4>
+          <p style="color: #999;">Bạn chưa có lịch sử thay lõi lọc nào</p>
+          <a href="#/booking" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-plus"></i> Đặt lịch ngay
+          </a>
         </div>
-      `).join('');
+      `;
     }
 
   } catch (error) {

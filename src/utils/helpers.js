@@ -1,3 +1,5 @@
+const EXTERNAL_URL = "https://geysereco.com";
+
 /**
  * Get the full image URL from relative or absolute path
  * @param {string} imagePath - Image path from API (can be relative or absolute)
@@ -16,12 +18,40 @@ export function getImageUrl(imagePath, fallbackImage = "/images/logo.png") {
 
   // Handle Geysereco API images (they start with /public/uploads/)
   if (imagePath.startsWith("/public/uploads/")) {
-    return "https://geysereco.com" + imagePath;
+    return EXTERNAL_URL + imagePath;
   }
 
   // Handle other API images with base URL
   const baseUrl = import.meta.env.VITE_API_URL;
   return baseUrl + imagePath;
+}
+
+/**
+ * Fix relative URLs in HTML content
+ * @param {string} html - HTML content with relative URLs
+ * @returns {string} HTML content with fixed URLs
+ */
+export function fixRelativeUrls(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+
+  // Fix img src
+  doc.querySelectorAll("img").forEach((img) => {
+    const src = img.getAttribute("src");
+    if (src && src.startsWith("/")) {
+      img.src = EXTERNAL_URL + src;
+    }
+  });
+
+  // Fix link href (nếu cần)
+  doc.querySelectorAll("a").forEach((a) => {
+    const href = a.getAttribute("href");
+    if (href && href.startsWith("/")) {
+      a.href = EXTERNAL_URL + href;
+    }
+  });
+
+  return doc.body.innerHTML;
 }
 
 /**

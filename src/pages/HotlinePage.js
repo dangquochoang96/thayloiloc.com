@@ -1,24 +1,25 @@
-import { Header } from '../components/Header.js';
-import { Footer } from '../components/Footer.js';
-import { api } from '../services/api.js';
-import '../styles/hotline/hotline-page.css';
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
+import { getImageUrl } from "../utils/helpers.js";
+import { SupportService } from "../services/support.service.js";
+import "../styles/hotline/hotline-page.css";
 
 export function HotlinePage() {
-  const container = document.createElement('div');
+  const container = document.createElement("div");
   container.appendChild(Header());
 
-  const page = document.createElement('main');
-  page.className = 'hotline-page';
+  const page = document.createElement("main");
+  page.className = "hotline-page";
 
-  const main = document.createElement('div');
-  main.className = 'hotline-main';
+  const main = document.createElement("div");
+  main.className = "hotline-main";
 
-  const containerDiv = document.createElement('div');
-  containerDiv.className = 'container';
+  const containerDiv = document.createElement("div");
+  containerDiv.className = "container";
 
   // Page header
-  const pageHeader = document.createElement('div');
-  pageHeader.className = 'page-header';
+  const pageHeader = document.createElement("div");
+  pageHeader.className = "page-header";
   pageHeader.innerHTML = `
     <h1><i class="fas fa-phone-volume"></i> Liên Hệ Hotline</h1>
     <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
@@ -31,8 +32,8 @@ export function HotlinePage() {
   containerDiv.appendChild(pageHeader);
 
   // Hotline content
-  const hotlineContent = document.createElement('div');
-  hotlineContent.className = 'hotline-content';
+  const hotlineContent = document.createElement("div");
+  hotlineContent.className = "hotline-content";
   hotlineContent.innerHTML = `
     <div class="technicians-section">
       <h2><i class="fas fa-users-cog"></i> Kỹ Thuật Viên Hỗ Trợ</h2>
@@ -79,14 +80,14 @@ export function HotlinePage() {
           <i class="fas fa-building"></i>
           <div>
             <strong>Trụ sở chính</strong>
-            <p>123 Đường ABC, Quận XYZ, TP.HCM</p>
+            <p>CTT1 - 03, Khu Biệt Thự Liền kề Kiến Hưng Luxury, P. Phúc La, Hà Đông, Hà Nội, Việt Nam</p>
           </div>
         </div>
         <div class="info-item">
           <i class="fas fa-map-marked-alt"></i>
           <div>
-            <strong>Chi nhánh</strong>
-            <p>456 Đường DEF, Quận GHI, Hà Nội</p>
+            <strong>Chi nhánh miền Nam</strong>
+            <p>Số 178 đường Nguyễn Trãi, kp Thống Nhất 1, P Dĩ An, Tp Dĩ An, Bình Dương</p>
           </div>
         </div>
       </div>
@@ -109,34 +110,34 @@ export function HotlinePage() {
 
 // Format phone number function
 function formatPhoneNumber(phone) {
-  if (!phone) return '';
-  const cleaned = phone.replace(/\D/g, '');
+  if (!phone) return "";
+  const cleaned = phone.replace(/\D/g, "");
   if (cleaned.length === 10) {
-    return cleaned.replace(/(\d{4})(\d{3})(\d{3})/, '$1.$2.$3');
+    return cleaned.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
   }
   return phone;
 }
 
 // Initialize technicians functionality
 function initializeTechnicians() {
-  const loadingEl = document.getElementById('techniciansLoading');
-  const gridEl = document.getElementById('techniciansGrid');
-  const areaFilter = document.getElementById('areaFilter');
-  const refreshBtn = document.getElementById('refreshTechnicians');
+  const loadingEl = document.getElementById("techniciansLoading");
+  const gridEl = document.getElementById("techniciansGrid");
+  const areaFilter = document.getElementById("areaFilter");
+  const refreshBtn = document.getElementById("refreshTechnicians");
 
   if (!loadingEl || !gridEl) return;
 
   // Load technicians function
   function loadTechnicians() {
-    loadingEl.style.display = 'block';
-    gridEl.innerHTML = '';
+    loadingEl.style.display = "block";
+    gridEl.innerHTML = "";
 
     // Gọi API qua api service
-    api.get('/user/support')
-      .then(data => {
+    SupportService.getSupportTechnicians()
+      .then((data) => {
         let technicians = data.data || data || [];
 
-        loadingEl.style.display = 'none';
+        loadingEl.style.display = "none";
 
         if (technicians.length === 0) {
           gridEl.innerHTML = `
@@ -148,10 +149,20 @@ function initializeTechnicians() {
           return;
         }
 
-        gridEl.innerHTML = technicians.map(tech => `
-          <div class="technician-card active" data-tech='${JSON.stringify(tech)}'>
+        gridEl.innerHTML = technicians
+          .map(
+            (tech) => `
+          <div class="technician-card active" data-tech='${JSON.stringify(
+            tech
+          )}'>
             <div class="tech-avatar">
-              ${tech.avartar ? `<img src="https://api.chothuetatca.com${tech.avartar}" alt="${tech.username}">` : `<i class="fas fa-user-cog"></i>`}
+              ${
+                tech.avartar
+                  ? `<img src="${getImageUrl(tech.avartar)}" alt="${
+                      tech.username
+                    }">`
+                  : `<i class="fas fa-user-cog"></i>`
+              }
             </div>
             <div class="tech-info">
               <h3>${tech.username}</h3>
@@ -162,32 +173,38 @@ function initializeTechnicians() {
             </div>
             <div class="tech-contact">
               <div class="tech-actions">
-                <a href="tel:${tech.phone}" class="action-btn call-btn" onclick="event.stopPropagation()">
+                <a href="tel:${
+                  tech.phone
+                }" class="action-btn call-btn" onclick="event.stopPropagation()">
                   <i class="fas fa-phone"></i>
                   Gọi ngay
                 </a>
-                <a href="sms:${tech.phone}" class="action-btn sms-btn" onclick="event.stopPropagation()">
+                <a href="sms:${
+                  tech.phone
+                }" class="action-btn sms-btn" onclick="event.stopPropagation()">
                   <i class="fas fa-sms"></i>
                   Nhắn tin
                 </a>
               </div>
             </div>
           </div>
-        `).join('');
+        `
+          )
+          .join("");
 
         // Add click event to show detail
-        gridEl.querySelectorAll('.technician-card').forEach(card => {
-          card.style.cursor = 'pointer';
-          card.addEventListener('click', () => {
+        gridEl.querySelectorAll(".technician-card").forEach((card) => {
+          card.style.cursor = "pointer";
+          card.addEventListener("click", () => {
             const tech = JSON.parse(card.dataset.tech);
             // Navigate to technician detail page
             window.location.hash = `/technician-detail?id=${tech.id}`;
           });
         });
       })
-      .catch(error => {
-        console.error('Lỗi khi tải danh sách kỹ thuật viên:', error);
-        loadingEl.style.display = 'none';
+      .catch((error) => {
+        console.error("Lỗi khi tải danh sách kỹ thuật viên:", error);
+        loadingEl.style.display = "none";
         gridEl.innerHTML = `
           <div class="error-message">
             <i class="fas fa-exclamation-triangle"></i>
@@ -202,8 +219,8 @@ function initializeTechnicians() {
   }
 
   // Event delegation for retry button
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.retry-btn')) {
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".retry-btn")) {
       loadTechnicians();
     }
   });
@@ -214,11 +231,11 @@ function initializeTechnicians() {
   // Show technician detail modal
   function showTechnicianDetail(tech) {
     // Remove existing modal
-    const existingModal = document.querySelector('.tech-modal');
+    const existingModal = document.querySelector(".tech-modal");
     if (existingModal) existingModal.remove();
 
-    const modal = document.createElement('div');
-    modal.className = 'tech-modal';
+    const modal = document.createElement("div");
+    modal.className = "tech-modal";
     modal.innerHTML = `
       <div class="tech-modal-overlay"></div>
       <div class="tech-modal-content">
@@ -227,7 +244,13 @@ function initializeTechnicians() {
         </button>
         <div class="tech-modal-header">
           <div class="tech-modal-avatar">
-            ${tech.avartar ? `<img src="https://api.chothuetatca.com${tech.avartar}" alt="${tech.username}">` : `<i class="fas fa-user-cog"></i>`}
+            ${
+              tech.avartar
+                ? `<img src="${getImageUrl(tech.avartar)}" alt="${
+                    tech.username
+                  }">`
+                : `<i class="fas fa-user-cog"></i>`
+            }
           </div>
           <h2>${tech.username}</h2>
         </div>
@@ -263,7 +286,9 @@ function initializeTechnicians() {
             <i class="fas fa-sms"></i>
             Nhắn tin
           </a>
-          <a href="https://zalo.me/${tech.phone}" target="_blank" class="modal-btn zalo-btn">
+          <a href="https://zalo.me/${
+            tech.phone
+          }" target="_blank" class="modal-btn zalo-btn">
             <i class="fas fa-comment-dots"></i>
             Zalo
           </a>
@@ -274,12 +299,16 @@ function initializeTechnicians() {
     document.body.appendChild(modal);
 
     // Close modal events
-    modal.querySelector('.tech-modal-overlay').addEventListener('click', () => modal.remove());
-    modal.querySelector('.tech-modal-close').addEventListener('click', () => modal.remove());
-    document.addEventListener('keydown', function closeOnEsc(e) {
-      if (e.key === 'Escape') {
+    modal
+      .querySelector(".tech-modal-overlay")
+      .addEventListener("click", () => modal.remove());
+    modal
+      .querySelector(".tech-modal-close")
+      .addEventListener("click", () => modal.remove());
+    document.addEventListener("keydown", function closeOnEsc(e) {
+      if (e.key === "Escape") {
         modal.remove();
-        document.removeEventListener('keydown', closeOnEsc);
+        document.removeEventListener("keydown", closeOnEsc);
       }
     });
   }
