@@ -1,6 +1,8 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
+import { bookingService } from "../services/booking.service.js";
+import { formatDate } from "../utils/helpers.js";
 
 // Import HTML template
 import profileTemplate from "../templates/auth/profile.html?raw";
@@ -25,6 +27,7 @@ export function ProfilePage() {
   loadUserProfile(profileContent);
 
   // Load booking history
+  const user = authService.getCurrentUser();
   loadBookingHistory(profileContent);
 
   // Handle form submissions
@@ -273,64 +276,52 @@ async function loadBookingHistory(container) {
       </div>
     `;
 
-    // Get user booking history (you'll need to implement this API call)
     const user = authService.getCurrentUser();
     if (!user) return;
 
-    // For now, show sample data - replace with actual API call
-    const sampleBookings = [
-      {
-        id: 1,
-        service: "Thay lõi lọc nước RO",
-        date: "15/01/2024",
-        time: "09:00",
-        address: "123 Nguyễn Văn A, Q.1, TP.HCM",
-        status: "completed"
-      },
-      {
-        id: 2,
-        service: "Vệ sinh máy lọc nước",
-        date: "20/01/2024",
-        time: "14:00",
-        address: "456 Lê Văn B, Q.3, TP.HCM",
-        status: "pending"
-      },
-      {
-        id: 3,
-        service: "Sửa chữa máy lọc nước",
-        date: "25/01/2024",
-        time: "10:30",
-        address: "789 Trần Văn C, Q.7, TP.HCM",
-        status: "cancelled"
-      }
-    ];
+    // Get user booking history
+    const bookingHistory = await bookingService.getLastReplaceFilterCore(user.id);
+    console.log('Booking history:', bookingHistory);
 
-    // Render booking history
-    if (sampleBookings.length === 0) {
+    // Get the first booking if exists
+    if (bookingHistory && bookingHistory.length > 0) {
+      const firstBooking = bookingHistory[0];
+      
+      // Render the first booking
+      bookingList.innerHTML = `
+        <div class="booking-item" data-order-id="${firstBooking.order_id}" style="cursor: pointer;">
+          <div class="booking-info">
+            <h4>Đơn hàng #${firstBooking.order_id}</h4>
+            <p><i class="fas fa-calendar"></i> Ngày thay: ${formatDate(firstBooking.replace_date)}</p>
+            <p><i class="fas fa-clock"></i> Ngày hẹn thay tiếp: ${formatDate(firstBooking.replace_date_promise)}</p>
+          </div>
+          <div class="booking-status pending">
+            <i class="fas fa-clock"></i>
+            Đang chờ
+          </div>
+        </div>
+      `;
+      
+      // Add click event listener to the booking item
+      const bookingItem = bookingList.querySelector('.booking-item');
+      if (bookingItem) {
+        bookingItem.addEventListener('click', () => {
+          const orderId = bookingItem.getAttribute('data-order-id');
+          window.location.hash = `/filter-history-detail/${orderId}`;
+        });
+      }
+    } else {
+      // No bookings found
       bookingList.innerHTML = `
         <div class="empty-state" style="text-align: center; padding: 3rem;">
           <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
           <h4 style="color: #666; margin-bottom: 0.5rem;">Chưa có lịch sử đặt lịch</h4>
-          <p style="color: #999;">Bạn chưa đặt lịch dịch vụ nào</p>
+          <p style="color: #999;">Bạn chưa có lịch sử thay lõi lọc nào</p>
           <a href="#/booking" class="btn btn-primary" style="margin-top: 1rem;">
             <i class="fas fa-plus"></i> Đặt lịch ngay
           </a>
         </div>
       `;
-    } else {
-      bookingList.innerHTML = sampleBookings.map(booking => `
-        <div class="booking-item">
-          <div class="booking-info">
-            <h4>${booking.service}</h4>
-            <p><i class="fas fa-calendar"></i> ${booking.date} - ${booking.time}</p>
-            <p><i class="fas fa-map-marker-alt"></i> ${booking.address}</p>
-          </div>
-          <div class="booking-status ${booking.status}">
-            <i class="fas ${getStatusIcon(booking.status)}"></i>
-            ${getStatusText(booking.status)}
-          </div>
-        </div>
-      `).join('');
     }
 
   } catch (error) {

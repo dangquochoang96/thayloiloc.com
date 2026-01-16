@@ -37,9 +37,9 @@ export function MaintenanceProcessPage() {
   contentSection.innerHTML = `
     <div class="content-card">
       <div class="maintenance-table-wrapper">
-      <img src="/public/images/Screenshot 2026-01-08 160523.png">
+      <img src="/images/Screenshot 2026-01-08 160523.png">
       <h2>I. QUY TRÌNH VỆ SINH – BẢO DƯỠNG – KIỂM TRA MÁY LỌC NƯỚC RO</h2>
-      <img src="/public/images/Screenshot 2026-01-08 172541.png">
+      <img src="/images/Screenshot 2026-01-08 172541.png">
       <h2>II.CÁC CÔNG VIỆC THỰC HIỆN BẢO DƯỠNG, VỆ SINH, KIỂM TRA MÁY LỌC NƯỚC RO:</h2>
         <table class="maintenance-table">
           <thead>
