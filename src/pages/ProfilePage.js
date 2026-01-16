@@ -60,6 +60,7 @@ function loadUserProfile(container) {
   const avatarImg = container.querySelector("#avatar-preview");
   const userNameDisplay = container.querySelector("#user-name");
   const userPhoneDisplay = container.querySelector("#user-phone");
+  const pointDisplay = container.querySelector("#user-point");
 
   // Handle different possible field names for user data
   const userName = user.name || user.fullName || user.username || user.ten || user.ho_ten || "";
@@ -67,6 +68,7 @@ function loadUserProfile(container) {
   const userEmail = user.email || user.emailAddress || user.email_address || "";
   const userAddress = user.address || user.diachi || user.dia_chi || "";
   const userAvatar = user.avatar || user.avatarUrl || user.avatar_url || user.hinh_anh || "";
+  const point = user.point || user.tich_diem || 0;
 
   if (nameInput) nameInput.value = userName;
   if (phoneInput) phoneInput.value = userPhone;
@@ -74,6 +76,7 @@ function loadUserProfile(container) {
   if (addressInput) addressInput.value = userAddress;
   if (userNameDisplay) userNameDisplay.textContent = userName || "Người dùng";
   if (userPhoneDisplay) userPhoneDisplay.textContent = userPhone || "";
+  if (pointDisplay) pointDisplay.textContent = `${point} tích điểm` || "0 tích điểm";
   
   // Set avatar
   if (avatarImg) {

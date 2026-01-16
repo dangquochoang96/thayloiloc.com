@@ -108,5 +108,5 @@ export class ApiClient {
   }
 }
 
-export const api = new ApiClient("https://api.chothuetatca.com/api");
+export const api = new ApiClient("https://mobile.chothuetatca.com/api");
 export const geyserecoApi = new ApiClient("https://geysereco.com/api");

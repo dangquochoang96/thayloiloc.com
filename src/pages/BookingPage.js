@@ -3,6 +3,7 @@ import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
 import { servicesService } from "../services/services.service.js";
 import { productService } from "../services/product.service.js";
+import { api } from "../services/api.js";
 
 // Import HTML templates
 import loginRequiredTemplate from "../templates/booking/login-required.html?raw";
@@ -134,6 +135,54 @@ export function BookingPage() {
       margin-bottom: 30px !important;
       border-left: 5px solid #f97316 !important;
     }
+    
+    /* Image upload styles */
+    .preview-item {
+      position: relative;
+      display: inline-block;
+      margin: 5px;
+      width: 100px;
+      height: 100px;
+    }
+    
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      border: 2px solid #d1d5db;
+    }
+    
+    .remove-image {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    .image-upload-container {
+      border: 2px dashed #d1d5db;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+    }
+    
+    .image-upload-container.drag-over {
+      border-color: #3b82f6;
+      background-color: #eff6ff;
+    }
 
     /* Responsive design */
     @media (max-width: 768px) {
@@ -214,26 +263,97 @@ export function BookingPage() {
   // Preview images
   const imageInput = form.querySelector("#images");
   const imagePreview = form.querySelector("#image-preview");
+  
+  // Store selected files at function scope level
+  let selectedFiles = [];
 
   imageInput.addEventListener("change", (e) => {
-    imagePreview.innerHTML = "";
     const files = Array.from(e.target.files);
-
-    files.forEach((file) => {
+    
+    // Add new files, but limit to 4 total
+    files.forEach(file => {
+      if (file.type.startsWith("image/") && selectedFiles.length < 4) {
+        selectedFiles.push(file);
+      }
+    });
+    
+    // Refresh the preview
+    renderImagePreviews();
+  });
+  
+  // Function to render image previews
+  function renderImagePreviews() {
+    imagePreview.innerHTML = "";
+    
+    selectedFiles.forEach((file, index) => {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = document.createElement("img");
-        img.src = event.target.result;
-        img.style.width = "100px";
-        img.style.height = "100px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "var(--radius-sm)";
-        img.style.border = "2px solid #d1d5db";
-        imagePreview.appendChild(img);
+      reader.onload = (e) => {
+        const previewItem = document.createElement("div");
+        previewItem.className = "preview-item";
+        previewItem.innerHTML = `
+          <img src="${e.target.result}" alt="Preview ${index + 1}">
+          <button type="button" class="remove-image" data-index="${index}">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        
+        // Add event listener to remove button
+        const removeButton = previewItem.querySelector(".remove-image");
+        removeButton.addEventListener("click", (e) => {
+          e.stopPropagation();
+          // Remove the file from selectedFiles array using the data-index attribute
+          const currentIndex = parseInt(removeButton.getAttribute("data-index"));
+          selectedFiles.splice(currentIndex, 1);
+          
+          // Update the file input value to reflect removed files
+          const dt = new DataTransfer();
+          selectedFiles.forEach(file => dt.items.add(file));
+          imageInput.files = dt.files;
+          
+          // Re-render previews
+          renderImagePreviews();
+        });
+        
+        imagePreview.appendChild(previewItem);
       };
       reader.readAsDataURL(file);
     });
-  });
+    
+    // Update the file input to reflect current selected files
+    const dt = new DataTransfer();
+    selectedFiles.forEach(file => dt.items.add(file));
+    imageInput.files = dt.files;
+  }
+  
+  // Handle drag and drop
+  const uploadContainer = form.querySelector('.image-upload-container');
+  if (uploadContainer) {
+    uploadContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadContainer.classList.add('drag-over');
+    });
+    
+    uploadContainer.addEventListener('dragleave', () => {
+      uploadContainer.classList.remove('drag-over');
+    });
+    
+    uploadContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadContainer.classList.remove('drag-over');
+      
+      const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+      
+      // Add new files, but limit to 4 total
+      files.forEach(file => {
+        if (selectedFiles.length < 4) {
+          selectedFiles.push(file);
+        }
+      });
+      
+      // Refresh the preview
+      renderImagePreviews();
+    });
+  }
 
   // Form submission
   const errorMsg = form.querySelector("#error-msg");
@@ -243,51 +363,86 @@ export function BookingPage() {
     e.preventDefault();
     errorMsg.style.display = "none";
     successMsg.style.display = "none";
-
-    // Format datetime to "DD/MM/YYYY HH:mm"
-    const formatDateTime = (datetimeLocal) => {
-      const date = new Date(datetimeLocal);
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
-    };
-
-    // Prepare booking data
-    const bookingData = {
-      customer: user.id,
-      time_star: formatDateTime(form.time_star.value),
-      time_end: formatDateTime(form.time_end.value),
-      type_task: form.type_task.value,
-      des: form.des.value || "",
-      status: "1",
-      priority: "1",
-      staff: "",
-      user_create: "161",
-      product_id: form.product_id.value,
-      images: [], // TODO: Upload images to server first and get URLs
-      address: form.address.value,
-    };
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    submitBtn.disabled = true;
 
     try {
+      // Upload images first and get URLs
+      const imageFiles = imageInput.files;
+      let imageUrls = [];
+      
+      if (imageFiles.length > 0) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải ảnh...';
+        try {
+          imageUrls = await api.uploadMultipleImages(imageFiles);
+        } catch (uploadError) {
+          console.error("Error uploading images:", uploadError);
+          errorMsg.textContent = "Không thể tải ảnh lên. Vui lòng thử lại.";
+          errorMsg.style.display = "block";
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          return;
+        }
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đặt lịch...';
+      }
+
+      // Format datetime to "DD/MM/YYYY HH:mm"
+      const formatDateTime = (datetimeLocal) => {
+        const date = new Date(datetimeLocal);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+      };
+
+      // Prepare booking data
+      const bookingData = {
+        customer: user.id,
+        time_star: formatDateTime(form.time_star.value),
+        time_end: formatDateTime(form.time_end.value),
+        type_task: form.type_task.value,
+        des: form.des.value || "",
+        status: "1",
+        priority: "1",
+        staff: "",
+        user_create: "161",
+        product_id: form.product_id.value,
+        images: imageUrls, // Use uploaded image URLs
+        address: form.address.value,
+      };
+
       const response = await servicesService.bookingService(bookingData);
 
       successMsg.textContent =
         "Đặt lịch thành công! Chúng tôi sẽ liên hệ với bạn sớm.";
       successMsg.style.display = "block";
-
-      // Reset form after 2 seconds
+      
+      // Reset form and image preview
+      form.reset();
+      imagePreview.innerHTML = "";
+      imageInput.value = ""; // Clear the image input
+      
       setTimeout(() => {
-        form.reset();
-        imagePreview.innerHTML = "";
         successMsg.style.display = "none";
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }, 2000);
     } catch (error) {
+      console.error("Error submitting booking:", error);
       errorMsg.textContent =
         error.message || "Đặt lịch thất bại. Vui lòng thử lại.";
       errorMsg.style.display = "block";
+    } finally {
+      // Ensure button is re-enabled in case of error
+      if (submitBtn.disabled) {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
     }
   });
 

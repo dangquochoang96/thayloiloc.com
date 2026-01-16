@@ -4,7 +4,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://api.chothuetatca.com",
+        target: "http://mobile.chothuetatca.com",
         changeOrigin: true,
         secure: false,
       },
