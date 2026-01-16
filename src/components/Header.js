@@ -33,6 +33,9 @@ export function Header() {
   const isLoggedIn = authService.isAuthenticated();
   const user = authService.getCurrentUser();
 
+  // Declare contactDropdown variable at the top of the nav section
+  let contactDropdown = null;
+
   console.log("Auth check:", { isLoggedIn, user }); // Debug log
 
   // Debug user data structure
@@ -47,9 +50,9 @@ export function Header() {
   // Add history link for logged in users
   if (isLoggedIn && user) {
     baseLinks.push({ text: "Lịch Sử", href: "#/booking-history" });
+    baseLinks.push({ text: "Tìm Thợ", href: "#/hotline" });
+    baseLinks.push({ text: "Góp Ý Khiếu Nại", href: "#/feedback" });
   }
-
-  baseLinks.push({ text: "Tin Tức", href: "#/news" });
 
   baseLinks.forEach((link) => {
     const a = document.createElement("a");
@@ -68,69 +71,107 @@ export function Header() {
     nav.appendChild(a);
   });
 
-  // Declare contactDropdown variable at the top of the nav section
-  let contactDropdown = null;
+  // Add "Tin Tức" dropdown with submenus
+  const newsDropdown = document.createElement("div");
+  newsDropdown.className = "nav-dropdown";
+  // Check if we're on any of the process pages or news page to highlight the parent menu
+  const isOnProcessPage = [
+    "#/check-process",
+    "#/filter-replacement",
+    "#/maintenance-process",
+    "#/training-content",
+    "#/news"
+  ].includes(window.location.hash);
   
-  // Add "Quy Trình Sửa Chữa" dropdown
-  const repairDropdown = document.createElement("div");
-  repairDropdown.className = "nav-dropdown";
-  repairDropdown.innerHTML = `
-    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
-      Quy Trình
+  newsDropdown.innerHTML = `
+    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnProcessPage ? 'active' : ''}">
+      Tin Tức
       <i class="fas fa-chevron-down dropdown-arrow"></i>
     </a>
     <div class="nav-dropdown-menu">
-      <a href="#/check-process"><i class="fas fa-search-plus"></i> Quy trình kiểm tra máy lọc nước</a>
-      <a href="#/filter-replacement"><i class="fas fa-sync-alt"></i> Quy trình thay lõi lọc</a>
-      <a href="#/maintenance-process"><i class="fas fa-broom"></i> Quy trình vệ sinh bảo dưỡng</a>
-      <a href="#/training-content"><i class="fas fa-graduation-cap"></i> Nội dung đào tạo</a>
+      <a href="#/news" class="${window.location.hash === '#/news' ? 'active' : ''}"><i class="fas fa-newspaper"></i> Dịch Vụ</a>
+      <div class="nav-dropdown-submenu">
+        <a href="javascript:void(0)" class="nav-submenu-toggle">
+          <i class="fas fa-cogs"></i> Quy Trình
+          <i class="fas fa-chevron-right submenu-arrow"></i>
+        </a>
+        <div class="nav-submenu" style="display: none; margin-left: 25px;">
+          <a href="#/check-process" style="display: block; padding-left: 10px;"><i class="fas fa-search-plus"></i> Quy trình kiểm tra máy lọc nước</a>
+          <a href="#/filter-replacement" style="display: block; padding-left: 10px;"><i class="fas fa-sync-alt"></i> Quy trình thay lõi lọc</a>
+          <a href="#/maintenance-process" style="display: block; padding-left: 10px;"><i class="fas fa-broom"></i> Quy trình vệ sinh bảo dưỡng</a>
+          <a href="#/training-content" style="display: block; padding-left: 10px;"><i class="fas fa-graduation-cap"></i> Nội dung đào tạo</a>
+        </div>
+      </div>
     </div>
   `;
-  nav.appendChild(repairDropdown);
+  nav.appendChild(newsDropdown);
 
-  // Dropdown toggle functionality for Quy Trình
-  const dropdownToggle = repairDropdown.querySelector(".nav-dropdown-toggle");
-  dropdownToggle.addEventListener("click", (e) => {
+  // Dropdown toggle functionality for Tin Tức
+  const newsDropdownToggle = newsDropdown.querySelector(".nav-dropdown-toggle");
+  newsDropdownToggle.addEventListener("click", (e) => {
     e.preventDefault();
     // Close contact dropdown if open
-    if (contactDropdown && contactDropdown !== repairDropdown) {
+    if (contactDropdown) {
       contactDropdown.classList.remove("active");
     }
-    repairDropdown.classList.toggle("active");
+    newsDropdown.classList.toggle("active");
+  });
+
+  // Submenu toggle functionality for Quy Trình
+  const submenuToggle = newsDropdown.querySelector(".nav-submenu-toggle");
+  submenuToggle.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const submenu = newsDropdown.querySelector(".nav-submenu");
+    if (submenu.style.display === "none") {
+      submenu.style.display = "block";
+    } else {
+      submenu.style.display = "none";
+    }
   });
 
   // Add "Liên Hệ" dropdown - only for logged in users
-  if (isLoggedIn && user) {
-    contactDropdown = document.createElement("div");
-    contactDropdown.className = "nav-dropdown";
-    contactDropdown.innerHTML = `
-      <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
-        Liên Hệ
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </a>
-      <div class="nav-dropdown-menu">
-        <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
-        <a href="#/feedback"><i class="fas fa-comment-dots"></i> Góp ý, khiếu nại</a>
-      </div>
-    `;
-    nav.appendChild(contactDropdown);
-  }
+  // if (isLoggedIn && user) {
+  //   contactDropdown = document.createElement("div");
+  //   contactDropdown.className = "nav-dropdown";
+  //   contactDropdown.innerHTML = `
+  //     <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
+  //       Liên Hệ
+  //       <i class="fas fa-chevron-down dropdown-arrow"></i>
+  //     </a>
+  //     <div class="nav-dropdown-menu">
+  //       <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
+  //       <a href="#/feedback"><i class="fas fa-comment-dots"></i> Góp ý, khiếu nại</a>
+  //     </div>
+  //   `;
+  //   nav.appendChild(contactDropdown);
+  // }
 
   // Dropdown toggle functionality for Liên Hệ - only if contactDropdown exists
   if (contactDropdown) {
     const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
     contactToggle.addEventListener("click", (e) => {
       e.preventDefault();
-      // Close repair dropdown if open
-      repairDropdown.classList.remove("active");
+      // Close news dropdown if open
+      newsDropdown.classList.remove("active");
+      // Also close submenu if open
+      const submenu = newsDropdown.querySelector('.nav-submenu');
+      if (submenu) {
+        submenu.style.display = "none";
+      }
       contactDropdown.classList.toggle("active");
     });
   }
 
   // Close dropdowns when clicking outside
   document.addEventListener("click", (e) => {
-    if (!repairDropdown.contains(e.target)) {
-      repairDropdown.classList.remove("active");
+    if (!newsDropdown.contains(e.target)) {
+      newsDropdown.classList.remove("active");
+      // Also close submenu if open
+      const submenu = newsDropdown.querySelector('.nav-submenu');
+      if (submenu) {
+        submenu.style.display = "none";
+      }
     }
     // Only check contact dropdown if it exists
     if (contactDropdown && !contactDropdown.contains(e.target)) {
