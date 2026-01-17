@@ -20,6 +20,7 @@ import { NewsPage } from "./pages/NewsPage.js";
 import { NewsDetailPage } from "./pages/NewsDetailPage.js";
 import { HotlinePage } from "./pages/HotlinePage.js";
 import { TechnicianDetailPage } from "./pages/TechnicianDetailPage.js";
+import { ContactPage } from "./pages/ContactPage.js";
 import { FloatingButton } from "./components/FloatingButton.js";
 
 const routes = {
@@ -82,6 +83,9 @@ const routes = {
   },
   "/technician-detail": {
     render: TechnicianDetailPage,
+  },
+  "/contact": {
+    render: ContactPage,
   },
   "*": {
     render: () => {

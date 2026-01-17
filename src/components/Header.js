@@ -34,7 +34,7 @@ export function Header() {
   const user = authService.getCurrentUser();
 
   // Declare contactDropdown variable at the top of the nav section
-  let contactDropdown = null;
+  // let contactDropdown = null;
 
   console.log("Auth check:", { isLoggedIn, user }); // Debug log
 
@@ -45,6 +45,7 @@ export function Header() {
   const baseLinks = [
     { text: "Trang Chủ", href: "#/" },
     { text: "Dịch Vụ", href: "#/services" },
+    { text: "Liên Hệ", href: "#/contact" },
   ];
 
   // Add history link for logged in users
@@ -110,9 +111,9 @@ export function Header() {
   newsDropdownToggle.addEventListener("click", (e) => {
     e.preventDefault();
     // Close contact dropdown if open
-    if (contactDropdown) {
-      contactDropdown.classList.remove("active");
-    }
+    // if (contactDropdown) {
+    //   contactDropdown.classList.remove("active");
+    // }
     newsDropdown.classList.toggle("active");
   });
 
@@ -130,20 +131,20 @@ export function Header() {
   });
 
   // Dropdown toggle functionality for Liên Hệ - only if contactDropdown exists
-  if (contactDropdown) {
-    const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
-    contactToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      // Close news dropdown if open
-      newsDropdown.classList.remove("active");
-      // Also close submenu if open
-      const submenu = newsDropdown.querySelector(".nav-submenu");
-      if (submenu) {
-        submenu.style.display = "none";
-      }
-      contactDropdown.classList.toggle("active");
-    });
-  }
+  // if (contactDropdown) {
+  //   const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
+  //   contactToggle.addEventListener("click", (e) => {
+  //     e.preventDefault();
+  //     // Close news dropdown if open
+  //     newsDropdown.classList.remove("active");
+  //     // Also close submenu if open
+  //     const submenu = newsDropdown.querySelector(".nav-submenu");
+  //     if (submenu) {
+  //       submenu.style.display = "none";
+  //     }
+  //     contactDropdown.classList.toggle("active");
+  //   });
+  // }
 
   // Close dropdowns when clicking outside
   document.addEventListener("click", (e) => {
@@ -156,9 +157,9 @@ export function Header() {
       }
     }
     // Only check contact dropdown if it exists
-    if (contactDropdown && !contactDropdown.contains(e.target)) {
-      contactDropdown.classList.remove("active");
-    }
+    // if (contactDropdown && !contactDropdown.contains(e.target)) {
+    //   contactDropdown.classList.remove("active");
+    // }
   });
 
   // Always add nav to center
