@@ -130,23 +130,6 @@ export function Header() {
     }
   });
 
-  // Add "Liên Hệ" dropdown - only for logged in users
-  // if (isLoggedIn && user) {
-  //   contactDropdown = document.createElement("div");
-  //   contactDropdown.className = "nav-dropdown";
-  //   contactDropdown.innerHTML = `
-  //     <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle">
-  //       Liên Hệ
-  //       <i class="fas fa-chevron-down dropdown-arrow"></i>
-  //     </a>
-  //     <div class="nav-dropdown-menu">
-  //       <a href="#/hotline"><i class="fas fa-user-tie"></i> Tìm thợ</a>
-  //       <a href="#/feedback"><i class="fas fa-comment-dots"></i> Góp ý, khiếu nại</a>
-  //     </div>
-  //   `;
-  //   nav.appendChild(contactDropdown);
-  // }
-
   // Dropdown toggle functionality for Liên Hệ - only if contactDropdown exists
   if (contactDropdown) {
     const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");

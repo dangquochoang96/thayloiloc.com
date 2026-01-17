@@ -1,5 +1,6 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
+import { FloatingButton } from "../components/FloatingButton.js";
 import { newsService } from "../services/news.service.js";
 import { productService } from "../services/product.service.js";
 import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
@@ -12,7 +13,6 @@ import productsTemplate from "../templates/home/products-section.html?raw";
 import appDownloadTemplate from "../templates/home/app-download-section.html?raw";
 import newsTemplate from "../templates/home/news-section.html?raw";
 import contactTemplate from "../templates/home/contact-section.html?raw";
-import floatingButtonTemplate from "../templates/home/floating-button.html?raw";
 
 // Import CSS styles
 import "../styles/home/hero-section.css";
@@ -21,7 +21,6 @@ import "../styles/home/products-section.css";
 import "../styles/home/app-download-section.css";
 import "../styles/home/news-section.css";
 import "../styles/home/contact-section.css";
-import "../styles/home/floating-button.css";
 
 export function HomePage() {
   const container = document.createElement("div");
@@ -69,11 +68,6 @@ export function HomePage() {
 
   container.appendChild(main);
   container.appendChild(Footer());
-
-  // Floating Button
-  const floatingButton = document.createElement("div");
-  floatingButton.innerHTML = floatingButtonTemplate;
-  container.appendChild(floatingButton.firstElementChild);
 
   return container;
 }
@@ -379,7 +373,7 @@ window.contactForProduct = (productId) => {
   // Handle contact for specific product
   console.log('Contact for product:', productId);
   // Can implement contact modal or redirect to contact form
-  alert('Vui lòng liên hệ hotline: 1900-xxxx để biết thêm chi tiết về sản phẩm này!');
+  alert('Vui lòng liên hệ hotline: 0963456911 để biết thêm chi tiết về sản phẩm này!');
 };
 
 // News slider state

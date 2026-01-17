@@ -104,7 +104,7 @@ async function loadUserOrders(container, user) {
         const orderId = order.id;
         const productName = order.product || '';
         const orderDate = order.created_at ? new Date(order.created_at).toLocaleDateString('vi-VN') : '';
-        orderSelect.innerHTML += `<option value="${orderId}">${productName} ${orderDate ? `(${orderDate})` : ''}</option>`;
+        orderSelect.innerHTML += `<option value="${orderId}">${productName} ${orderDate ? `(${orderDate})` : ''} ID: ${orderId}</option>`;
       });
     }
   } catch (error) {

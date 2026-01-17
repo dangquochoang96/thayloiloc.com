@@ -22,6 +22,7 @@ import { NewsDetailPage } from './pages/NewsDetailPage.js';
 import { HotlinePage } from './pages/HotlinePage.js';
 import { TechnicianDetailPage } from './pages/TechnicianDetailPage.js';
 import { FeedbackPage } from './pages/FeedbackPage.js';
+import { FloatingButton } from './components/FloatingButton.js';
 
 const routes = {
   '/': {
@@ -102,8 +103,24 @@ const routes = {
 // Ensure Font Awesome is loaded before starting the router
 ensureFontAwesome().then(() => {
   console.log('Starting router with Font Awesome loaded');
+  
+  // Add floating button to the body once
+  const existingFloatingButton = document.querySelector('.floating-buttons');
+  if (!existingFloatingButton) {
+    const floatingButton = FloatingButton();
+    document.body.appendChild(floatingButton);
+  }
+  
   new Router(routes);
 }).catch((error) => {
   console.warn('Font Awesome failed to load, continuing anyway:', error);
+  
+  // Add floating button to the body once
+  const existingFloatingButton = document.querySelector('.floating-buttons');
+  if (!existingFloatingButton) {
+    const floatingButton = FloatingButton();
+    document.body.appendChild(floatingButton);
+  }
+  
   new Router(routes);
 });
