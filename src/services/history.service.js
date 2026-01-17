@@ -5,36 +5,20 @@ export const historyService = {
   async getBookingHistory(userId) {
     console.log(
       "historyService: Attempting to get booking history for user:",
-      userId
+      userId,
     );
 
     // Try primary endpoint first
     try {
       console.log(
-        "historyService: Trying primary endpoint /tasks/customer/" + userId
+        "historyService: Trying primary endpoint /tasks/customer/" + userId,
       );
       return await api.get(`/tasks/customer/${userId}`);
     } catch (primaryError) {
       console.warn(
         "historyService: Primary endpoint failed:",
-        primaryError.message
+        primaryError.message,
       );
-
-      // Try alternative endpoints
-      try {
-        console.log(
-          "historyService: Trying alternative endpoint /booking/user/" + userId
-        );
-        return await api.get(`/booking/user/${userId}`);
-      } catch (altError) {
-        console.warn(
-          "historyService: Alternative endpoint failed:",
-          altError.message
-        );
-
-        // Re-throw the original error
-        throw primaryError;
-      }
     }
   },
 

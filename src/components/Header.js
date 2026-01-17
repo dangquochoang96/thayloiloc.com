@@ -1,5 +1,5 @@
 import { authService } from "../services/auth.service.js";
-import '../styles/header.css'
+import "../styles/header.css";
 
 export function Header() {
   const header = document.createElement("header");
@@ -51,7 +51,6 @@ export function Header() {
   if (isLoggedIn && user) {
     baseLinks.push({ text: "Lịch Sử", href: "#/booking-history" });
     baseLinks.push({ text: "Tìm Thợ", href: "#/hotline" });
-    baseLinks.push({ text: "Góp Ý Khiếu Nại", href: "#/feedback" });
   }
 
   baseLinks.forEach((link) => {
@@ -80,16 +79,16 @@ export function Header() {
     "#/filter-replacement",
     "#/maintenance-process",
     "#/training-content",
-    "#/news"
+    "#/news",
   ].includes(window.location.hash);
-  
+
   newsDropdown.innerHTML = `
-    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnProcessPage ? 'active' : ''}">
+    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnProcessPage ? "active" : ""}">
       Tin Tức
       <i class="fas fa-chevron-down dropdown-arrow"></i>
     </a>
     <div class="nav-dropdown-menu">
-      <a href="#/news" class="${window.location.hash === '#/news' ? 'active' : ''}"><i class="fas fa-newspaper"></i> Dịch Vụ</a>
+      <a href="#/news" class="${window.location.hash === "#/news" ? "active" : ""}"><i class="fas fa-newspaper"></i> Dịch Vụ</a>
       <div class="nav-dropdown-submenu">
         <a href="javascript:void(0)" class="nav-submenu-toggle">
           <i class="fas fa-cogs"></i> Quy Trình
@@ -138,7 +137,7 @@ export function Header() {
       // Close news dropdown if open
       newsDropdown.classList.remove("active");
       // Also close submenu if open
-      const submenu = newsDropdown.querySelector('.nav-submenu');
+      const submenu = newsDropdown.querySelector(".nav-submenu");
       if (submenu) {
         submenu.style.display = "none";
       }
@@ -151,7 +150,7 @@ export function Header() {
     if (!newsDropdown.contains(e.target)) {
       newsDropdown.classList.remove("active");
       // Also close submenu if open
-      const submenu = newsDropdown.querySelector('.nav-submenu');
+      const submenu = newsDropdown.querySelector(".nav-submenu");
       if (submenu) {
         submenu.style.display = "none";
       }

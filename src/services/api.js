@@ -28,7 +28,7 @@ export class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Request failed with status ${response.status}`
+          errorData.message || `Request failed with status ${response.status}`,
         );
       }
 
@@ -70,7 +70,7 @@ export class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Request failed with status ${response.status}`
+          errorData.message || `Request failed with status ${response.status}`,
         );
       }
 
@@ -90,10 +90,14 @@ export class ApiClient {
 
   // Upload multiple images and return array of URLs
   async uploadMultipleImages(files) {
-    const uploadPromises = Array.from(files).map(file => this.uploadImage(file));
+    const uploadPromises = Array.from(files).map((file) =>
+      this.uploadImage(file),
+    );
     const results = await Promise.all(uploadPromises);
     // Extract image_link from responses
-    return results.map(result => result.data?.image_link || result.image_link);
+    return results.map(
+      (result) => result.data?.image_link || result.image_link,
+    );
   }
 
   put(endpoint, body) {
