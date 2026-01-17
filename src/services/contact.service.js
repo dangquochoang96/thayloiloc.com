@@ -4,14 +4,18 @@
 // ============================================
 // Configuration
 // ============================================
-// TODO: Update these values with your actual Telegram bot credentials
+// Load from environment variables (defined in .env file)
+const TELEGRAM_CONFIG = {
+  botToken: import.meta.env.VITE_TELEGRAM_BOT_TOKEN || "YOUR_BOT_TOKEN_HERE",
+  chatId: import.meta.env.VITE_TELEGRAM_CHAT_ID || "YOUR_CHAT_ID_HERE",
+};
 
 // ============================================
 // Service Class
 // ============================================
 class ContactService {
   constructor() {
-    this.telegramApiUrl = `https://api.telegram.org/bot${import.meta.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+    this.telegramApiUrl = `https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`;
   }
 
   /**
@@ -34,7 +38,7 @@ class ContactService {
 
       // Prepare request payload
       const payload = {
-        chat_id: import.meta.env.TELEGRAM_CHAT_ID,
+        chat_id: TELEGRAM_CONFIG.chatId,
         text: formattedMessage,
         parse_mode: "HTML", // Enable HTML formatting
       };
