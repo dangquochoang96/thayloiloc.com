@@ -5,17 +5,13 @@
 // Configuration
 // ============================================
 // TODO: Update these values with your actual Telegram bot credentials
-const TELEGRAM_CONFIG = {
-  botToken: "8216851859:AAGmHU2SuMUL5VS9CyIcTtid08fpbyLXst4", // Replace with your bot token from @BotFather
-  chatId: "5272730388", // Replace with your chat ID or channel ID
-};
 
 // ============================================
 // Service Class
 // ============================================
 class ContactService {
   constructor() {
-    this.telegramApiUrl = `https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`;
+    this.telegramApiUrl = `https://api.telegram.org/bot${import.meta.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
   }
 
   /**
@@ -38,7 +34,7 @@ class ContactService {
 
       // Prepare request payload
       const payload = {
-        chat_id: TELEGRAM_CONFIG.chatId,
+        chat_id: import.meta.env.TELEGRAM_CHAT_ID,
         text: formattedMessage,
         parse_mode: "HTML", // Enable HTML formatting
       };
@@ -95,15 +91,15 @@ class ContactService {
     });
 
     return `
-🔔 <b>LIÊN HỆ MỚI TỪ Thayloiloc.com</b>
+      🔔 <b>LIÊN HỆ MỚI TỪ Thayloiloc.com</b>
 
-👤 <b>Họ và Tên:</b> ${this.escapeHtml(contactData.name)}
-📱 <b>Số Điện Thoại:</b> ${this.escapeHtml(contactData.phone)}
+      👤 <b>Họ và Tên:</b> ${this.escapeHtml(contactData.name)}
+      📱 <b>Số Điện Thoại:</b> ${this.escapeHtml(contactData.phone)}
 
-💬 <b>Nội Dung:</b>
-${this.escapeHtml(contactData.message)}
+      💬 <b>Nội Dung:</b>
+        ${this.escapeHtml(contactData.message)}
 
-⏰ <b>Thời Gian:</b> ${timestamp}
+      ⏰ <b>Thời Gian:</b> ${timestamp}
     `.trim();
   }
 
