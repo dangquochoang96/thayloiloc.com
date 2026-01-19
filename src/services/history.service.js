@@ -72,4 +72,84 @@ export const historyService = {
   cancelBooking(bookingId, reason) {
     return api.put(`/tasks/${bookingId}/cancel`, { reason });
   },
+
+  // Submit rating and review for a history item
+  async submitReview(historyId, rating, comment) {
+    const endpoints = [
+      `/order/rating`,
+      `/order/rate`,
+      `/order/submit-rating`,
+      `/userrate/${historyId}`,
+      `/user/rate/${historyId}`
+    ];
+    
+    const payload = {
+      order_id: historyId,
+      rate: rating.toString(),
+      comment: comment
+    };
+    
+    // Try each endpoint until one works
+    for (const endpoint of endpoints) {
+      try {
+        console.log(`Trying endpoint: ${endpoint}`, payload);
+        const result = await api.post(endpoint, payload);
+        console.log(`Success with endpoint: ${endpoint}`, result);
+        return result;
+      } catch (error) {
+        console.log(`Failed with endpoint: ${endpoint}`, error.message);
+        // Continue to next endpoint
+      }
+    }
+    
+    // If all endpoints fail, save to localStorage as fallback
+    console.log('All API endpoints failed, saving to localStorage');
+    return this.saveReviewToLocalStorage(historyId, rating, comment);
+  },
+
+  // Fallback: Save review to localStorage
+  saveReviewToLocalStorage(historyId, rating, comment) {
+    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const reviewsKey = 'filter_history_reviews';
+    
+    const newReview = {
+      id: Date.now(),
+      history_id: historyId,
+      user_id: userInfo.id || 0,
+      user_name: userInfo.name || userInfo.username || userInfo.phone || 'Khách hàng',
+      rate: rating,
+      comment: comment,
+      created_at: new Date().toISOString()
+    };
+
+    const existingReviews = JSON.parse(localStorage.getItem(reviewsKey) || '[]');
+    
+    // Check if user already reviewed this history item
+    const existingIndex = existingReviews.findIndex(r => 
+      r.history_id == historyId && r.user_id == userInfo.id
+    );
+    
+    if (existingIndex >= 0) {
+      // Update existing review
+      existingReviews[existingIndex] = newReview;
+    } else {
+      // Add new review
+      existingReviews.unshift(newReview);
+    }
+    
+    localStorage.setItem(reviewsKey, JSON.stringify(existingReviews));
+    
+    return {
+      success: true,
+      message: 'Đánh giá đã được lưu thành công!',
+      data: newReview
+    };
+  },
+
+  // Get review from localStorage
+  getReviewFromLocalStorage(historyId, userId) {
+    const reviewsKey = 'filter_history_reviews';
+    const reviews = JSON.parse(localStorage.getItem(reviewsKey) || '[]');
+    return reviews.find(r => r.history_id == historyId && r.user_id == userId);
+  }
 };

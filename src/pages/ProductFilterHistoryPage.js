@@ -222,14 +222,15 @@ function renderProductHistory(container, product, historyItems, user, loadingSta
       const replaceDate = item.replace_date || item.ngay_thay || item.created_at;
       const status = item.status || '1';
       
-      // Get technician from staff array
-      const staff = Array.isArray(item.staff) && item.staff.length > 0 
-        ? item.staff[0] 
-        : null;
-      const technicianName = staff?.staff_info?.username || staff?.staff_info?.name || item.technician_name || item.technician?.name || 'Chưa phân công';
+      // Get technician from staff array or direct staff object
+      let staff = null;
+      if (Array.isArray(item.staff) && item.staff.length > 0) {
+        staff = item.staff[0];
+      } else if (item.staff && typeof item.staff === 'object') {
+        staff = item.staff;
+      }
       
-      console.log('Staff data:', staff);
-      console.log('Technician name:', technicianName);
+      const technicianName = staff?.username || staff?.staff_info?.username || staff?.staff_info?.name || item.technician_name || item.technician?.name || 'Chưa phân công';
       
       const price = item.price || item.gia;
       
