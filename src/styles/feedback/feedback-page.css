@@ -172,7 +172,8 @@
   cursor: pointer;
 }
 
-.image-upload-container:hover {
+.image-upload-container:hover,
+.image-upload-container.drag-over {
   border-color: #f97316;
   background: rgba(249, 115, 22, 0.05);
 }
