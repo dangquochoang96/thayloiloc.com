@@ -99,7 +99,7 @@ async function loadFilterDetail(contentContainer, loadingState, errorState) {
       return;
     }
 
-    renderFilterDetail(contentContainer, historyItem, user, loadingState);
+    renderFilterDetail(contentContainer, historyItem, user, loadingState, historyId);
   } catch (error) {
     console.error("Error loading filter detail:", error);
     showError(loadingState, errorState, error.message || "Có lỗi xảy ra");
@@ -113,7 +113,7 @@ function showError(loadingState, errorState, message) {
   if (errorText) errorText.textContent = message;
 }
 
-function renderFilterDetail(container, historyItem, user, loadingState) {
+function renderFilterDetail(container, historyItem, user, loadingState, historyId) {
   loadingState.style.display = "none";
   container.style.display = "block";
 
@@ -160,12 +160,16 @@ function renderFilterDetail(container, historyItem, user, loadingState) {
     order.ngay_thay_tiep_theo ||
     historyItem.next_replace_date;
 
-  // Get technician info from staff array
-  const staff =
-    Array.isArray(order.staff) && order.staff.length > 0
-      ? order.staff[0]
-      : null;
+  // Get technician info from staff array or direct staff object
+  let staff = null;
+  if (Array.isArray(order.staff) && order.staff.length > 0) {
+    staff = order.staff[0];
+  } else if (order.staff && typeof order.staff === 'object') {
+    staff = order.staff;
+  }
+  
   const technicianName =
+    staff?.username ||
     staff?.staff_info?.username ||
     staff?.staff_info?.name ||
     order.sale_id?.username ||
@@ -173,6 +177,32 @@ function renderFilterDetail(container, historyItem, user, loadingState) {
     order.technician_name ||
     order.ten_ky_thuat_vien ||
     "Chưa phân công";
+
+  const technicianId =
+    staff?.staff_info?.id ||
+    staff?.id ||
+    order.sale_id?.id ||
+    order.technician_id ||
+    order.ky_thuat_vien_id;
+
+  // Rating info from API response
+  let rating = parseInt(order.rate) || parseInt(order.rating) || parseInt(order.danh_gia) || 0;
+  let comment = order.comment || order.nhan_xet || order.binh_luan || "";
+  
+  // Check localStorage for existing review if no API data
+  if (!comment && !rating) {
+    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const localReview = historyService.getReviewFromLocalStorage(historyId, userInfo.id);
+    if (localReview) {
+      comment = localReview.comment;
+      // Update rating from localStorage
+      const localRating = parseInt(localReview.rate) || 0;
+      if (localRating > 0) {
+        // Use local rating if API doesn't have one
+        rating = localRating;
+      }
+    }
+  }
 
   // Financial info from order
   const price =
@@ -271,22 +301,40 @@ function renderFilterDetail(container, historyItem, user, loadingState) {
     <div class="technician-info">
       <div class="info-row">
         <span class="label">Thông tin kỹ thuật viên:</span>
-        <span class="value tech-name">${technicianName}</span>
+        <span class="value tech-name" id="technicianName">${technicianName}</span>
       </div>
     </div>
 
     <div class="rating-section">
       <div class="rating-label">Đánh giá và nhận xét dịch vụ</div>
-      <div class="stars">
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
+      <div class="stars" id="ratingStars">
+        ${generateInteractiveStars(rating)}
       </div>
+      <div class="comment-input-section">
+        <textarea id="commentInput" placeholder="Viết nhận xét của bạn..." class="comment-input" ${comment ? `readonly` : ''}>${comment || ''}</textarea>
+        ${!comment ? `<button id="submitReview" class="submit-review-btn">Gửi đánh giá</button>` : ''}
+      </div>
+      ${comment ? `<div class="existing-comment"><p class="comment-text">"${comment}"</p></div>` : ''}
     </div>
   `;
   container.appendChild(mainCard);
+
+  // Add click event for technician name after DOM is created
+  if (technicianId) {
+    const techNameElement = mainCard.querySelector('#technicianName');
+    if (techNameElement) {
+      techNameElement.classList.add('clickable');
+      techNameElement.style.cursor = 'pointer';
+      techNameElement.addEventListener('click', () => {
+        window.location.hash = `/technician-detail?id=${technicianId}`;
+      });
+    }
+  }
+
+  // Add rating interaction if not already rated
+  if (!comment) {
+    setupRatingInteraction(mainCard, historyId, rating);
+  }
 
   // Next replacement card
   const nextCard = document.createElement("div");
@@ -347,6 +395,94 @@ function formatPrice(price) {
 function formatPoints(points) {
   if (!points && points !== 0) return "0";
   return new Intl.NumberFormat("vi-VN").format(points);
+}
+
+function generateInteractiveStars(currentRating) {
+  const maxStars = 5;
+  let starsHtml = '';
+  
+  for (let i = 1; i <= maxStars; i++) {
+    const filled = i <= currentRating ? 'filled' : 'empty';
+    starsHtml += `<i class="fas fa-star ${filled} interactive" data-rating="${i}"></i>`;
+  }
+  
+  return starsHtml;
+}
+
+function setupRatingInteraction(container, historyId, currentRating) {
+  const stars = container.querySelectorAll('.stars .interactive');
+  const submitBtn = container.querySelector('#submitReview');
+  const commentInput = container.querySelector('#commentInput');
+  let selectedRating = currentRating;
+
+  // Star hover and click events
+  stars.forEach((star, index) => {
+    const rating = index + 1;
+    
+    // Hover effect
+    star.addEventListener('mouseenter', () => {
+      updateStarsDisplay(stars, rating);
+    });
+    
+    // Click to select
+    star.addEventListener('click', () => {
+      selectedRating = rating;
+      updateStarsDisplay(stars, rating);
+    });
+  });
+
+  // Reset on mouse leave
+  container.querySelector('.stars').addEventListener('mouseleave', () => {
+    updateStarsDisplay(stars, selectedRating);
+  });
+
+  // Submit review
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      const comment = commentInput.value.trim();
+      
+      if (selectedRating === 0) {
+        alert('Vui lòng chọn số sao đánh giá');
+        return;
+      }
+
+      if (!comment) {
+        alert('Vui lòng viết nhận xét');
+        return;
+      }
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang gửi...';
+
+        await historyService.submitReview(historyId, selectedRating, comment);
+        
+        // Show success message
+        alert('Đánh giá của bạn đã được gửi thành công!');
+        
+        // Reload page to show updated review
+        window.location.reload();
+        
+      } catch (error) {
+        console.error('Error submitting review:', error);
+        alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Gửi đánh giá';
+      }
+    });
+  }
+}
+
+function updateStarsDisplay(stars, rating) {
+  stars.forEach((star, index) => {
+    if (index < rating) {
+      star.classList.remove('empty');
+      star.classList.add('filled');
+    } else {
+      star.classList.remove('filled');
+      star.classList.add('empty');
+    }
+  });
 }
 
 // Global function to open image modal

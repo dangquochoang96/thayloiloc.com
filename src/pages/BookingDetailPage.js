@@ -172,9 +172,20 @@ function renderBookingDetail(container, booking) {
     status.innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
   }
   
+  // Get technician info from staff array or direct staff object
+  let staff = null;
+  if (Array.isArray(booking.staff) && booking.staff.length > 0) {
+    staff = booking.staff[0];
+  } else if (booking.staff && typeof booking.staff === 'object') {
+    staff = booking.staff;
+  }
+  
+  const technicianName = staff?.username || staff?.staff_info?.username || staff?.staff_info?.name || booking.technician?.name || booking.staff_name || customer.username || customer.name || 'Chưa phân công';
+  const technicianPhone = staff?.phone || staff?.staff_info?.phone || booking.technician?.phone || booking.staff_phone || customer.phone || booking.phone || 'N/A';
+  
   // Staff info - same field mapping
-  if (staffName) staffName.textContent = booking.technician?.name || booking.staff_name || customer.username || customer.name || 'Chưa phân công';
-  if (staffPhone) staffPhone.textContent = booking.technician?.phone || booking.staff_phone || customer.phone || booking.phone || 'N/A';
+  if (staffName) staffName.textContent = technicianName;
+  if (staffPhone) staffPhone.textContent = technicianPhone;
   
   // Notification - same field priority
   if (notification) notification.textContent = booking.notification || booking.notes || booking.des || 'Không có thông báo';

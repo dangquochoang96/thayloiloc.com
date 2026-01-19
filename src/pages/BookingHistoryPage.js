@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer.js';
 import { authService } from '../services/auth.service.js';
 import { historyService } from '../services/history.service.js';
 import { bookingService } from '../services/booking.service.js';
+import { getImageUrl } from '../utils/helpers.js';
 import '../styles/history/booking-history.css';
 
 export function BookingHistoryPage() {
@@ -314,6 +315,98 @@ export function BookingHistoryPage() {
           margin-bottom: 1rem;
         }
 
+        .booking-images-gallery {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
+
+        .booking-image {
+          width: 80px;
+          height: 80px;
+          object-fit: cover;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border: 2px solid transparent;
+        }
+
+        .booking-image:hover {
+          transform: scale(1.05);
+          border-color: #f97316;
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+
+        .image-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10001;
+          opacity: 0;
+          animation: fadeIn 0.3s ease forwards;
+        }
+
+        .image-modal-content {
+          position: relative;
+          max-width: 90%;
+          max-height: 90%;
+        }
+
+        .image-modal-content img {
+          max-width: 100%;
+          max-height: 100%;
+          border-radius: 8px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-modal-close {
+          position: absolute;
+          top: -40px;
+          right: 0;
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          color: white;
+          font-size: 1.5rem;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+        }
+
+        .image-modal-close:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+          .booking-images-gallery {
+            gap: 0.3rem;
+          }
+
+          .booking-image {
+            width: 60px;
+            height: 60px;
+          }
+
+          .image-modal-close {
+            top: -30px;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2rem;
+          }
+        }
+
         @media (max-width: 768px) {
           .booking-detail-modal {
             width: 95%;
@@ -358,6 +451,39 @@ export function BookingHistoryPage() {
       const product = booking.product_info || {};
       const displayAddress = product.address || booking.address || booking.customer?.address || 'Chưa cập nhật';
 
+      // Get technician info from staff array or direct staff object
+      let staff = null;
+      if (Array.isArray(booking.staff) && booking.staff.length > 0) {
+        staff = booking.staff[0];
+      } else if (booking.staff && typeof booking.staff === 'object') {
+        staff = booking.staff;
+      }
+      
+      const technicianName = staff?.username || staff?.staff_info?.username || staff?.staff_info?.name || booking.technician?.name || booking.staff_name || 'Chưa phân công';
+      const technicianPhone = staff?.phone || staff?.staff_info?.phone || booking.technician?.phone || booking.staff_phone || 'N/A';
+
+      // Get images from booking.images array
+      const images = booking.images || [];
+
+      // Create images gallery HTML
+      let imagesHtml = '';
+      if (images && images.length > 0) {
+        imagesHtml = `
+          <div class="detail-row border-top">
+            <span class="detail-label">Hình ảnh:</span>
+            <div class="detail-value">
+              <div class="booking-images-gallery">
+                ${images.map(img => {
+                  const imageUrl = img.image_link || img.url || img;
+                  const fullImageUrl = getImageUrl(imageUrl);
+                  return `<img src="${fullImageUrl}" alt="Hình ảnh công việc" class="booking-image" onclick="openImageModal('${fullImageUrl}')" onerror="this.style.display='none'">`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       // Update modal content
       const modalBody = modalOverlay.querySelector('.modal-body');
       modalBody.innerHTML = `
@@ -385,12 +511,13 @@ export function BookingHistoryPage() {
         </div>
         <div class="detail-row">
           <span class="detail-label">Kỹ thuật viên:</span>
-          <span class="detail-value">${booking.technician?.name || booking.staff_name || 'Chưa phân công'}</span>
+          <span class="detail-value">${technicianName}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">SĐT KTV:</span>
-          <span class="detail-value">${booking.technician?.phone || booking.staff_phone || 'N/A'}</span>
+          <span class="detail-value">${technicianPhone}</span>
         </div>
+        ${imagesHtml}
       `;
 
     } catch (error) {
@@ -429,6 +556,51 @@ export function BookingHistoryPage() {
       modal.style.animation = 'fadeOut 0.3s ease forwards';
       setTimeout(() => {
         document.body.removeChild(modal);
+      }, 300);
+    }
+  };
+
+  // Global function to open image modal
+  window.openImageModal = (imageUrl) => {
+    const imageModal = document.createElement('div');
+    imageModal.className = 'image-modal-overlay';
+    imageModal.innerHTML = `
+      <div class="image-modal-content">
+        <button class="image-modal-close" onclick="closeImageModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <img src="${imageUrl}" alt="Hình ảnh chi tiết">
+      </div>
+    `;
+
+    document.body.appendChild(imageModal);
+
+    // Close modal when clicking overlay
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal) {
+        closeImageModal();
+      }
+    });
+
+    // Close modal with Escape key
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+  };
+
+  // Global function to close image modal
+  window.closeImageModal = () => {
+    const modal = document.querySelector('.image-modal-overlay');
+    if (modal) {
+      modal.style.animation = 'fadeOut 0.3s ease forwards';
+      setTimeout(() => {
+        if (modal.parentNode) {
+          document.body.removeChild(modal);
+        }
       }, 300);
     }
   };
