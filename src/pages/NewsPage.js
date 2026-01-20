@@ -153,13 +153,6 @@ function loadNewsPage(page = 1) {
       } else {
         // No data from API, use sample news
         console.log("No data from Geysereco API, using sample news");
-        newsData = getSampleNews();
-        pagination = {
-          current_page: 1,
-          last_page: Math.ceil(newsData.length / itemsPerPage),
-          total: newsData.length,
-          per_page: itemsPerPage,
-        };
       }
 
       // Process news data
@@ -201,32 +194,6 @@ function loadNewsPage(page = 1) {
     })
     .catch((err) => {
       console.log("Error loading news from Geysereco API:", err);
-
-      // Fallback to sample news only on first page
-      if (page === 1) {
-        allNews = getSampleNews();
-        // Simulate pagination with sample news (16 items, 8 per page = 2 pages)
-        totalPages = Math.ceil(allNews.length / itemsPerPage);
-        currentPage = 1;
-
-        if (newsLoading) newsLoading.style.display = "none";
-        if (newsGrid) newsGrid.style.display = "grid";
-
-        // Add mock categories for sample news
-        allNews = allNews.map((item, index) => ({
-          ...item,
-          id: item.id || `sample-${index}`,
-          category: item.category || getRandomCategory(),
-          source: "geysereco",
-        }));
-
-        console.log("Using sample news due to API error:", allNews);
-        console.log("Sample news total pages:", totalPages);
-
-        // For sample news, use client-side pagination
-        displayNews(allNews);
-        updatePagination();
-      }
 
       isLoading = false;
     });
@@ -315,7 +282,7 @@ function displayNews(news) {
   // If using sample news (fallback), apply client-side pagination
   if (
     news.length > itemsPerPage &&
-    news.some((item) => item.id && item.id.startsWith("sample-"))
+    news.some((item) => item.id)
   ) {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;

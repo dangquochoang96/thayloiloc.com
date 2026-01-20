@@ -188,21 +188,7 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
   // Rating info from API response
   let rating = parseInt(order.rate) || parseInt(order.rating) || parseInt(order.danh_gia) || 0;
   let comment = order.comment || order.nhan_xet || order.binh_luan || "";
-  
-  // Check localStorage for existing review if no API data
-  if (!comment && !rating) {
-    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-    const localReview = historyService.getReviewFromLocalStorage(historyId, userInfo.id);
-    if (localReview) {
-      comment = localReview.comment;
-      // Update rating from localStorage
-      const localRating = parseInt(localReview.rate) || 0;
-      if (localRating > 0) {
-        // Use local rating if API doesn't have one
-        rating = localRating;
-      }
-    }
-  }
+
 
   // Financial info from order
   const price =
