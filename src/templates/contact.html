@@ -1,0 +1,146 @@
+<section class="contact-page">
+    <!-- Hero Section -->
+    <div class="contact-hero">
+        <div class="contact-hero-content">
+            <h1 class="contact-hero-title">Liên Hệ Với Chúng Tôi</h1>
+            <p class="contact-hero-subtitle">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn</p>
+        </div>
+        <div class="contact-hero-decoration">
+            <div class="decoration-circle circle-1"></div>
+            <div class="decoration-circle circle-2"></div>
+            <div class="decoration-circle circle-3"></div>
+        </div>
+    </div>
+
+    <!-- Contact Content -->
+    <div class="contact-container">
+        <div class="contact-content">
+            <!-- Contact Form -->
+            <div class="contact-form-wrapper">
+                <div class="contact-form-header">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <h2>Gửi Tin Nhắn</h2>
+                    <p>Vui lòng điền thông tin bên dưới, chúng tôi sẽ liên hệ lại sớm nhất</p>
+                </div>
+
+                <form id="contactForm" class="contact-form">
+                    <!-- Name Field -->
+                    <div class="form-group">
+                        <label for="customerName" class="form-label">
+                            <i class="fas fa-user"></i>
+                            Họ và Tên
+                            <span class="required">*</span>
+                        </label>
+                        <input type="text" id="customerName" name="customerName" class="form-input"
+                            placeholder="Nhập họ và tên của bạn" required />
+                        <span class="form-error" id="nameError"></span>
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="form-group">
+                        <label for="customerPhone" class="form-label">
+                            <i class="fas fa-phone"></i>
+                            Số Điện Thoại
+                            <span class="required">*</span>
+                        </label>
+                        <input type="tel" id="customerPhone" name="customerPhone" class="form-input"
+                            placeholder="Nhập số điện thoại (VD: 0963456911)" required />
+                        <span class="form-error" id="phoneError"></span>
+                    </div>
+
+                    <!-- Message Field -->
+                    <div class="form-group">
+                        <label for="customerMessage" class="form-label">
+                            <i class="fas fa-comment-dots"></i>
+                            Nội Dung
+                            <span class="required">*</span>
+                        </label>
+                        <textarea id="customerMessage" name="customerMessage" class="form-textarea"
+                            placeholder="Nhập nội dung cần tư vấn hoặc hỗ trợ..." rows="5" required></textarea>
+                        <span class="form-error" id="messageError"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span class="btn-text">
+                            <i class="fas fa-paper-plane"></i>
+                            Gửi Tin Nhắn
+                        </span>
+                        <span class="btn-loader" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Đang gửi...
+                        </span>
+                    </button>
+
+                    <!-- Success Message -->
+                    <div class="form-message success-message" id="successMessage" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.</p>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div class="form-message error-message" id="errorMessage" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p id="errorMessageText">Đã có lỗi xảy ra. Vui lòng thử lại sau.</p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-info-wrapper">
+                <div class="contact-info-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h2>Thông Tin Liên Hệ</h2>
+                    <p>Bạn cũng có thể liên hệ trực tiếp qua các kênh sau</p>
+                </div>
+
+                <div class="contact-info-list">
+                    <!-- Address -->
+                    <div class="contact-info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Địa Chỉ</h3>
+                            <p>CTT1 - 03, Khu Biệt Thự Liền kề Kiến Hưng Luxury, P. Phúc La, Hà Đông, Hà Nội, Việt Nam
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="contact-info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Điện Thoại</h3>
+                            <p><a href="tel:0963456911">0963 456 911</a></p>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="contact-info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Email</h3>
+                            <p><a href="mailto:contact@thayloiloc.com">thayloiloc@gmail.com</a></p>
+                        </div>
+                    </div>
+
+                    <!-- Working Hours -->
+                    <div class="contact-info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Giờ Làm Việc</h3>
+                            <p>Thứ 2 - Chủ Nhật: 8:00 - 18:00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
