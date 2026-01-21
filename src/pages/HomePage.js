@@ -373,7 +373,7 @@ window.contactForProduct = (productId) => {
   // Handle contact for specific product
   console.log('Contact for product:', productId);
   // Can implement contact modal or redirect to contact form
-  alert('Vui lòng liên hệ hotline: 0963456911 để biết thêm chi tiết về sản phẩm này!');
+  alert('Vui lòng liên hệ hotline: 0335118911 để biết thêm chi tiết về sản phẩm này!');
 };
 
 // News slider state

@@ -94,7 +94,7 @@ Kiểm tra dây: nếu dây cũ và giòn cũng cần phải thay
 Kiểm tra vòi ra máy lọc nước: Nếu vòi rỉ nước không khóa lại được cần tư vấn thay, vì vòi lúc này lâu rồi hỏng van khóa, nếu vòi khi xoay bị lỏng thì vặn chặt lại cho khách.  
 
 <h3>4.Kiểm tra hệ thống nước cấp, đường nước thải của bồn chậu rửa:</h3> Trong trường hợp hệ thống cũ, han rỉ động vào dễ gây hư hỏng cần thông báo trước cho khách, tránh trường họp không may đụng hỏng mới báo khách.  </p>
-<h1>HOTLINE: 0963 456 911 / 09 323 999 20 </h1>
+<h1>HOTLINE: 0335 118 911</h1>
     </div>
   `;
   containerDiv.appendChild(contentSection);

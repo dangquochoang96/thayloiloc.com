@@ -256,7 +256,7 @@ export function FilterReplacementPage() {
             </tr>
             </tbody>
     </table>
-    <h3>HOTLINE: 0963 456 911 / 02466 862 911</h3>
+    <h3>HOTLINE: 0335 118 911</h3>
     <h3>Note: KH hài lòng ghi OK, nếu không vui lòng ghi NG vào cột bên phải </h3>
 </div>
   `;

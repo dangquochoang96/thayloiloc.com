@@ -750,7 +750,7 @@ export function BookingHistoryPage() {
           <div class="info-card">
             <i class="fas fa-headset"></i>
             <h3>Hỗ trợ 24/7</h3>
-            <p>Hotline: 0963456911</p>
+            <p>Hotline: 0335118911</p>
           </div>
         </div>
       </div>

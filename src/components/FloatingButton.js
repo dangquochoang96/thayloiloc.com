@@ -4,7 +4,7 @@ export function FloatingButton() {
   const floatingButton = document.createElement("div");
   floatingButton.innerHTML = `
         <div class="floating-buttons">
-            <a href="tel:0963456911" class="float-btn alo" title="Liên hệ ngay">
+            <a href="tel:0335118911" class="float-btn alo" title="Liên hệ ngay">
                 <i class="fas fa-phone"></i>
                 <span>Liên hệ</span>
             </a>

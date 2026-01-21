@@ -158,7 +158,7 @@ function initializeContactForm() {
     }
 
     if (!contactService.validatePhone(phone)) {
-      phoneError.textContent = "Số điện thoại không hợp lệ (VD: 0963456911)";
+      phoneError.textContent = "Số điện thoại không hợp lệ (VD: 0335118911)";
       formGroup.classList.add("error");
       return false;
     }
