@@ -103,12 +103,23 @@ export function ServicesPage() {
         </div>
         <h3>${service.name || service.ten_dich_vu || 'Dịch vụ'}</h3>
         <p class="service-type">${service.loai_dich_vu || service.service_type || 'Dịch vụ thường'}</p>
-        <button class="btn btn-outline" onclick="window.location.hash='#/booking'">
+        <button class="btn btn-outline select-service-btn" data-service-id="${service.id}" data-service-name="${service.name || 'Thay lõi + VSBD'}">
           Chọn Dịch Vụ
         </button>
       `;
       container.appendChild(card);
     });
+
+    // Attach event listeners to the buttons
+    setTimeout(() => {
+      document.querySelectorAll('.select-service-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const serviceId = e.currentTarget.getAttribute('data-service-id');
+          const serviceName = e.currentTarget.getAttribute('data-service-name');
+          selectService(parseInt(serviceId), serviceName);
+        });
+      });
+    }, 0);
 
     // If no services
     if (services.length === 0) {

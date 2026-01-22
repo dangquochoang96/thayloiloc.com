@@ -97,6 +97,37 @@ export function BookingPage() {
 
   centeredContainer.appendChild(form);
 
+  // Auto-populate type_task field if service is selected
+  if (selectedServiceId) {
+    const typeTaskField = form.querySelector('#type_task');
+    if (typeTaskField) {
+      typeTaskField.value = selectedServiceId;
+    }
+  }
+
+  // Handle conditional service name field
+  const typeTaskField = form.querySelector('#type_task');
+  const serviceNameGroup = form.querySelector('#service-name-group');
+  const serviceNameField = form.querySelector('#service_name');
+  
+  // Function to toggle service name field visibility
+  const toggleServiceNameField = () => {
+    if (typeTaskField.value === '6') { // 'Khác' option
+      serviceNameGroup.style.display = 'block';
+      serviceNameField.required = true;
+    } else {
+      serviceNameGroup.style.display = 'none';
+      serviceNameField.required = false;
+      serviceNameField.value = '';
+    }
+  };
+  
+  // Initial check
+  toggleServiceNameField();
+  
+  // Listen for changes
+  typeTaskField.addEventListener('change', toggleServiceNameField);
+
   // Add responsive styles
   const style = document.createElement("style");
   style.textContent = `
@@ -134,6 +165,33 @@ export function BookingPage() {
       border-radius: 15px !important;
       margin-bottom: 30px !important;
       border-left: 5px solid #f97316 !important;
+    }
+    
+    #service-name-group {
+      transition: all 0.3s ease;
+    }
+    
+    #service_name {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+    
+    #service_name:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    #service_name:required:valid {
+      border-color: #10b981;
+    }
+    
+    #service_name:required:invalid {
+      border-color: #ef4444;
     }
     
     /* Image upload styles */
@@ -415,6 +473,11 @@ export function BookingPage() {
         images: imageUrls, // Use uploaded image URLs
         address: form.address.value,
       };
+
+      // Add service name if 'Khác' is selected
+      if (form.type_task.value === '6' && form.service_name.value.trim()) {
+        bookingData.name = form.service_name.value.trim();
+      }
 
       const response = await servicesService.bookingService(bookingData);
 
