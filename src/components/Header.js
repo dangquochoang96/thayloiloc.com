@@ -74,13 +74,14 @@ export function Header() {
   // Add "Tin Tức" dropdown with submenus
   const newsDropdown = document.createElement("div");
   newsDropdown.className = "nav-dropdown";
-  // Check if we're on any of the process pages or news page to highlight the parent menu
+  // Check if we're on any of the process pages, news page, or video page to highlight the parent menu
   const isOnProcessPage = [
     "#/check-process",
     "#/filter-replacement",
     "#/maintenance-process",
     "#/training-content",
     "#/news",
+    "#/video",
   ].includes(window.location.hash);
 
   newsDropdown.innerHTML = `
@@ -89,7 +90,8 @@ export function Header() {
       <i class="fas fa-chevron-down dropdown-arrow"></i>
     </a>
     <div class="nav-dropdown-menu">
-      <a href="#/news" class="${window.location.hash === "#/news" ? "active" : ""}"><i class="fas fa-newspaper"></i> Dịch Vụ</a>
+      <a href="#/news" class="${window.location.hash === "#/news" ? "active" : ""}"><i class="fas fa-newspaper"></i> Tin Tức</a>
+      <a href="#/video" class="${window.location.hash === "#/video" ? "active" : ""}"><i class="fas fa-play-circle"></i> Video</a>
       <div class="nav-dropdown-submenu">
         <a href="javascript:void(0)" class="nav-submenu-toggle">
           <i class="fas fa-cogs"></i> Quy Trình

@@ -18,6 +18,7 @@ import { MaintenanceProcessPage } from "./pages/MaintenanceProcessPage.js";
 import { FilterReplacementPage } from "./pages/FilterReplacementPage.js";
 import { NewsPage } from "./pages/NewsPage.js";
 import { NewsDetailPage } from "./pages/NewsDetailPage.js";
+import { VideoPage } from "./pages/VideoPage.js";
 import { HotlinePage } from "./pages/HotlinePage.js";
 import { TechnicianDetailPage } from "./pages/TechnicianDetailPage.js";
 import { ContactPage } from "./pages/ContactPage.js";
@@ -45,6 +46,9 @@ const routes = {
   "/news/:id": {
     render: NewsDetailPage,
   },
+  "/video": {
+    render: VideoPage,
+  },
   "/booking": {
     render: BookingPage,
   },
@@ -71,12 +75,6 @@ const routes = {
   },
   "/filter-replacement": {
     render: FilterReplacementPage,
-  },
-  "/news": {
-    render: NewsPage,
-  },
-  "/news-detail": {
-    render: NewsDetailPage,
   },
   "/hotline": {
     render: HotlinePage,
