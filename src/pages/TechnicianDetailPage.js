@@ -1,6 +1,8 @@
 import { SupportService } from "../services/support.service.js";
 import { authService } from "../services/auth.service.js";
 import { getImageUrl } from "../utils/helpers.js";
+import { api } from "../services/api.js";
+import { favoriteStore } from "../services/favorite.store.js";
 import "../styles/hotline/technician-detail.css";
 
 export function TechnicianDetailPage() {
@@ -52,6 +54,30 @@ export function TechnicianDetailPage() {
   return container;
 }
 
+// Hàm hiển thị thông báo
+function showNotification(message, type = "success") {
+  // Remove existing notification if any
+  const existingNotification = document.querySelector(".tech-notification");
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  const notification = document.createElement("div");
+  notification.className = `tech-notification tech-notification-${type}`;
+  notification.innerHTML = `
+    <i class="fas fa-${type === "success" ? "check-circle" : "exclamation-circle"}"></i>
+    <span>${message}</span>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    notification.classList.add("fade-out");
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
 // function getUserById(id) {
 //   return authService.getUserFromServer(id).then((data) => console.log(data));
 // }
@@ -64,6 +90,12 @@ function loadTechnicianDetail(techId, mainEl) {
       console.log("Technician data:", tech);
 
       if (tech) {
+        // Initialize FavoriteStore nếu user đã đăng nhập
+        if (authService.isAuthenticated()) {
+          const user = authService.getUser();
+          favoriteStore.init(user.id);
+        }
+        
         renderTechnicianDetail(tech, mainEl);
       } else {
         mainEl.innerHTML = `
@@ -85,6 +117,24 @@ function loadTechnicianDetail(techId, mainEl) {
         </div>
       `;
     });
+}
+
+// Hàm cập nhật UI favorite button từ store
+function updateFavoriteButton(techId, mainEl) {
+  const favoriteBtn = mainEl.querySelector(".favorite-btn");
+  if (!favoriteBtn) return;
+  
+  const isFavorite = favoriteStore.isFavorite(techId);
+  
+  if (isFavorite) {
+    favoriteBtn.classList.add("active");
+    const icon = favoriteBtn.querySelector("i");
+    if (icon) icon.className = "fas fa-heart";
+  } else {
+    favoriteBtn.classList.remove("active");
+    const icon = favoriteBtn.querySelector("i");
+    if (icon) icon.className = "far fa-heart";
+  }
 }
 
 function renderTechnicianDetail(tech, mainEl) {
@@ -183,13 +233,46 @@ function renderTechnicianDetail(tech, mainEl) {
   // Add favorite button event
   const favoriteBtn = mainEl.querySelector(".favorite-btn");
   if (favoriteBtn) {
-    favoriteBtn.addEventListener("click", () => {
-      favoriteBtn.classList.toggle("active");
-      const icon = favoriteBtn.querySelector("i");
-      if (favoriteBtn.classList.contains("active")) {
-        icon.className = "fas fa-heart";
-      } else {
-        icon.className = "far fa-heart";
+    const techId = favoriteBtn.getAttribute("data-tech-id");
+    
+    // Subscribe to store để update UI khi có thay đổi
+    const unsubscribe = favoriteStore.subscribe(() => {
+      updateFavoriteButton(techId, mainEl);
+    });
+    
+    // Cleanup khi rời trang
+    window.addEventListener('hashchange', () => {
+      unsubscribe();
+    }, { once: true });
+    
+    // Handle click
+    favoriteBtn.addEventListener("click", async () => {
+      // Kiểm tra đăng nhập
+      if (!authService.isAuthenticated()) {
+        alert("Vui lòng đăng nhập để lưu thợ yêu thích!");
+        window.location.hash = "#/login";
+        return;
+      }
+      
+      try {
+        favoriteBtn.disabled = true;
+        
+        // Sử dụng FavoriteStore (single source of truth)
+        const result = await favoriteStore.toggle(techId);
+        
+        // Show notification
+        showNotification(
+          result.action === 'added' 
+            ? "Đã thêm vào danh sách yêu thích" 
+            : "Đã xóa khỏi danh sách yêu thích",
+          "success"
+        );
+        
+      } catch (error) {
+        console.error("❌ Error updating favorite:", error);
+        showNotification("Có lỗi xảy ra. Vui lòng thử lại!", "error");
+      } finally {
+        favoriteBtn.disabled = false;
       }
     });
   }
@@ -199,42 +282,53 @@ function renderTechnicianDetail(tech, mainEl) {
 }
 
 function renderStars(rating) {
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating % 1 >= 0.5;
+  // Đảm bảo rating là số
+  const numRating = Number(rating) || 0;
+  const fullStars = Math.floor(numRating);
+  const hasHalf = (numRating % 1) >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
   let html = "";
+  
+  // Sao đầy
   for (let i = 0; i < fullStars; i++) {
     html += '<i class="fas fa-star"></i>';
   }
+  
+  // Sao nửa
   if (hasHalf) {
     html += '<i class="fas fa-star-half-alt"></i>';
   }
+  
+  // Sao rỗng
   for (let i = 0; i < emptyStars; i++) {
     html += '<i class="far fa-star"></i>';
   }
+  
   return html;
 }
 
 function renderReviewItem(review) {
   // Handle both API format and local format
-  const avatarUrl = review.user.avartar
+  const avatarUrl = review.user?.avartar
     ? getImageUrl(review.user.avartar)
     : null;
-  console.log("Review data:", getImageUrl(review.user.avartar));
 
-  const userName = review.user.username || "Người dùng";
-  const rating = review.rate || 0;
+  const userName = review.user?.username || review.user?.name || "Người dùng";
+  const rating = parseInt(review.rate) || 0; // Chuyển sang số nguyên
   const comment = review.comment || review.content || review.note || "";
 
-  console.log("Review data:", review.rate);
+  // Escape HTML để tránh XSS
+  const safeComment = comment.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  console.log(`Rendering review: ${userName}, rate=${review.rate}, parsed=${rating}`);
 
   return `
     <div class="review-item">
       <div class="review-avatar">
         ${
           avatarUrl
-            ? `<img src="${avatarUrl}" alt="${userName}">`
+            ? `<img src="${avatarUrl}" alt="${userName}" onerror="this.parentElement.innerHTML='<div class=\\'avatar-placeholder\\'><i class=\\'fas fa-user\\'></i></div>'">`
             : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`
         }
       </div>
@@ -245,7 +339,7 @@ function renderReviewItem(review) {
             ${renderStars(rating)}
           </div>
         </div>
-        <p class="review-text">${comment}</p>
+        <p class="review-text">${safeComment}</p>
       </div>
     </div>
   `;
@@ -257,20 +351,61 @@ function loadReviews(techId, mainEl) {
 
   SupportService.getListOrderRating(techId)
     .then((data) => {
-      const reviews = data.data || data || [];
+      // Xử lý dữ liệu trả về từ API
+      let reviews = [];
+      if (data && data.data && Array.isArray(data.data)) {
+        reviews = data.data;
+      } else if (Array.isArray(data)) {
+        reviews = data;
+      }
+
       console.log("Reviews data:", reviews);
+      
+      // Log chi tiết từng review để debug
+      reviews.forEach((r, index) => {
+        console.log(`Review ${index}:`, {
+          order_id: r.order_id || r.id,
+          user_id: r.user?.id,
+          username: r.user?.username,
+          rate: r.rate,
+          comment: r.comment || r.content || r.note
+        });
+      });
+
+      // Lọc các đánh giá hợp lệ (có rate và comment)
+      const validReviews = reviews.filter(r => 
+        r && r.rate && r.user && (r.comment || r.content || r.note)
+      );
+
+      // Loại bỏ các đánh giá trùng lặp dựa trên id hoặc order_id
+      const uniqueReviews = validReviews.reduce((acc, current) => {
+        const currentId = current.id || current.order_id;
+        const isDuplicate = acc.find(item => {
+          const itemId = item.id || item.order_id;
+          return itemId && currentId && itemId === currentId;
+        });
+        
+        if (!isDuplicate) {
+          acc.push(current);
+        } else {
+          console.log("Duplicate found:", current);
+        }
+        return acc;
+      }, []);
+
+      console.log("Unique reviews:", uniqueReviews);
 
       // Update rating display
-      if (reviews.length > 0) {
+      if (uniqueReviews.length > 0) {
         const avgRating =
-          reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
-          reviews.length;
+          uniqueReviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
+          uniqueReviews.length;
         console.log("Average rating:", avgRating);
         techRating.innerHTML = `
           ${renderStars(avgRating)}
-          <span class="rating-count">(${reviews.length} đánh giá)</span>
+          <span class="rating-count">(${uniqueReviews.length} đánh giá)</span>
         `;
-        reviewsList.innerHTML = reviews
+        reviewsList.innerHTML = uniqueReviews
           .map((review) => renderReviewItem(review))
           .join("");
       } else {
@@ -280,6 +415,6 @@ function loadReviews(techId, mainEl) {
     })
     .catch((error) => {
       console.error("Error loading reviews:", error);
-      reviewsList.innerHTML = '<p class="empty-text">Chưa có đánh giá nào</p>';
+      reviewsList.innerHTML = '<p class="empty-text">Lỗi khi tải đánh giá</p>';
     });
 }
