@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FavoriteStore Constructor Tests</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      margin: 0;
+    }
+    
+    #console {
+      background-color: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 20px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.6;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .pass {
+      color: #4ec9b0;
+    }
+    
+    .fail {
+      color: #f48771;
+    }
+    
+    .info {
+      color: #569cd6;
+    }
+    
+    h1 {
+      color: #4ec9b0;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 FavoriteStore Constructor Tests</h1>
+  <div id="console"></div>
+
+  <script type="module">
+    // Capture console output
+    const consoleDiv = document.getElementById('console');
+    const originalLog = console.log;
+    const originalError = console.error;
+    
+    function formatMessage(msg, type = 'log') {
+      const className = type === 'error' ? 'fail' : 
+                       msg.includes('✅') ? 'pass' : 
+                       msg.includes('❌') ? 'fail' : 
+                       msg.includes('===') ? 'info' : '';
+      
+      const span = document.createElement('span');
+      span.className = className;
+      span.textContent = msg + '\n';
+      consoleDiv.appendChild(span);
+    }
+    
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      formatMessage(args.join(' '), 'log');
+    };
+    
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      formatMessage(args.join(' '), 'error');
+    };
+    
+    // Import and run tests
+    import { runAllTests } from './src/services/favorite.store.test.js';
+    
+    // Run tests
+    runAllTests();
+  </script>
+</body>
+</html>

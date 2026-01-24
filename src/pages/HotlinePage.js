@@ -108,6 +108,117 @@ export function HotlinePage() {
   return container;
 }
 
+// Load rating data cho tất cả kỹ thuật viên (trả về data thay vì update UI)
+async function loadAllTechniciansRatingData(technicians) {
+  try {
+    // Gọi tất cả API cùng lúc
+    const ratingPromises = technicians.map(tech => 
+      SupportService.getListOrderRating(tech.id)
+        .then(data => ({
+          techId: tech.id,
+          reviews: data.data || data || []
+        }))
+        .catch(error => {
+          console.error(`Error loading rating for tech ${tech.id}:`, error);
+          return {
+            techId: tech.id,
+            reviews: []
+          };
+        })
+    );
+    
+    // Đợi tất cả API hoàn thành
+    const results = await Promise.all(ratingPromises);
+    
+    // Tạo object chứa rating info cho từng thợ
+    const ratingsData = {};
+    results.forEach(result => {
+      if (result.reviews.length > 0) {
+        const avgRating = result.reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / result.reviews.length;
+        const roundedRating = Math.round(avgRating * 10) / 10;
+        
+        ratingsData[result.techId] = {
+          avgRating: roundedRating,
+          count: result.reviews.length
+        };
+      } else {
+        ratingsData[result.techId] = {
+          avgRating: 0,
+          count: 0
+        };
+      }
+    });
+    
+    return ratingsData;
+  } catch (error) {
+    console.error('Error loading all ratings:', error);
+    return {};
+  }
+}
+
+// Load rating cho kỹ thuật viên (deprecated - dùng loadAllTechniciansRating thay thế)
+function loadTechnicianRating(techId) {
+  const ratingEl = document.querySelector(`.tech-rating-display[data-tech-id="${techId}"]`);
+  if (!ratingEl) return;
+
+  SupportService.getListOrderRating(techId)
+    .then((data) => {
+      const reviews = data.data || data || [];
+      
+      if (reviews.length > 0) {
+        const avgRating = reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / reviews.length;
+        const roundedRating = Math.round(avgRating * 10) / 10;
+        
+        ratingEl.innerHTML = `
+          <div class="tech-rating-stars">
+            ${renderStars(avgRating)}
+          </div>
+          <span class="tech-rating-text">${roundedRating} (${reviews.length})</span>
+        `;
+      } else {
+        ratingEl.innerHTML = `
+          <div class="tech-rating-stars">
+            ${renderStars(0)}
+          </div>
+          <span class="tech-rating-text">Chưa có đánh giá</span>
+        `;
+      }
+    })
+    .catch((error) => {
+      console.error(`Error loading rating for tech ${techId}:`, error);
+      ratingEl.innerHTML = `
+        <div class="tech-rating-stars">
+          ${renderStars(0)}
+        </div>
+        <span class="tech-rating-text">Chưa có đánh giá</span>
+      `;
+    });
+}
+
+// Render stars
+function renderStars(rating) {
+  const numRating = Number(rating) || 0;
+  const fullStars = Math.floor(numRating);
+  const hasHalf = (numRating % 1) >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+
+  let html = "";
+  
+  for (let i = 0; i < fullStars; i++) {
+    html += '<i class="fas fa-star"></i>';
+  }
+  
+  if (hasHalf) {
+    html += '<i class="fas fa-star-half-alt"></i>';
+  }
+  
+  for (let i = 0; i < emptyStars; i++) {
+    html += '<i class="far fa-star"></i>';
+  }
+  
+  return html;
+}
+
 // Format phone number function
 function formatPhoneNumber(phone) {
   if (!phone) return "";
@@ -128,33 +239,51 @@ function initializeTechnicians() {
   if (!loadingEl || !gridEl) return;
 
   // Load technicians function
-  function loadTechnicians() {
+  async function loadTechnicians() {
     loadingEl.style.display = "block";
     gridEl.innerHTML = "";
 
-    // Gọi API qua api service
-    SupportService.getSupportTechnicians()
-      .then((data) => {
-        let technicians = data.data || data || [];
+    try {
+      // Gọi API qua api service
+      const data = await SupportService.getSupportTechnicians();
+      let technicians = data.data || data || [];
 
+      if (technicians.length === 0) {
         loadingEl.style.display = "none";
+        gridEl.innerHTML = `
+          <div class="no-technicians">
+            <i class="fas fa-user-slash"></i>
+            <p>Không có kỹ thuật viên nào</p>
+          </div>
+        `;
+        return;
+      }
 
-        if (technicians.length === 0) {
-          gridEl.innerHTML = `
-            <div class="no-technicians">
-              <i class="fas fa-user-slash"></i>
-              <p>Không có kỹ thuật viên nào</p>
-            </div>
-          `;
-          return;
-        }
+      // Load tất cả ratings trước khi render
+      const ratingsData = await loadAllTechniciansRatingData(technicians);
 
-        gridEl.innerHTML = technicians
-          .map(
-            (tech) => `
+      // Render với ratings đã có sẵn
+      gridEl.innerHTML = technicians
+        .map((tech) => {
+          const ratingInfo = ratingsData[tech.id] || { avgRating: 0, count: 0 };
+          const ratingHTML = ratingInfo.count > 0
+            ? `
+              <div class="tech-rating-stars">
+                ${renderStars(ratingInfo.avgRating)}
+              </div>
+              <span class="tech-rating-text">${ratingInfo.avgRating} (${ratingInfo.count})</span>
+            `
+            : `
+              <div class="tech-rating-stars">
+                ${renderStars(0)}
+              </div>
+              <span class="tech-rating-text">Chưa có đánh giá</span>
+            `;
+
+          return `
           <div class="technician-card active" data-tech='${JSON.stringify(
             tech
-          )}'>
+          )}' data-tech-id="${tech.id}">
             <div class="tech-avatar">
               ${
                 tech.avartar
@@ -166,6 +295,9 @@ function initializeTechnicians() {
             </div>
             <div class="tech-info">
               <h3>${tech.username}</h3>
+              <div class="tech-rating-display" data-tech-id="${tech.id}">
+                ${ratingHTML}
+              </div>
               <div class="tech-phone-display">
                 <i class="fas fa-phone"></i>
                 <span>${formatPhoneNumber(tech.phone)}</span>
@@ -188,34 +320,35 @@ function initializeTechnicians() {
               </div>
             </div>
           </div>
-        `
-          )
-          .join("");
-
-        // Add click event to show detail
-        gridEl.querySelectorAll(".technician-card").forEach((card) => {
-          card.style.cursor = "pointer";
-          card.addEventListener("click", () => {
-            const tech = JSON.parse(card.dataset.tech);
-            // Navigate to technician detail page
-            window.location.hash = `/technician-detail?id=${tech.id}`;
-          });
-        });
-      })
-      .catch((error) => {
-        console.error("Lỗi khi tải danh sách kỹ thuật viên:", error);
-        loadingEl.style.display = "none";
-        gridEl.innerHTML = `
-          <div class="error-message">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>Không thể tải danh sách kỹ thuật viên</p>
-            <button class="retry-btn">
-              <i class="fas fa-redo"></i>
-              Thử lại
-            </button>
-          </div>
         `;
+        })
+        .join("");
+
+      loadingEl.style.display = "none";
+
+      // Add click event to show detail
+      gridEl.querySelectorAll(".technician-card").forEach((card) => {
+        card.style.cursor = "pointer";
+        card.addEventListener("click", () => {
+          const tech = JSON.parse(card.dataset.tech);
+          // Navigate to technician detail page
+          window.location.hash = `/technician-detail?id=${tech.id}`;
+        });
       });
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách kỹ thuật viên:", error);
+      loadingEl.style.display = "none";
+      gridEl.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Không thể tải danh sách kỹ thuật viên</p>
+          <button class="retry-btn">
+            <i class="fas fa-redo"></i>
+            Thử lại
+          </button>
+        </div>
+      `;
+    }
   }
 
   // Event delegation for retry button

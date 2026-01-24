@@ -157,7 +157,36 @@
 .tech-info h3 {
   color: #1e293b;
   font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.tech-rating-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.tech-rating-stars {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.tech-rating-stars i.fas {
+  color: #f59e0b;
+  font-size: 0.9rem;
+}
+
+.tech-rating-stars i.far {
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
+.tech-rating-text {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.85rem;
 }
 
 .tech-phone-display {

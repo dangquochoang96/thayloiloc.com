@@ -35,6 +35,41 @@
   font-size: 1rem;
 }
 
+/* Style cho select với optgroup */
+.form-group select optgroup {
+  font-weight: 700;
+  font-style: normal;
+  color: #1f2937;
+  background-color: #f3f4f6;
+}
+
+.form-group select option {
+  padding: 0.5rem;
+  font-weight: 400;
+}
+
+/* Highlight thợ yêu thích */
+.form-group select optgroup[label*="Yêu Thích"] {
+  background-color: #fee2e2;
+}
+
+.form-group select optgroup[label*="Yêu Thích"] option {
+  background-color: #fef2f2;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Style cho staff select */
+#staff option[value=""]:first-child {
+  color: #6b7280;
+  font-style: italic;
+}
+
+#staff option:not([value=""]) {
+  color: #dc2626;
+  font-weight: 500;
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
