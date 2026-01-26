@@ -57,7 +57,6 @@ export function VideoPage() {
       <!-- Pagination -->
       <div class="pagination-section" id="paginationSection" style="display:none;">
         <div class="pagination-info">
-          <span id="paginationInfo">Trang 1 / 1</span>
         </div>
         <div class="pagination-controls">
           <button class="pagination-btn prev-btn" id="prevPageBtn" onclick="goToPreviousPage()">
