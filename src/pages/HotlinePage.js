@@ -80,7 +80,7 @@ export function HotlinePage() {
           <i class="fas fa-building"></i>
           <div>
             <strong>Trụ sở chính</strong>
-            <p>CTT1 - 03, Khu Biệt Thự Liền kề Kiến Hưng Luxury, P. Phúc La, Hà Đông, Hà Nội, Việt Nam</p>
+            <p>179 Đường Phùng Hưng, Phúc La, Hà Đông, Hà Nội</p>
           </div>
         </div>
         <div class="info-item">

@@ -78,7 +78,7 @@ export function Footer() {
                 <i class="fas fa-map-marker-alt"></i>
                 <div>
                   <strong>Địa chỉ</strong>
-                  <span>CTT1 - 03, Khu Biệt Thự Liền kề Kiến Hưng Luxury, P. Phúc La, Hà Đông, Hà Nội, Việt Nam</span>
+                  <span>179 Đường Phùng Hưng, Phúc La, Hà Đông, Hà Nội</span>
                 </div>
               </li>
             </ul>
