@@ -1,3 +1,5 @@
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
 import { SupportService } from "../services/support.service.js";
 import { authService } from "../services/auth.service.js";
 import { getImageUrl } from "../utils/helpers.js";
@@ -7,29 +9,43 @@ import "../styles/hotline/technician-detail.css";
 
 export function TechnicianDetailPage() {
   const container = document.createElement("div");
-  container.className = "technician-detail-wrapper";
 
-  // Header with back button
-  const header = document.createElement("header");
-  header.className = "tech-detail-header";
-  header.innerHTML = `
-    <button class="back-btn" onclick="history.back()">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <h1>Thông tin kỹ thuật viên</h1>
-    <div class="header-spacer"></div>
-  `;
+  // Use standard Header component
+  const header = Header();
   container.appendChild(header);
 
   const main = document.createElement("main");
-  main.className = "tech-detail-main";
-  main.innerHTML = `
-    <div class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Đang tải thông tin...</p>
+  main.className = "technician-detail-page";
+  
+  // Page Header with breadcrumb
+  const pageHeader = document.createElement("div");
+  pageHeader.className = "page-header";
+  pageHeader.innerHTML = `
+    <h1><i class="fas fa-user-cog"></i> Thông tin kỹ thuật viên</h1>
+    <div class="breadcrumb">
+      <a href="#/" onclick="event.preventDefault(); window.location.hash='/'">Trang chủ</a>
+      <i class="fas fa-chevron-right"></i>
+      <a href="#/hotline" onclick="event.preventDefault(); window.location.hash='/hotline'">Hotline</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Chi tiết</span>
     </div>
   `;
+  main.appendChild(pageHeader);
+  
+  const contentSection = document.createElement("section");
+  contentSection.className = "tech-detail-content";
+  contentSection.innerHTML = `
+    <div class="container">
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải thông tin...</p>
+      </div>
+    </div>
+  `;
+  main.appendChild(contentSection);
+  
   container.appendChild(main);
+  container.appendChild(Footer());
 
   // Get technician ID from URL
   setTimeout(() => {
@@ -38,10 +54,12 @@ export function TechnicianDetailPage() {
     );
     const techId = urlParams.get("id");
 
+    const contentContainer = contentSection.querySelector(".container");
+    
     if (techId) {
-      loadTechnicianDetail(techId, main);
+      loadTechnicianDetail(techId, contentContainer);
     } else {
-      main.innerHTML = `
+      contentContainer.innerHTML = `
         <div class="error-state">
           <i class="fas fa-exclamation-triangle"></i>
           <p>Không tìm thấy thông tin kỹ thuật viên</p>
