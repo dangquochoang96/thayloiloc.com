@@ -59,13 +59,13 @@ export function VideoPage() {
         <div class="pagination-info">
         </div>
         <div class="pagination-controls">
-          <button class="pagination-btn prev-btn" id="prevPageBtn" onclick="goToPreviousPage()">
+          <button class="pagination-btn prev-btn" id="prevPageBtn" onclick="goToVideoPagePrevious()">
             <i class="fas fa-chevron-left"></i>
           </button>
           <div class="pagination-numbers" id="paginationNumbers">
             <!-- Page numbers will be generated here -->
           </div>
-          <button class="pagination-btn next-btn" id="nextPageBtn" onclick="goToNextPage()">
+          <button class="pagination-btn next-btn" id="nextPageBtn" onclick="goToVideoPageNext()">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -475,7 +475,7 @@ function generatePaginationNumbers() {
 
   // First page
   if (startPage > 1) {
-    numbersHTML += `<button class="page-number" onclick="goToPage(1)">1</button>`;
+    numbersHTML += `<button class="page-number" onclick="goToVideoPage(1)">1</button>`;
     if (startPage > 2) {
       numbersHTML += `<span class="page-ellipsis">...</span>`;
     }
@@ -484,7 +484,7 @@ function generatePaginationNumbers() {
   // Page numbers
   for (let i = startPage; i <= endPage; i++) {
     const activeClass = i === currentPage ? "active" : "";
-    numbersHTML += `<button class="page-number ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+    numbersHTML += `<button class="page-number ${activeClass}" onclick="goToVideoPage(${i})">${i}</button>`;
   }
 
   // Last page
@@ -492,7 +492,7 @@ function generatePaginationNumbers() {
     if (endPage < totalPages - 1) {
       numbersHTML += `<span class="page-ellipsis">...</span>`;
     }
-    numbersHTML += `<button class="page-number" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    numbersHTML += `<button class="page-number" onclick="goToVideoPage(${totalPages})">${totalPages}</button>`;
   }
 
   paginationNumbers.innerHTML = numbersHTML;
@@ -542,19 +542,20 @@ window.closeVideoModal = () => {
   }
 };
 
-window.goToPage = (page) => {
+// Video page navigation functions with unique names
+window.goToVideoPage = (page) => {
   if (page >= 1 && page <= totalPages && page !== currentPage && !isLoading) {
     loadVideoPage(page);
   }
 };
 
-window.goToPreviousPage = () => {
+window.goToVideoPagePrevious = () => {
   if (currentPage > 1 && !isLoading) {
     loadVideoPage(currentPage - 1);
   }
 };
 
-window.goToNextPage = () => {
+window.goToVideoPageNext = () => {
   if (currentPage < totalPages && !isLoading) {
     loadVideoPage(currentPage + 1);
   }

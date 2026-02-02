@@ -587,36 +587,89 @@ function initializeNewsTouchEvents() {
   const slider = document.querySelector('.news-slider-wrapper');
   if (!slider) return;
   
-  slider.addEventListener('touchstart', (e) => {
-    newsTouchStartX = e.touches[0].clientX;
-    newsIsDragging = true;
-  }, { passive: true });
+  // Touch events for mobile
+  slider.addEventListener('touchstart', handleNewsTouchStart, { passive: true });
+  slider.addEventListener('touchmove', handleNewsTouchMove, { passive: true });
+  slider.addEventListener('touchend', handleNewsTouchEnd, { passive: true });
   
-  slider.addEventListener('touchmove', (e) => {
-    if (!newsIsDragging) return;
-    newsTouchEndX = e.touches[0].clientX;
-  }, { passive: true });
+  // Mouse events for desktop (drag functionality)
+  slider.addEventListener('mousedown', handleNewsMouseDown);
+  slider.addEventListener('mousemove', handleNewsMouseMove);
+  slider.addEventListener('mouseup', handleNewsMouseEnd);
+  slider.addEventListener('mouseleave', handleNewsMouseEnd);
+}
+
+function handleNewsTouchStart(e) {
+  newsTouchStartX = e.touches[0].clientX;
+  newsIsDragging = true;
+}
+
+function handleNewsTouchMove(e) {
+  if (!newsIsDragging) return;
+  newsTouchEndX = e.touches[0].clientX;
+}
+
+function handleNewsTouchEnd() {
+  if (!newsIsDragging) return;
+  newsIsDragging = false;
   
-  slider.addEventListener('touchend', () => {
-    if (!newsIsDragging) return;
-    newsIsDragging = false;
-    
-    const swipeThreshold = 50;
-    const diff = newsTouchStartX - newsTouchEndX;
-    
-    if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0 && newsCurrentSlide < newsTotalSlides - 1) {
+  const swipeThreshold = 50; // Minimum distance for swipe
+  const diff = newsTouchStartX - newsTouchEndX;
+  
+  if (Math.abs(diff) > swipeThreshold) {
+    if (diff > 0) {
+      // Swipe left - next slide
+      if (newsCurrentSlide < newsTotalSlides - 1) {
         newsCurrentSlide++;
         updateNewsSliderPosition();
-      } else if (diff < 0 && newsCurrentSlide > 0) {
+      }
+    } else {
+      // Swipe right - previous slide
+      if (newsCurrentSlide > 0) {
         newsCurrentSlide--;
         updateNewsSliderPosition();
       }
     }
-    
-    newsTouchStartX = 0;
-    newsTouchEndX = 0;
-  }, { passive: true });
+  }
+  
+  newsTouchStartX = 0;
+  newsTouchEndX = 0;
+}
+
+function handleNewsMouseDown(e) {
+  newsTouchStartX = e.clientX;
+  newsIsDragging = true;
+  e.preventDefault();
+}
+
+function handleNewsMouseMove(e) {
+  if (!newsIsDragging) return;
+  newsTouchEndX = e.clientX;
+}
+
+function handleNewsMouseEnd() {
+  if (!newsIsDragging) return;
+  newsIsDragging = false;
+  
+  const swipeThreshold = 50;
+  const diff = newsTouchStartX - newsTouchEndX;
+  
+  if (Math.abs(diff) > swipeThreshold) {
+    if (diff > 0) {
+      if (newsCurrentSlide < newsTotalSlides - 1) {
+        newsCurrentSlide++;
+        updateNewsSliderPosition();
+      }
+    } else {
+      if (newsCurrentSlide > 0) {
+        newsCurrentSlide--;
+        updateNewsSliderPosition();
+      }
+    }
+  }
+  
+  newsTouchStartX = 0;
+  newsTouchEndX = 0;
 }
 
 // Global news slider functions
