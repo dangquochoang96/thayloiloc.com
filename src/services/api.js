@@ -27,6 +27,15 @@ export class ApiClient {
       // Handle non-2xx responses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        
+        // Special handling for rate limit errors
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After') || '60';
+          throw new Error(
+            `Too Many Requests. Please try again in ${retryAfter} seconds.`
+          );
+        }
+        
         throw new Error(
           errorData.message || `Request failed with status ${response.status}`,
         );

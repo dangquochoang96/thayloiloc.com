@@ -127,14 +127,24 @@ class FavoriteStore {
     this.notify();
 
     try {
-      // Call API (single source of truth)
-      console.log('📡 Calling API /user/addFavorite');
-      const response = await api.post('/user/addFavorite', {
-        user_id: parseInt(this.userId),
-        staff_id: parseInt(staffId)
-      });
-
-      console.log('✅ API response:', response);
+      // Call appropriate API endpoint based on current state
+      if (isCurrentlyFavorite) {
+        // Remove from favorites
+        console.log('📡 Calling API /user/unFavorite');
+        const response = await api.post('/user/unFavorite', {
+          user_id: this.userId,
+          staff_id: staffId
+        });
+        console.log('✅ API response:', response);
+      } else {
+        // Add to favorites
+        console.log('📡 Calling API /user/addFavorite');
+        const response = await api.post('/user/addFavorite', {
+          user_id: this.userId,
+          staff_id: staffId
+        });
+        console.log('✅ API response:', response);
+      }
 
       // Reload from API to get fresh data
       await this.load();

@@ -244,7 +244,7 @@ function initializeTechnicians() {
     gridEl.innerHTML = "";
 
     try {
-      // Gọi API qua api service
+      // Gọi API qua api service (with caching)
       const data = await SupportService.getSupportTechnicians();
       let technicians = data.data || data || [];
 
@@ -338,10 +338,14 @@ function initializeTechnicians() {
     } catch (error) {
       console.error("Lỗi khi tải danh sách kỹ thuật viên:", error);
       loadingEl.style.display = "none";
+      
+      // Check if it's a rate limit error
+      const isRateLimit = error.message && error.message.includes('Too Many Requests');
+      
       gridEl.innerHTML = `
         <div class="error-message">
           <i class="fas fa-exclamation-triangle"></i>
-          <p>Không thể tải danh sách kỹ thuật viên</p>
+          <p>${isRateLimit ? 'Quá nhiều yêu cầu. Vui lòng đợi một chút và thử lại.' : 'Không thể tải danh sách kỹ thuật viên'}</p>
           <button class="retry-btn">
             <i class="fas fa-redo"></i>
             Thử lại

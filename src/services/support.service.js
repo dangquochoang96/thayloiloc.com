@@ -1,16 +1,43 @@
 import { api } from './api.js';
 
+// Cache for technicians data
+let techniciansCache = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export const SupportService = {
   /**
    * Lấy danh sách kỹ thuật viên hỗ trợ
+   * @param {boolean} forceRefresh - Force refresh cache
    * @returns {Promise<Array>} Danh sách kỹ thuật viên với thông tin liên hệ
    */
-  async getSupportTechnicians() {
+  async getSupportTechnicians(forceRefresh = false) {
     try {
+      // Check cache first
+      const now = Date.now();
+      if (!forceRefresh && techniciansCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+        console.log('📦 Using cached technicians data');
+        return techniciansCache;
+      }
+
+      console.log('🔄 Fetching fresh technicians data');
       const response = await api.get('/user/support');
-      return response.data || response;
+      const data = response.data || response;
+      
+      // Update cache
+      techniciansCache = data;
+      cacheTimestamp = now;
+      
+      return data;
     } catch (error) {
       console.error('Lỗi khi lấy danh sách kỹ thuật viên:', error);
+      
+      // If rate limited and we have cache, return cache
+      if (error.message && error.message.includes('429') && techniciansCache) {
+        console.log('⚠️ Rate limited, using cached data');
+        return techniciansCache;
+      }
+      
       throw error;
     }
   },
