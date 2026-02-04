@@ -237,10 +237,9 @@ function setupEventListeners(container) {
 
   // Password visibility toggle
   const toggleButtons = container.querySelectorAll('.toggle-password');
-  toggleButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const input = button.parentElement.querySelector('input');
-      const icon = button.querySelector('i');
+  toggleButtons.forEach(icon => {
+    icon.addEventListener('click', () => {
+      const input = icon.parentElement.querySelector('input');
       
       if (input.type === 'password') {
         input.type = 'text';
