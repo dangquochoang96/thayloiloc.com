@@ -156,9 +156,19 @@ function setupEventListeners(container) {
       }
 
       try {
-        await authService.changePassword(currentPassword, newPassword);
-        showMessage(successMsg, "Đổi mật khẩu thành công!");
+        await authService.changePassword(currentPassword, newPassword, confirmPassword);
+        
+        // Show success message
+        showMessage(successMsg, "Đổi mật khẩu thành công! Bạn sẽ được đăng xuất sau 3 giây...");
         passwordForm.reset();
+        
+        // Show alert notification
+        alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại với mật khẩu mới.");
+        
+        // Log out user after password change
+        setTimeout(() => {
+          authService.logout();
+        }, 3000);
       } catch (error) {
         showMessage(errorMsg, error.message || "Có lỗi xảy ra khi đổi mật khẩu");
       } finally {

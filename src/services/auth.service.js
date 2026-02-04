@@ -110,25 +110,42 @@ export const authService = {
     }
   },
 
-  async changePassword(currentPassword, newPassword) {
+  async changePassword(currentPassword, newPassword, confirmPassword) {
     try {
       const user = this.getCurrentUser();
       if (!user) {
-        throw new Error("User not authenticated");
+        throw new Error("Bạn chưa đăng nhập");
       }
 
-      const response = await api.put("/user/change-password", {
-        id: user.id,
-        currentPassword,
-        newPassword,
+      console.log("User data:", user);
+      console.log("User ID:", user.id);
+      
+      // Use geyserecoApi instead of api
+      const { geyserecoApi } = await import('./api.js');
+      
+      const endpoint = `/user/${user.id}/changePassWord`;
+      console.log("Change password endpoint:", endpoint);
+      console.log("Request body:", {
+        password: currentPassword,
+        new_password: newPassword,
+        new_password_confirm: confirmPassword,
       });
+      
+      const response = await geyserecoApi.post(endpoint, {
+        password: currentPassword,
+        new_password: newPassword,
+        new_password_confirm: confirmPassword,
+      });
+
+      console.log("Change password response:", response);
 
       if (response.code === 1) {
         return response;
       } else {
-        throw new Error(response.message || "Change password failed");
+        throw new Error(response.message || "Đổi mật khẩu thất bại");
       }
     } catch (error) {
+      console.error("Change password error:", error);
       throw error;
     }
   },
