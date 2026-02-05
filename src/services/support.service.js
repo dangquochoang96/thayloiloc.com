@@ -7,34 +7,105 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export const SupportService = {
   /**
-   * Lấy danh sách kỹ thuật viên hỗ trợ
-   * @param {boolean} forceRefresh - Force refresh cache
-   * @returns {Promise<Array>} Danh sách kỹ thuật viên với thông tin liên hệ
+   * Lấy danh sách kỹ thuật viên hỗ trợ với phân trang và tìm kiếm
+   * @param {number} page - Số trang (mặc định 1)
+   * @param {Object} filters - Bộ lọc tìm kiếm {name, phone, address}
+   * @returns {Promise<Object>} Danh sách kỹ thuật viên với thông tin phân trang
    */
-  async getSupportTechnicians(forceRefresh = false) {
+  async getSupportTechnicians(page = 1, filters = {}) {
     try {
-      // Check cache first
-      const now = Date.now();
-      if (!forceRefresh && techniciansCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
-        console.log('📦 Using cached technicians data');
-        return techniciansCache;
+      // Build search query - combine all filters into one search string
+      let searchQuery = '';
+      if (filters.name || filters.phone || filters.address) {
+        const searchTerms = [filters.name, filters.phone, filters.address]
+          .filter(term => term && term.trim())
+          .join(' ');
+        searchQuery = searchTerms.trim();
       }
-
-      console.log('🔄 Fetching fresh technicians data');
-      const response = await api.get('/user/support');
+      
+      // Build query params
+      let queryParams = `page=${page}`;
+      if (searchQuery) {
+        queryParams += `&q=${encodeURIComponent(searchQuery)}`;
+      }
+      
+      const response = await api.get(`/user/support?${queryParams}`);
       const data = response.data || response;
       
-      // Update cache
-      techniciansCache = data;
+      // Return data with pagination info
+      return {
+        data: data.data || [],
+        current_page: data.current_page || page,
+        last_page: data.last_page || 1,
+        per_page: data.per_page || 9,
+        total: data.total || (data.data ? data.data.length : 0)
+      };
+    } catch (error) {
+      console.error('Error loading technicians:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy tất cả kỹ thuật viên (không phân trang) - dùng cho nearby mode
+   * @param {boolean} forceRefresh - Force refresh cache
+   * @returns {Promise<Array>} Danh sách tất cả kỹ thuật viên
+   */
+  async getAllSupportTechnicians(forceRefresh = false) {
+    try {
+      const now = Date.now();
+      if (!forceRefresh && techniciansCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+        return techniciansCache;
+      }
+      
+      let allTechnicians = [];
+      let currentPage = 1;
+      let hasMoreData = true;
+      
+      while (hasMoreData) {
+        try {
+          const response = await api.get(`/user/support?page=${currentPage}`);
+          const data = response.data || response;
+          
+          if (data.data && Array.isArray(data.data)) {
+            const pageData = data.data;
+            
+            if (pageData.length > 0) {
+              allTechnicians = allTechnicians.concat(pageData);
+              
+              if (data.current_page && data.last_page) {
+                hasMoreData = data.current_page < data.last_page;
+              } else {
+                hasMoreData = true;
+              }
+              
+              currentPage++;
+            } else {
+              hasMoreData = false;
+            }
+          } else if (Array.isArray(data)) {
+            allTechnicians = data;
+            hasMoreData = false;
+          } else {
+            hasMoreData = false;
+          }
+        } catch (pageError) {
+          console.error('Error fetching page:', pageError);
+          hasMoreData = false;
+        }
+        
+        if (currentPage > 20) break;
+      }
+      
+      const result = { data: allTechnicians };
+      techniciansCache = result;
       cacheTimestamp = now;
       
-      return data;
+      return result;
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách kỹ thuật viên:', error);
+      console.error('Error loading all technicians:', error);
       
-      // If rate limited and we have cache, return cache
       if (error.message && error.message.includes('429') && techniciansCache) {
-        console.log('⚠️ Rate limited, using cached data');
         return techniciansCache;
       }
       
@@ -45,10 +116,9 @@ export const SupportService = {
   async getListOrderRating(techId) {
     try {
       const response = await api.get(`/order/get-list-order-rating-by-staff?user_id=${techId}`);
-      console.log('List of order ratings:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách đơn hàng đánh giá:', error);
+      console.error('Error loading ratings:', error);
       throw error;
     }
   },

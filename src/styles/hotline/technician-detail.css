@@ -420,6 +420,42 @@
   gap: 0.75rem;
 }
 
+.area-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.address-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+  border-radius: var(--radius-lg);
+  border-left: 4px solid #f97316;
+  transition: all 0.3s ease;
+}
+
+.address-item:hover {
+  background: #fff7ed;
+  transform: translateX(5px);
+}
+
+.address-item i {
+  color: #f97316;
+  font-size: 1.1rem;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.address-item span {
+  color: #1e293b;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
 .service-tag,
 .area-tag {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);

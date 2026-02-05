@@ -105,10 +105,8 @@ function loadTechnicianDetail(techId, mainEl) {
     .getUserFromServer(techId)
     .then((data) => {
       const tech = data.data || data || [];
-      console.log("Technician data:", tech);
 
       if (tech) {
-        // Initialize FavoriteStore nếu user đã đăng nhập
         if (authService.isAuthenticated()) {
           const user = authService.getUser();
           favoriteStore.init(user.id);
@@ -214,13 +212,14 @@ function renderTechnicianDetail(tech, mainEl) {
     <!-- Area -->
     <div class="info-section">
       <h3 class="section-title">Khu vực</h3>
-      <div class="area-list">
+      <div class="area-info">
         ${
-          tech.location && tech.location.length > 0
-            ? tech.location
-                .map((a) => `<span class="area-tag">${a}</span>`)
-                .join("")
-            : '<span class="empty-text">Chưa cập nhật</span>'
+          tech.address
+            ? `<div class="address-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${tech.address}</span>
+              </div>`
+            : '<span class="empty-text">Chưa cập nhật địa chỉ</span>'
         }
       </div>
     </div>
@@ -327,19 +326,15 @@ function renderStars(rating) {
 }
 
 function renderReviewItem(review) {
-  // Handle both API format and local format
   const avatarUrl = review.user?.avartar
     ? getImageUrl(review.user.avartar)
     : null;
 
   const userName = review.user?.username || review.user?.name || "Người dùng";
-  const rating = parseInt(review.rate) || 0; // Chuyển sang số nguyên
+  const rating = parseInt(review.rate) || 0;
   const comment = review.comment || review.content || review.note || "";
 
-  // Escape HTML để tránh XSS
   const safeComment = comment.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  console.log(`Rendering review: ${userName}, rate=${review.rate}, parsed=${rating}`);
 
   return `
     <div class="review-item">
@@ -369,7 +364,6 @@ function loadReviews(techId, mainEl) {
 
   SupportService.getListOrderRating(techId)
     .then((data) => {
-      // Xử lý dữ liệu trả về từ API
       let reviews = [];
       if (data && data.data && Array.isArray(data.data)) {
         reviews = data.data;
@@ -377,25 +371,10 @@ function loadReviews(techId, mainEl) {
         reviews = data;
       }
 
-      console.log("Reviews data:", reviews);
-      
-      // Log chi tiết từng review để debug
-      reviews.forEach((r, index) => {
-        console.log(`Review ${index}:`, {
-          order_id: r.order_id || r.id,
-          user_id: r.user?.id,
-          username: r.user?.username,
-          rate: r.rate,
-          comment: r.comment || r.content || r.note
-        });
-      });
-
-      // Lọc các đánh giá hợp lệ (có rate và comment)
       const validReviews = reviews.filter(r => 
         r && r.rate && r.user && (r.comment || r.content || r.note)
       );
 
-      // Loại bỏ các đánh giá trùng lặp dựa trên id hoặc order_id
       const uniqueReviews = validReviews.reduce((acc, current) => {
         const currentId = current.id || current.order_id;
         const isDuplicate = acc.find(item => {
@@ -405,20 +384,14 @@ function loadReviews(techId, mainEl) {
         
         if (!isDuplicate) {
           acc.push(current);
-        } else {
-          console.log("Duplicate found:", current);
         }
         return acc;
       }, []);
 
-      console.log("Unique reviews:", uniqueReviews);
-
-      // Update rating display
       if (uniqueReviews.length > 0) {
         const avgRating =
           uniqueReviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
           uniqueReviews.length;
-        console.log("Average rating:", avgRating);
         techRating.innerHTML = `
           ${renderStars(avgRating)}
           <span class="rating-count">(${uniqueReviews.length} đánh giá)</span>
