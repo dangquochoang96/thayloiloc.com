@@ -1,0 +1,242 @@
+.rent-water-page {
+  background-color: #f9fafb;
+}
+
+.rent-hero {
+  background: linear-gradient(135deg, var(--primary-color, #0f4c81), #1a365d);
+  color: white;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.rent-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rent-hero .subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.rent-content {
+  max-width: 1200px;
+  margin: -3rem auto 3rem;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.rent-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.rent-section h2 {
+  color: var(--primary-color, #0f4c81);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #ebf2fa;
+  padding-bottom: 0.75rem;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+}
+
+.benefits-list li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+.benefits-list li::before {
+  content: '\f058';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-size: 1.2rem;
+}
+
+.highlight-box {
+  background-color: #ebf2fa;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  border-left: 5px solid var(--primary-color, #0f4c81);
+  margin-top: 2rem;
+}
+
+.highlight-box h3 {
+  color: var(--primary-color, #0f4c81);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.4rem;
+}
+
+.product-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background-color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.product-card h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px dashed #e5e7eb;
+  padding-bottom: 0.75rem;
+}
+
+.product-features {
+  list-style: none;
+  padding: 0;
+}
+
+.product-features li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.product-features li::before {
+  content: '\f111';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  color: var(--primary-color, #0f4c81);
+  font-size: 0.4rem;
+}
+
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.partner-card {
+  background: #f8fafc;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px dashed #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.partner-card:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.partner-card h4 {
+  color: #0f172a;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.partner-card .partner-meta {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.contact-cta {
+  text-align: center;
+  margin-top: 3rem;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #ffbf00, #ff9900);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(255, 191, 0, 0.4);
+}
+
+.contact-cta h3 {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.contact-cta .btn {
+  background-color: white;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 1rem 3rem;
+  font-size: 1.2rem;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contact-cta .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .rent-content {
+    margin-top: 1rem;
+  }
+
+  .rent-section {
+    padding: 1.5rem;
+  }
+
+  .contact-cta h3 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Image Placeholders */
+.img-placeholder {
+  width: 100%;
+  min-height: 300px;
+  background-color: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.img-placeholder:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.img-placeholder::after {
+  content: attr(data-alt);
+  color: #64748b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+}

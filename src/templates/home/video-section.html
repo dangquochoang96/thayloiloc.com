@@ -1,0 +1,25 @@
+<section id="video-home" class="video-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Video Tin Tức</h2>
+            <a href="#/video" class="view-all-btn" onclick="event.preventDefault(); window.location.hash='#/video'">
+                Xem tất cả <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div id="videoHomeLoading" style="text-align:center; padding:40px;">
+            <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:#f97316;"></i>
+            <p style="margin-top:10px; color:#666;">Đang tải video...</p>
+        </div>
+        
+        <div class="video-playlist-container" id="videoHomePlaylistContainer" style="display:none;">
+            <div class="video-player-wrapper">
+                <div id="youtubePlayer"></div>
+            </div>
+            <div class="video-playlist-sidebar">
+                <div class="video-playlist-list" id="videoHomePlaylist">
+                    <!-- Playlist items will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
