@@ -3,6 +3,7 @@ import { Footer } from "../components/Footer.js";
 import { FloatingButton } from "../components/FloatingButton.js";
 import { newsService } from "../services/news.service.js";
 import { productService } from "../services/product.service.js";
+import { videoService } from "../services/video.service.js";
 import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
 import { navigateTo } from "../utils/navigation.js";
 
@@ -12,6 +13,7 @@ import servicesTemplate from "../templates/home/services-section.html?raw";
 import productsTemplate from "../templates/home/products-section.html?raw";
 import appDownloadTemplate from "../templates/home/app-download-section.html?raw";
 import newsTemplate from "../templates/home/news-section.html?raw";
+import videoTemplate from "../templates/home/video-section.html?raw";
 import contactTemplate from "../templates/home/contact-section.html?raw";
 
 // Import CSS styles
@@ -20,6 +22,7 @@ import "../styles/home/services-section.css";
 import "../styles/home/products-section.css";
 import "../styles/home/app-download-section.css";
 import "../styles/home/news-section.css";
+import "../styles/home/video-section.css";
 import "../styles/home/contact-section.css";
 
 export function HomePage() {
@@ -39,6 +42,14 @@ export function HomePage() {
   const servicesSection = document.createElement("div");
   servicesSection.innerHTML = servicesTemplate;
   main.appendChild(servicesSection.firstElementChild);
+
+  // Video Section
+  const videoSection = document.createElement("div");
+  videoSection.innerHTML = videoTemplate;
+  main.appendChild(videoSection.firstElementChild);
+
+  // Load videos from API
+  loadVideoHome();
 
   // Products Section
   const productsSection = document.createElement("div");
@@ -686,3 +697,143 @@ window.goToNewsSlide = (slideIndex) => {
   newsCurrentSlide = slideIndex;
   updateNewsSliderPosition();
 };
+
+// Video Home Playlist state
+let videoHomePlaylist = [];
+let videoHomeCurrentIndex = 0;
+let youtubePlayerInstance = null;
+let isYoutubeApiLoaded = false;
+
+function loadYoutubeAPI() {
+  if (window.YT) {
+    isYoutubeApiLoaded = true;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    window.onYouTubeIframeAPIReady = () => {
+      isYoutubeApiLoaded = true;
+      resolve();
+    };
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  });
+}
+
+function loadVideoHome() {
+  videoService.getAllVideos()
+    .then((result) => {
+      const videoHomeLoading = document.getElementById("videoHomeLoading");
+      const videoPlaylistContainer = document.getElementById("videoHomePlaylistContainer");
+
+      if (videoHomeLoading) videoHomeLoading.style.display = "none";
+      if (videoPlaylistContainer) videoPlaylistContainer.style.display = "flex";
+
+      if (result && result.data && Array.isArray(result.data)) {
+        videoHomePlaylist = result.data.slice(0, 9);
+      } else if (Array.isArray(result)) {
+        videoHomePlaylist = result.slice(0, 9);
+      }
+
+      if (videoHomePlaylist.length > 0) {
+        renderVideoPlaylist();
+        loadYoutubeAPI().then(() => {
+          initYoutubePlayer();
+        });
+      } else {
+        if (videoPlaylistContainer) {
+          videoPlaylistContainer.innerHTML = '<p style="text-align:center; padding: 40px; width: 100%;">Chưa có video</p>';
+        }
+      }
+    })
+    .catch((err) => {
+      console.log("Error loading videos:", err);
+      const videoHomeLoading = document.getElementById("videoHomeLoading");
+      if (videoHomeLoading) {
+        videoHomeLoading.innerHTML = '<p style="color:#666;">Không thể tải video</p>';
+      }
+    });
+}
+
+function renderVideoPlaylist() {
+  const listContainer = document.getElementById("videoHomePlaylist");
+  if (!listContainer) return;
+
+  listContainer.innerHTML = videoHomePlaylist.map((item, index) => {
+    const imageUrl = item.link ? videoService.getYoutubeThumbnail(item.link) : "/images/logo.png";
+    const title = item.name || item.title || "Video hướng dẫn";
+    const date = item.created_at || new Date().toISOString();
+    
+    return `
+      <div class="video-playlist-item ${index === videoHomeCurrentIndex ? 'active' : ''}" onclick="window.playVideoFromList(${index})">
+        <div class="video-playlist-thumb">
+          <img src="${imageUrl}" alt="${title}" onerror="this.src='/images/logo.png'">
+        </div>
+        <div class="video-playlist-info">
+          <h3 class="video-playlist-title">${title}</h3>
+          <span class="video-playlist-date"><i class="fas fa-calendar"></i> ${formatDate(date)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function initYoutubePlayer() {
+  const currentVideo = videoHomePlaylist[videoHomeCurrentIndex];
+  if (!currentVideo) return;
+  
+  const videoId = videoService.extractVideoId(currentVideo.link);
+  if (!videoId) return;
+
+  youtubePlayerInstance = new window.YT.Player('youtubePlayer', {
+    videoId: videoId,
+    playerVars: {
+      'autoplay': 1,
+      'mute': 1,
+      'rel': 0
+    },
+    events: {
+      'onReady': onPlayerReady,
+      'onStateChange': onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  event.target.playVideo();
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === window.YT.PlayerState.ENDED) {
+    playNextVideoHome();
+  }
+}
+
+function playNextVideoHome() {
+  videoHomeCurrentIndex++;
+  if (videoHomeCurrentIndex >= videoHomePlaylist.length) {
+    videoHomeCurrentIndex = 0;
+  }
+  
+  updatePlayerAndList();
+}
+
+window.playVideoFromList = (index) => {
+  videoHomeCurrentIndex = index;
+  updatePlayerAndList();
+};
+
+function updatePlayerAndList() {
+  const currentVideo = videoHomePlaylist[videoHomeCurrentIndex];
+  if (!currentVideo) return;
+
+  const videoId = videoService.extractVideoId(currentVideo.link);
+  
+  if (youtubePlayerInstance && videoId) {
+    youtubePlayerInstance.loadVideoById(videoId);
+  }
+  
+  renderVideoPlaylist();
+}
+

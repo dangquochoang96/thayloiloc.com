@@ -18,5 +18,20 @@ export const servicesService = {
             console.error('Error booking service:', error);
             throw error;
         }
+    },
+
+    async bookingRentService(bookingData) {
+        try {
+            const response = await api.post('/rent-tasks/them', bookingData);
+            
+            if (response.code === 1) {
+                return response;
+            } else {
+                throw new Error(response.message || 'Booking rent failed');
+            }
+        } catch (error) {
+            console.error('Error booking rent service:', error);
+            throw error;
+        }
     }
 };

@@ -58,9 +58,12 @@ export async function geocodeAddress(address) {
     throw new Error('Address is required');
   }
 
+  // Clean address: remove ||| separators
+  const cleanAddress = address.replace(/\|+/g, ' ').trim();
+
   // Check cache first
   const cache = getCache();
-  const cacheKey = address.toLowerCase().trim();
+  const cacheKey = cleanAddress.toLowerCase().trim();
   
   if (cache[cacheKey]) {
     return {
@@ -70,8 +73,9 @@ export async function geocodeAddress(address) {
   }
 
   try {
-    const searchQuery = `${address}, Vietnam`;
-    const url = `${NOMINATIM_BASE_URL}/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`;
+    // Try with Vietnam suffix first
+    const searchQuery = `${cleanAddress}, Vietnam`;
+    const url = `${NOMINATIM_BASE_URL}/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=vn`;
     
     const response = await fetch(url, {
       headers: {

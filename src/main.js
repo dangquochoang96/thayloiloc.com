@@ -22,6 +22,9 @@ import { VideoPage } from "./pages/VideoPage.js";
 import { HotlinePage } from "./pages/HotlinePage.js";
 import { TechnicianDetailPage } from "./pages/TechnicianDetailPage.js";
 import { ContactPage } from "./pages/ContactPage.js";
+import { RentWaterPurifierPage } from "./pages/RentWaterPurifierPage.js";
+import { BookingRentPage } from "./pages/BookingRentPage.js";
+import { LapdatPage } from "./pages/Lapdat.js";
 import { FloatingButton } from "./components/FloatingButton.js";
 
 const routes = {
@@ -76,6 +79,9 @@ const routes = {
   "/filter-replacement": {
     render: FilterReplacementPage,
   },
+  "/lapdat": {
+    render: LapdatPage,
+  },
   "/hotline": {
     render: HotlinePage,
   },
@@ -84,6 +90,12 @@ const routes = {
   },
   "/contact": {
     render: ContactPage,
+  },
+  "/rent-water-purifier": {
+    render: RentWaterPurifierPage,
+  },
+  "/bookingrent": {
+    render: BookingRentPage,
   },
   "*": {
     render: () => {

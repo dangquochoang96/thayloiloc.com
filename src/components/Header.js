@@ -41,41 +41,54 @@ export function Header() {
   // Debug user data structure
   authService.debugUserData();
 
-  // Base navigation links - always show these
-  const baseLinks = [
-    { text: "Trang Chủ", href: "#/" },
-    { text: "Dịch Vụ", href: "#/services" },
-    { text: "Liên Hệ", href: "#/contact" },
-  ];
-
-  // Add history link for logged in users
-  if (isLoggedIn && user) {
-    baseLinks.push({ text: "Lịch Sử", href: "#/booking-history" });
-    baseLinks.push({ text: "Tìm Thợ", href: "#/hotline" });
-  }
-
-  baseLinks.forEach((link) => {
+  // Helper to create nav links
+  const createNavLink = (text, href) => {
     const a = document.createElement("a");
-    a.href = link.href;
+    a.href = href;
     a.className = "nav-link";
-    a.textContent = link.text;
-
-    // Add active class for current page
+    a.textContent = text;
     if (
-      window.location.hash === link.href ||
-      (window.location.hash === "" && link.href === "#/")
+      window.location.hash === href ||
+      (window.location.hash === "" && href === "#/")
     ) {
       a.classList.add("active");
     }
+    return a;
+  };
 
-    nav.appendChild(a);
-  });
+  nav.appendChild(createNavLink("Trang Chủ", "#/"));
+
+  // Dịch Vụ Dropdown
+  const servicesDropdown = document.createElement("div");
+  servicesDropdown.className = "nav-dropdown";
+  const isOnServicesPage = ["#/services", "#/rent-water-purifier"].includes(window.location.hash);
+
+  servicesDropdown.innerHTML = `
+    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnServicesPage ? "active" : ""}">
+      Dịch Vụ
+      <i class="fas fa-chevron-down dropdown-arrow"></i>
+    </a>
+    <div class="nav-dropdown-menu">
+      <a href="#/services" class="${window.location.hash === "#/services" ? "active" : ""}"><i class="fas fa-wrench"></i> Dịch Vụ Sửa Chữa</a>
+      <a href="#/rent-water-purifier" class="${window.location.hash === "#/rent-water-purifier" ? "active" : ""}"><i class="fas fa-tint"></i> Thuê máy lọc nước</a>
+    </div>
+  `;
+  nav.appendChild(servicesDropdown);
+
+  nav.appendChild(createNavLink("Liên Hệ", "#/contact"));
+  nav.appendChild(createNavLink("Tìm Thợ", "#/hotline"));
+
+  // Add history link for logged in users
+  if (isLoggedIn && user) {
+    nav.appendChild(createNavLink("Lịch Sử", "#/booking-history"));
+  }
 
   // Add "Tin Tức" dropdown with submenus
   const newsDropdown = document.createElement("div");
   newsDropdown.className = "nav-dropdown";
   // Check if we're on any of the process pages, news page, or video page to highlight the parent menu
   const isOnProcessPage = [
+    "#/lapdat",
     "#/check-process",
     "#/filter-replacement",
     "#/maintenance-process",
@@ -98,6 +111,7 @@ export function Header() {
           <i class="fas fa-chevron-right submenu-arrow"></i>
         </a>
         <div class="nav-submenu" style="display: none; margin-left: 25px;">
+          <a href="#/lapdat" style="display: block; padding-left: 10px;"><i class="fas fa-tools"></i> Quy trình lắp máy lọc nước</a>
           <a href="#/check-process" style="display: block; padding-left: 10px;"><i class="fas fa-search-plus"></i> Quy trình kiểm tra máy lọc nước</a>
           <a href="#/filter-replacement" style="display: block; padding-left: 10px;"><i class="fas fa-sync-alt"></i> Quy trình thay lõi lọc</a>
           <a href="#/maintenance-process" style="display: block; padding-left: 10px;"><i class="fas fa-broom"></i> Quy trình vệ sinh bảo dưỡng</a>
@@ -112,11 +126,18 @@ export function Header() {
   const newsDropdownToggle = newsDropdown.querySelector(".nav-dropdown-toggle");
   newsDropdownToggle.addEventListener("click", (e) => {
     e.preventDefault();
-    // Close contact dropdown if open
-    // if (contactDropdown) {
-    //   contactDropdown.classList.remove("active");
-    // }
+    servicesDropdown.classList.remove("active");
     newsDropdown.classList.toggle("active");
+  });
+
+  // Dropdown toggle functionality for Dịch Vụ
+  const servicesDropdownToggle = servicesDropdown.querySelector(".nav-dropdown-toggle");
+  servicesDropdownToggle.addEventListener("click", (e) => {
+    e.preventDefault();
+    newsDropdown.classList.remove("active");
+    const submenu = newsDropdown.querySelector(".nav-submenu");
+    if (submenu) submenu.style.display = "none";
+    servicesDropdown.classList.toggle("active");
   });
 
   // Submenu toggle functionality for Quy Trình
@@ -158,10 +179,9 @@ export function Header() {
         submenu.style.display = "none";
       }
     }
-    // Only check contact dropdown if it exists
-    // if (contactDropdown && !contactDropdown.contains(e.target)) {
-    //   contactDropdown.classList.remove("active");
-    // }
+    if (!servicesDropdown.contains(e.target)) {
+      servicesDropdown.classList.remove("active");
+    }
   });
 
   // Always add nav to center

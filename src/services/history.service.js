@@ -22,6 +22,19 @@ export const historyService = {
     }
   },
 
+  // Get rent history for a specific customer
+  async getRentHistory(userId) {
+    console.log(
+      "historyService: Trying endpoint /rent-tasks/customer/" + userId,
+    );
+    try {
+      return await api.get(`/rent-tasks/customer/${userId}`);
+    } catch (error) {
+      console.warn("historyService: getRentHistory failed:", error.message);
+      return [];
+    }
+  },
+
   // Get list order by customer
   async getListOrderByCustomer(userId) {
     return api.get(`/order/list-order-by-customer/${userId}`);

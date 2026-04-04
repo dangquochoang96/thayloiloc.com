@@ -5,6 +5,12 @@ let techniciansCache = null;
 let cacheTimestamp = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Cache for ratings data
+let ratingsCache = {};
+let ratingsCacheTimestamp = {};
+const RATINGS_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
+
 export const SupportService = {
   /**
    * Lấy danh sách kỹ thuật viên hỗ trợ với phân trang và tìm kiếm
@@ -29,7 +35,7 @@ export const SupportService = {
         queryParams += `&q=${encodeURIComponent(searchQuery)}`;
       }
       
-      const response = await api.get(`/user/support?${queryParams}`);
+      const response = await api.get(`/user/listAllKTV?${queryParams}`);
       const data = response.data || response;
       
       // Return data with pagination info
@@ -55,16 +61,19 @@ export const SupportService = {
     try {
       const now = Date.now();
       if (!forceRefresh && techniciansCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+        console.log('Using cached technicians data');
         return techniciansCache;
       }
       
+      console.log('Fetching all technicians from API...');
       let allTechnicians = [];
       let currentPage = 1;
       let hasMoreData = true;
       
       while (hasMoreData) {
         try {
-          const response = await api.get(`/user/support?page=${currentPage}`);
+          // Use /user/listAllKTV endpoint for consistency
+          const response = await api.get(`/user/listAllKTV?page=${currentPage}`);
           const data = response.data || response;
           
           if (data.data && Array.isArray(data.data)) {
@@ -72,11 +81,13 @@ export const SupportService = {
             
             if (pageData.length > 0) {
               allTechnicians = allTechnicians.concat(pageData);
+              console.log(`Loaded page ${currentPage}: ${pageData.length} technicians (total: ${allTechnicians.length})`);
               
               if (data.current_page && data.last_page) {
                 hasMoreData = data.current_page < data.last_page;
+                console.log(`Page ${data.current_page}/${data.last_page}`);
               } else {
-                hasMoreData = true;
+                hasMoreData = pageData.length > 0;
               }
               
               currentPage++;
@@ -94,8 +105,14 @@ export const SupportService = {
           hasMoreData = false;
         }
         
-        if (currentPage > 20) break;
+        // Safety limit
+        if (currentPage > 50) {
+          console.warn('Reached page limit (50), stopping...');
+          break;
+        }
       }
+      
+      console.log(`Total technicians loaded: ${allTechnicians.length}`);
       
       const result = { data: allTechnicians };
       techniciansCache = result;
@@ -105,7 +122,9 @@ export const SupportService = {
     } catch (error) {
       console.error('Error loading all technicians:', error);
       
+      // Return cached data if available on rate limit
       if (error.message && error.message.includes('429') && techniciansCache) {
+        console.log('Rate limited, using cached data');
         return techniciansCache;
       }
       
@@ -113,13 +132,46 @@ export const SupportService = {
     }
   },
 
-  async getListOrderRating(techId) {
+  async getListOrderRating(techId, useCache = true) {
     try {
+      // Check cache first
+      const now = Date.now();
+      if (useCache && ratingsCache[techId] && ratingsCacheTimestamp[techId]) {
+        if (now - ratingsCacheTimestamp[techId] < RATINGS_CACHE_DURATION) {
+          console.log(`Using cached rating for tech ${techId}`);
+          return ratingsCache[techId];
+        }
+      }
+
       const response = await api.get(`/order/get-list-order-rating-by-staff?user_id=${techId}`);
-      return response.data;
+      const data = response.data;
+      
+      // Cache the result
+      ratingsCache[techId] = data;
+      ratingsCacheTimestamp[techId] = now;
+      
+      return data;
     } catch (error) {
       console.error('Error loading ratings:', error);
+      
+      // Return cached data if available on error
+      if (ratingsCache[techId]) {
+        console.log(`Using stale cache for tech ${techId} due to error`);
+        return ratingsCache[techId];
+      }
+      
       throw error;
+    }
+  },
+
+  // Clear ratings cache
+  clearRatingsCache(techId = null) {
+    if (techId) {
+      delete ratingsCache[techId];
+      delete ratingsCacheTimestamp[techId];
+    } else {
+      ratingsCache = {};
+      ratingsCacheTimestamp = {};
     }
   },
 

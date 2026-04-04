@@ -43,6 +43,14 @@
   background: linear-gradient(135deg, #1da1f2, #0d8bd9);
 }
 
+.float-btn.zalo .zalo-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin: 0;
+  border-radius: 4px;
+}
+
 /* Hover effects for all buttons */
 .float-btn:hover {
   transform: translateY(-3px);
@@ -96,5 +104,10 @@
 
   .float-btn i {
     font-size: 1.2rem;
+  }
+
+  .float-btn.zalo .zalo-icon {
+    width: 24px;
+    height: 24px;
   }
 }

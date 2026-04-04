@@ -9,7 +9,7 @@ export function FloatingButton() {
                 <span>Liên hệ</span>
             </a>
             <a href="https://zalo.me/2053854707066812736" class="float-btn zalo" title="Chat Zalo OA">
-                <i class="fa-solid fa-message"></i>
+                <img src="/images/Icon_of_Zalopng.png" alt="Zalo" class="zalo-icon" />
                 <span>Zalo OA</span>
             </a>
             <a href="#/booking" class="float-btn booking" title="Đặt lịch ngay">

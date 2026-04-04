@@ -76,7 +76,27 @@ export function BookingHistoryPage() {
         tasks = [];
       }
 
-      console.log("BookingHistoryPage: Processed tasks:", tasks);
+      // Get rent history as well
+      let rentTasks = [];
+      try {
+        const rentResult = await historyService.getRentHistory(currentUser.id);
+        if (rentResult && rentResult.data && Array.isArray(rentResult.data)) {
+          rentTasks = rentResult.data.map(t => ({ ...t, isRentTask: true }));
+        } else if (rentResult && Array.isArray(rentResult)) {
+          rentTasks = rentResult.map(t => ({ ...t, isRentTask: true }));
+        }
+      } catch (rentErr) {
+        console.warn('BookingHistoryPage: Error fetching rent history:', rentErr);
+      }
+      
+      // Merge tasks and sort by latest
+      tasks = [...tasks, ...rentTasks].sort((a, b) => {
+        const tA = new Date(a.time_star || a.created_at || 0).getTime();
+        const tB = new Date(b.time_star || b.created_at || 0).getTime();
+        return tB - tA;
+      });
+
+      console.log("BookingHistoryPage: Processed merged tasks:", tasks);
       allHistory = tasks;
       filteredHistory = tasks;
       loading = false;
@@ -147,18 +167,19 @@ export function BookingHistoryPage() {
     return map[status] || "Chờ xử lý";
   };
 
-  const handleCardClick = (id) => {
-    showBookingDetailModal(id);
+  const handleCardClick = (id, isRentTask = false) => {
+    showBookingDetailModal(id, isRentTask);
   };
+  window.handleCardClick = handleCardClick;
 
-  const showBookingDetailModal = async (bookingId) => {
+  const showBookingDetailModal = async (bookingId, isRentTask = false) => {
     // Create modal overlay
     const modalOverlay = document.createElement("div");
     modalOverlay.className = "modal-overlay";
     modalOverlay.innerHTML = `
       <div class="modal-content booking-detail-modal">
         <div class="modal-header">
-          <h2><i class="fas fa-calendar-check"></i> Chi tiết đặt lịch #${bookingId}</h2>
+          <h2><i class="fas fa-calendar-check"></i> Chi tiết đặt lịch ${isRentTask ? 'thuê máy ' : ''}#${bookingId}</h2>
           <button class="modal-close" onclick="closeBookingModal()">
             <i class="fas fa-times"></i>
           </button>
@@ -184,7 +205,12 @@ export function BookingHistoryPage() {
 
     // Load booking detail data
     try {
-      const booking = await bookingService.getBookingDetail(bookingId);
+      let booking;
+      if (isRentTask) {
+        booking = await bookingService.getRentBookingDetail(bookingId);
+      } else {
+        booking = await bookingService.getBookingDetail(bookingId);
+      }
 
       // Prioritize product address
       const product = booking.product_info || {};
@@ -337,7 +363,7 @@ export function BookingHistoryPage() {
           "Chưa cập nhật";
 
         return `
-        <div class="history-card" onclick="handleCardClick(${item.id})" style="cursor: pointer;">
+        <div class="history-card" onclick="handleCardClick(${item.id}, ${item.isRentTask ? 'true' : 'false'})" style="cursor: pointer;">
           <div class="history-header">
             <span class="history-date">
               <i class="fas fa-calendar"></i> ${displayDate}
@@ -508,6 +534,9 @@ export function BookingHistoryPage() {
         const filterLevel = product.filter_core_level || "?";
         const historyCount = product.historyCount || 0;
 
+        const orderTypeLabel = product.order_type_label || product.product?.order_type_label || "";
+        const isRental = orderTypeLabel === "Thuê";
+
         let productImage = "/images/default-service.svg";
         if (
           product.product?.product_images &&
@@ -529,7 +558,7 @@ export function BookingHistoryPage() {
             <div class="product-card-left">
               <div class="product-header">
                 <div class="product-info">
-                  <h3><i class="fas fa-tint"></i> ${productName}</h3>
+                  <h3><i class="fas fa-tint"></i> ${productName} ${isRental ? '<span class="rental-tag">Máy thuê</span>' : ''}</h3>
                   <p class="product-address"><i class="fas fa-map-marker-alt"></i> ${address}</p>
                   <p class="product-date"><i class="fas fa-calendar"></i> Ngày mua: ${formatDate(purchaseDate)}</p>
                   <p class="product-date"><i class="fas fa-phone"></i> SĐT: ${userPhone}</p>

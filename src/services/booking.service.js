@@ -39,6 +39,27 @@ export const bookingService = {
     }
   },
 
+  async getRentBookingDetail(bookingId) {
+    try {
+      const response = await api.get(`/rent-tasks/${bookingId}`);
+      if (response && response.code === 1 && response.data) {
+        return response.data;
+      } else if (response && !response.code) {
+        return response;
+      } else {
+        throw new Error(response?.message || "Không thể lấy thông tin đặt lịch thuê máy");
+      }
+    } catch (error) {
+      if (error.message.includes('fetch')) {
+        throw new Error("Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.");
+      } else if (error.message.includes('404')) {
+        throw new Error(`Không tìm thấy thông tin đặt lịch thuê máy #${bookingId}`);
+      } else {
+        throw new Error(error.message || "Có lỗi xảy ra khi tải thông tin đặt lịch thuê máy");
+      }
+    }
+  },
+
   // Lấy danh sách booking của user
   async getUserBookings() {
     try {

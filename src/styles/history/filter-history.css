@@ -381,3 +381,16 @@
 .view-detail i {
   margin-right: 5px;
 }
+
+.rental-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background-color: #fff3e0;
+  color: #f97316;
+  border: 1px solid #f97316;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 10px;
+  vertical-align: text-bottom;
+}

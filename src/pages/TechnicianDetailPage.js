@@ -217,7 +217,7 @@ function renderTechnicianDetail(tech, mainEl) {
           tech.address
             ? `<div class="address-item">
                 <i class="fas fa-map-marker-alt"></i>
-                <span>${tech.address}</span>
+                <span>${tech.address.replace(/\|+/g, ' ').trim()}</span>
               </div>`
             : '<span class="empty-text">Chưa cập nhật địa chỉ</span>'
         }

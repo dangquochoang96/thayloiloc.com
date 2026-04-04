@@ -171,46 +171,56 @@ export function HotlinePage() {
   return container;
 }
 
-// Load rating data cho tất cả kỹ thuật viên (trả về data thay vì update UI)
-async function loadAllTechniciansRatingData(technicians) {
+// Load rating data cho tất cả kỹ thuật viên với progressive rendering
+async function loadAllTechniciansRatingData(technicians, onProgress = null) {
   try {
-    // Gọi tất cả API cùng lúc
-    const ratingPromises = technicians.map(tech => 
-      SupportService.getListOrderRating(tech.id)
-        .then(data => ({
-          techId: tech.id,
-          reviews: data.data || data || []
-        }))
-        .catch(error => {
-          console.error(`Error loading rating for tech ${tech.id}:`, error);
-          return {
-            techId: tech.id,
-            reviews: []
-          };
-        })
-    );
-    
-    // Đợi tất cả API hoàn thành
-    const results = await Promise.all(ratingPromises);
-    
-    // Tạo object chứa rating info cho từng thợ
+    // Smaller batch size for faster perceived performance - load 3 at a time
+    const batchSize = 3;
     const ratingsData = {};
-    results.forEach(result => {
-      if (result.reviews.length > 0) {
-        const avgRating = result.reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / result.reviews.length;
-        const roundedRating = Math.round(avgRating * 10) / 10;
-        
-        ratingsData[result.techId] = {
-          avgRating: roundedRating,
-          count: result.reviews.length
-        };
-      } else {
-        ratingsData[result.techId] = {
-          avgRating: 0,
-          count: 0
-        };
+    
+    for (let i = 0; i < technicians.length; i += batchSize) {
+      const batch = technicians.slice(i, i + batchSize);
+      const batchPromises = batch.map(tech => 
+        SupportService.getListOrderRating(tech.id, true) // Use cache
+          .then(data => ({
+            techId: tech.id,
+            reviews: data.data || data || []
+          }))
+          .catch(error => {
+            console.error(`Error loading rating for tech ${tech.id}:`, error);
+            return {
+              techId: tech.id,
+              reviews: []
+            };
+          })
+      );
+      
+      const results = await Promise.all(batchPromises);
+      
+      results.forEach(result => {
+        if (result.reviews.length > 0) {
+          const avgRating = result.reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / result.reviews.length;
+          const roundedRating = Math.round(avgRating * 10) / 10;
+          
+          ratingsData[result.techId] = {
+            avgRating: roundedRating,
+            count: result.reviews.length
+          };
+        } else {
+          ratingsData[result.techId] = {
+            avgRating: 0,
+            count: 0
+          };
+        }
+      });
+      
+      // Call progress callback after each batch to update UI immediately
+      if (onProgress && typeof onProgress === 'function') {
+        onProgress(ratingsData, i + batch.length, technicians.length);
       }
-    });
+      
+      // No delay between batches - let cache handle rate limiting
+    }
     
     return ratingsData;
   } catch (error) {
@@ -317,15 +327,81 @@ function initializeTechnicians() {
   let totalPages = 1;
   let totalItems = 0;
   let searchTimeout = null; // Debounce search
+  let currentTechnicians = []; // Lưu danh sách thợ hiện tại để tính khoảng cách
+
+  // Progressive rating loading function - optimized with callback and viewport detection
+  async function loadRatingsProgressively(technicians) {
+    // Prioritize visible technicians first
+    const visibleTechs = [];
+    const hiddenTechs = [];
+    
+    technicians.forEach(tech => {
+      const card = document.querySelector(`.technician-card[data-tech-id="${tech.id}"]`);
+      if (card) {
+        const rect = card.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        if (isVisible) {
+          visibleTechs.push(tech);
+        } else {
+          hiddenTechs.push(tech);
+        }
+      } else {
+        visibleTechs.push(tech); // If card not found, load anyway
+      }
+    });
+    
+    // Load visible technicians first
+    if (visibleTechs.length > 0) {
+      await loadAllTechniciansRatingData(visibleTechs, (newRatings, loaded, total) => {
+        ratingsData = { ...ratingsData, ...newRatings };
+        updateRatingUI(newRatings);
+      });
+    }
+    
+    // Then load hidden technicians
+    if (hiddenTechs.length > 0) {
+      await loadAllTechniciansRatingData(hiddenTechs, (newRatings, loaded, total) => {
+        ratingsData = { ...ratingsData, ...newRatings };
+        updateRatingUI(newRatings);
+      });
+    }
+  }
+  
+  // Helper function to update rating UI
+  function updateRatingUI(newRatings) {
+    Object.keys(newRatings).forEach(techId => {
+      const ratingEl = document.querySelector(`.tech-rating-display[data-tech-id="${techId}"]`);
+      if (ratingEl && ratingsData[techId]) {
+        const ratingInfo = ratingsData[techId];
+        const ratingHTML = ratingInfo.count > 0
+          ? `
+            <div class="tech-rating-stars">
+              ${renderStars(ratingInfo.avgRating)}
+            </div>
+            <span class="tech-rating-text">${ratingInfo.avgRating} (${ratingInfo.count})</span>
+          `
+          : `
+            <div class="tech-rating-stars">
+              ${renderStars(0)}
+            </div>
+            <span class="tech-rating-text">Chưa có đánh giá</span>
+          `;
+        ratingEl.innerHTML = ratingHTML;
+      }
+    });
+  }
 
   // Geocode technicians in background
   async function geocodeTechniciansInBackground(technicians) {
     for (let i = 0; i < technicians.length; i++) {
       const tech = technicians[i];
       
-      if (tech.address && !tech.geocoded) {
+      // Clean address: remove ||| separators and trim
+      const cleanAddress = tech.address ? tech.address.replace(/\|+/g, ' ').trim() : '';
+      
+      if (cleanAddress && !tech.geocoded && !tech.geocodeFailed) {
         try {
-          const coords = await geocodeAddress(tech.address);
+          const coords = await geocodeAddress(cleanAddress);
           
           // Update the technician in allTechnicians array
           const index = allTechnicians.findIndex(t => t.id === tech.id);
@@ -334,7 +410,8 @@ function initializeTechnicians() {
               ...allTechnicians[index],
               latitude: coords.latitude,
               longitude: coords.longitude,
-              geocoded: true
+              geocoded: true,
+              cleanAddress: cleanAddress
             };
             
             // If in nearby mode, update the list
@@ -342,7 +419,30 @@ function initializeTechnicians() {
               updateNearbyTechnicians();
             }
           }
+
+          // Cập nhật khoảng cách cho thợ trong danh sách hiện tại nếu có vị trí người dùng
+          if (userLocation && !nearbyMode) {
+            const currentIndex = currentTechnicians.findIndex(t => t.id === tech.id);
+            if (currentIndex !== -1) {
+              currentTechnicians[currentIndex] = {
+                ...currentTechnicians[currentIndex],
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                geocoded: true,
+                cleanAddress: cleanAddress,
+                distance: calculateDistance(
+                  userLocation.latitude,
+                  userLocation.longitude,
+                  coords.latitude,
+                  coords.longitude
+                )
+              };
+              // Re-render để hiển thị khoảng cách
+              renderTechnicians(currentTechnicians);
+            }
+          }
         } catch (error) {
+          console.warn(`Failed to geocode address for tech ${tech.id} (${tech.username}): ${cleanAddress}`, error.message);
           // Mark as failed to avoid retrying
           const index = allTechnicians.findIndex(t => t.id === tech.id);
           if (index !== -1) {
@@ -354,9 +454,9 @@ function initializeTechnicians() {
           }
         }
         
-        // Shorter wait time: 500ms instead of 1000ms
+        // Shorter wait time: 200ms instead of 500ms
         if (i < technicians.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
     }
@@ -489,6 +589,9 @@ function initializeTechnicians() {
       return;
     }
 
+    // Lưu danh sách thợ hiện tại
+    currentTechnicians = technicians;
+
     // No need to paginate here - API already returns paginated data
     // Find the nearest technician if in nearby mode
     const nearestTech = nearbyMode && technicians.length > 0 ? technicians[0] : null;
@@ -503,18 +606,33 @@ function initializeTechnicians() {
             </div>
             <span class="tech-rating-text">${ratingInfo.avgRating} (${ratingInfo.count})</span>
           `
-          : `
+          : ratingsData[tech.id] !== undefined
+          ? `
             <div class="tech-rating-stars">
               ${renderStars(0)}
             </div>
             <span class="tech-rating-text">Chưa có đánh giá</span>
+          `
+          : `
+            <div class="tech-rating-stars">
+              <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <span class="tech-rating-text">Đang tải...</span>
           `;
 
-        // Show distance if in nearby mode
+        // Luôn hiển thị khoảng cách nếu có tọa độ
+        const displayAddress = tech.cleanAddress || (tech.address ? tech.address.replace(/\|+/g, ' ').trim() : '');
         const distanceHTML = tech.distance !== undefined
           ? `<div class="tech-distance">
               <i class="fas fa-route"></i>
               <span>${tech.distance.toFixed(1)} km</span>
+            </div>`
+          : '';
+        
+        const addressHTML = displayAddress
+          ? `<div class="tech-address">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>${displayAddress}</span>
             </div>`
           : '';
 
@@ -546,12 +664,9 @@ function initializeTechnicians() {
           <div class="tech-info">
             <h3>${tech.username}</h3>
             ${distanceHTML}
+            ${addressHTML}
             <div class="tech-rating-display" data-tech-id="${tech.id}">
               ${ratingHTML}
-            </div>
-            <div class="tech-phone-display">
-              <i class="fas fa-phone"></i>
-              <span>${formatPhoneNumber(tech.phone)}</span>
             </div>
           </div>
           <div class="tech-contact">
@@ -599,6 +714,7 @@ function initializeTechnicians() {
 
       // Get initial user location
       userLocation = await getUserLocation();
+      console.log('User location obtained:', userLocation);
 
       locationStatus.className = 'location-status loading';
       locationStatus.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang tải danh sách thợ...`;
@@ -610,8 +726,8 @@ function initializeTechnicians() {
         geocoded: false
       }));
 
-      // Load ratings for all technicians
-      ratingsData = await loadAllTechniciansRatingData(allTechnicians);
+      console.log(`Loaded ${allTechnicians.length} technicians for nearby search`);
+      console.log('Sample technician:', allTechnicians[0]);
 
       locationStatus.className = 'location-status success';
       locationStatus.innerHTML = `<i class="fas fa-check-circle"></i> Đã xác định vị trí của bạn - Đang theo dõi di chuyển...`;
@@ -622,6 +738,21 @@ function initializeTechnicians() {
 
       // Update technicians list based on current location
       updateNearbyTechnicians();
+
+      // Load ratings in background with progressive rendering
+      loadAllTechniciansRatingData(allTechnicians, (newRatings, loaded, total) => {
+        // Update ratings data progressively
+        ratingsData = { ...ratingsData, ...newRatings };
+        // Re-render to show new ratings
+        updateNearbyTechnicians();
+        console.log(`Loaded ratings: ${loaded}/${total}`);
+      }).then(ratings => {
+        ratingsData = { ...ratingsData, ...ratings };
+        updateNearbyTechnicians();
+        console.log('All ratings loaded');
+      }).catch(error => {
+        console.error('Error loading ratings in background:', error);
+      });
 
       // Geocode in background
       geocodeTechniciansInBackground(allTechnicians);
@@ -664,8 +795,12 @@ function initializeTechnicians() {
 
   // Update nearby technicians based on current location
   function updateNearbyTechnicians() {
-    if (!userLocation) return;
+    if (!userLocation) {
+      console.warn('No user location available');
+      return;
+    }
 
+    console.log('Updating nearby technicians...');
     locationStatus.className = 'location-status loading';
     locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tính toán khoảng cách...';
 
@@ -698,13 +833,24 @@ function initializeTechnicians() {
     // Debug: Log all technicians with distance
     console.log('=== NEARBY TECHNICIANS DEBUG ===');
     console.log('User location:', userLocation);
+    console.log('Total technicians:', allTechnicians.length);
     console.log('Technicians with coordinates:', techniciansWithDistance.length);
     console.log('Technicians without coordinates:', withoutCoords.length);
-    techniciansWithDistance.forEach(tech => {
-      console.log(`${tech.username}: ${tech.distance.toFixed(2)} km - ${tech.address || 'No address'}`);
-    });
+    
+    if (techniciansWithDistance.length > 0) {
+      console.log('Top 5 nearest technicians:');
+      techniciansWithDistance.slice(0, 5).forEach((tech, idx) => {
+        const displayAddress = tech.cleanAddress || tech.address?.replace(/\|+/g, ' ').trim() || 'No address';
+        console.log(`${idx + 1}. ${tech.username}: ${tech.distance.toFixed(2)} km - ${displayAddress}`);
+      });
+    }
+    
     if (withoutCoords.length > 0) {
-      console.log('Without coords:', withoutCoords.map(t => `${t.username} (${t.address || 'No address'})`).join(', '));
+      console.log(`\nTechnicians without coords (${withoutCoords.length}):`);
+      withoutCoords.slice(0, 5).forEach(t => {
+        const displayAddress = t.address ? t.address.replace(/\|+/g, ' ').trim() : 'No address';
+        console.log(`- ${t.username} (${displayAddress}) - geocoded: ${t.geocoded}, failed: ${t.geocodeFailed}`);
+      });
     }
     console.log('================================');
 
@@ -740,6 +886,7 @@ function initializeTechnicians() {
       const endIndex = startIndex + itemsPerPage;
       const paginatedNearbyTechs = nearbyTechs.slice(startIndex, endIndex);
       
+      console.log(`Showing ${paginatedNearbyTechs.length} technicians (page ${currentPage}/${totalPages})`);
       renderTechnicians(paginatedNearbyTechs);
     }
   }
@@ -806,17 +953,57 @@ function initializeTechnicians() {
         return;
       }
 
-      // Load ratings for current page
-      loadingEl.innerHTML = `
-        <i class="fas fa-star fa-spin"></i>
-        <p>Đang tải đánh giá...</p>
-      `;
+      // Tính khoảng cách nếu có vị trí người dùng
+      if (userLocation) {
+        technicians = technicians.map(tech => {
+          if (tech.latitude && tech.longitude) {
+            const distance = calculateDistance(
+              userLocation.latitude,
+              userLocation.longitude,
+              tech.latitude,
+              tech.longitude
+            );
+            return { ...tech, distance };
+          }
+          return tech;
+        });
+      }
 
-      ratingsData = await loadAllTechniciansRatingData(technicians);
-
-      // Hide loading and render
+      // Hide loading and render immediately
       loadingEl.style.display = "none";
       renderTechnicians(technicians);
+
+      // Load ratings in background with progressive rendering
+      loadAllTechniciansRatingData(technicians, (newRatings, loaded, total) => {
+        // Update ratings data progressively
+        ratingsData = { ...ratingsData, ...newRatings };
+        // Update only rating displays without full re-render
+        Object.keys(newRatings).forEach(techId => {
+          const ratingEl = document.querySelector(`.tech-rating-display[data-tech-id="${techId}"]`);
+          if (ratingEl) {
+            const ratingInfo = newRatings[techId];
+            ratingEl.innerHTML = ratingInfo.count > 0
+              ? `
+                <div class="tech-rating-stars">
+                  ${renderStars(ratingInfo.avgRating)}
+                </div>
+                <span class="tech-rating-text">${ratingInfo.avgRating} (${ratingInfo.count})</span>
+              `
+              : `
+                <div class="tech-rating-stars">
+                  ${renderStars(0)}
+                </div>
+                <span class="tech-rating-text">Chưa có đánh giá</span>
+              `;
+          }
+        });
+        console.log(`Loaded ratings: ${loaded}/${total}`);
+      }).then(ratings => {
+        ratingsData = { ...ratingsData, ...ratings };
+        console.log('All ratings loaded');
+      }).catch(error => {
+        console.error('Error loading ratings in background:', error);
+      });
 
       // Geocode in background for nearby feature
       geocodeTechniciansInBackground(technicians);
@@ -914,6 +1101,34 @@ function initializeTechnicians() {
 
   // Load all technicians
   loadTechnicians();
+
+  // Tự động lấy vị trí người dùng khi trang load (không bắt buộc)
+  getUserLocation()
+    .then(location => {
+      userLocation = location;
+      console.log('User location obtained automatically:', userLocation);
+      
+      // Nếu đã có danh sách thợ, tính lại khoảng cách
+      if (currentTechnicians.length > 0) {
+        const updatedTechnicians = currentTechnicians.map(tech => {
+          if (tech.latitude && tech.longitude) {
+            const distance = calculateDistance(
+              userLocation.latitude,
+              userLocation.longitude,
+              tech.latitude,
+              tech.longitude
+            );
+            return { ...tech, distance };
+          }
+          return tech;
+        });
+        renderTechnicians(updatedTechnicians);
+      }
+    })
+    .catch(error => {
+      console.log('Could not get user location automatically:', error.message);
+      // Không hiển thị lỗi cho người dùng, chỉ log
+    });
 
   // Cleanup when leaving page
   return () => {
