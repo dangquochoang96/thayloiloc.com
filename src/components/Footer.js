@@ -64,21 +64,21 @@ export function Footer() {
                 <i class="fas fa-envelope"></i>
                 <div>
                   <strong>Email</strong>
-                  <a href="mailto:nanogeyser29@gmail.com">nanogeyser29@gmail.com</a>
+                  <a href="mailto:thayloilocsocbay@gmail.com">thayloilocsocbay@gmail.com</a>
                 </div>
               </li>
               <li>
                 <i class="fas fa-phone-alt"></i>
                 <div>
                   <strong>Điện Thoại</strong>
-                  <a href="tel:0963456911">0963456911</a>
+                  <a href="tel:0335118911">0335118911</a>
                 </div>
               </li>
               <li>
                 <i class="fas fa-map-marker-alt"></i>
                 <div>
                   <strong>Địa chỉ</strong>
-                  <span>CTT1 - 03, Khu Biệt Thự Liền kề Kiến Hưng Luxury, P. Phúc La, Hà Đông, Hà Nội, Việt Nam</span>
+                  <span>179 Đường Phùng Hưng, Phúc La, Hà Đông, Hà Nội</span>
                 </div>
               </li>
             </ul>

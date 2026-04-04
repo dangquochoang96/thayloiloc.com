@@ -60,13 +60,13 @@ export function NewsPage() {
           <span id="paginationInfo">Trang 1 / 1</span>
         </div>
         <div class="pagination-controls">
-          <button class="pagination-btn prev-btn" id="prevPageBtn" onclick="goToPreviousPage()">
+          <button class="pagination-btn prev-btn" id="prevPageBtn" onclick="goToNewsPagePrevious()">
             <i class="fas fa-chevron-left"></i>
           </button>
           <div class="pagination-numbers" id="paginationNumbers">
             <!-- Page numbers will be generated here -->
           </div>
-          <button class="pagination-btn next-btn" id="nextPageBtn" onclick="goToNextPage()">
+          <button class="pagination-btn next-btn" id="nextPageBtn" onclick="goToNewsPageNext()">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -128,7 +128,13 @@ function loadNewsPage(page = 1) {
   newsService
     .getGeyserecoNewsWithPagination("san-pham-dich-vu-2", page, itemsPerPage)
     .then((result) => {
-      console.log("Geysereco API result:", result);
+      console.log("=== Geysereco API Full Response ===");
+      console.log("Result object:", result);
+      console.log("Result.data:", result.data);
+      console.log("Result.last_page:", result.last_page);
+      console.log("Result.total:", result.total);
+      console.log("Result.per_page:", result.per_page);
+      console.log("Result.current_page:", result.current_page);
 
       let newsData = [];
       let pagination = {};
@@ -153,13 +159,6 @@ function loadNewsPage(page = 1) {
       } else {
         // No data from API, use sample news
         console.log("No data from Geysereco API, using sample news");
-        newsData = getSampleNews();
-        pagination = {
-          current_page: 1,
-          last_page: Math.ceil(newsData.length / itemsPerPage),
-          total: newsData.length,
-          per_page: itemsPerPage,
-        };
       }
 
       // Process news data
@@ -172,9 +171,20 @@ function loadNewsPage(page = 1) {
 
       // For server-side pagination, replace all news with current page data
       allNews = processedNews;
+      
       // Set total pages from API response
-      totalPages = pagination.last_page || 1;
+      // Use the larger value between API's last_page and calculated total pages
+      const calculatedTotalPages = Math.ceil(pagination.total / pagination.per_page);
+      const apiLastPage = pagination.last_page || 1;
+      
+      console.log("=== Total Pages Calculation ===");
+      console.log(`API last_page: ${apiLastPage}`);
+      console.log(`Calculated (${pagination.total} / ${pagination.per_page}): ${calculatedTotalPages}`);
+      
+      totalPages = Math.max(apiLastPage, calculatedTotalPages);
       currentPage = pagination.current_page || page;
+      
+      console.log(`Final totalPages: ${totalPages}`);
 
       // Sort by date (newest first)
       allNews.sort((a, b) => {
@@ -183,12 +193,14 @@ function loadNewsPage(page = 1) {
         return dateB - dateA;
       });
 
-      console.log(`Loaded page ${currentPage}:`);
-      console.log(`- Items in this page: ${processedNews.length}`);
-      console.log(`- Total items: ${pagination.total}`);
-      console.log(`- Per page: ${pagination.per_page}`);
-      console.log(`- Total pages: ${totalPages}`);
-      console.log(`- Should show pagination: ${totalPages > 1}`);
+      console.log("=== Pagination Summary ===");
+      console.log(`Current Page: ${currentPage}`);
+      console.log(`Total Pages: ${totalPages}`);
+      console.log(`Items in this page: ${processedNews.length}`);
+      console.log(`Total items across all pages: ${pagination.total}`);
+      console.log(`Per page: ${pagination.per_page}`);
+      console.log(`Expected total pages (calculated): ${Math.ceil(pagination.total / pagination.per_page)}`);
+      console.log(`Should show pagination: ${totalPages > 1}`);
 
       if (newsLoading) newsLoading.style.display = "none";
       if (newsGrid) newsGrid.style.display = "grid";
@@ -201,31 +213,13 @@ function loadNewsPage(page = 1) {
     })
     .catch((err) => {
       console.log("Error loading news from Geysereco API:", err);
-
-      // Fallback to sample news only on first page
-      if (page === 1) {
-        allNews = getSampleNews();
-        // Simulate pagination with sample news (16 items, 8 per page = 2 pages)
-        totalPages = Math.ceil(allNews.length / itemsPerPage);
-        currentPage = 1;
-
-        if (newsLoading) newsLoading.style.display = "none";
-        if (newsGrid) newsGrid.style.display = "grid";
-
-        // Add mock categories for sample news
-        allNews = allNews.map((item, index) => ({
-          ...item,
-          id: item.id || `sample-${index}`,
-          category: item.category || getRandomCategory(),
-          source: "geysereco",
-        }));
-
-        console.log("Using sample news due to API error:", allNews);
-        console.log("Sample news total pages:", totalPages);
-
-        // For sample news, use client-side pagination
-        displayNews(allNews);
-        updatePagination();
+      
+      const newsLoading = document.getElementById("newsLoading");
+      if (newsLoading) {
+        newsLoading.innerHTML = `
+          <i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i>
+          <p style="color:#666; margin-top: 10px;">Không thể tải tin tức: ${err.message}</p>
+        `;
       }
 
       isLoading = false;
@@ -315,7 +309,7 @@ function displayNews(news) {
   // If using sample news (fallback), apply client-side pagination
   if (
     news.length > itemsPerPage &&
-    news.some((item) => item.id && item.id.startsWith("sample-"))
+    news.some((item) => item.id)
   ) {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -396,9 +390,10 @@ function updatePagination() {
   const nextPageBtn = document.getElementById("nextPageBtn");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-  console.log(
-    `updatePagination called: currentPage=${currentPage}, totalPages=${totalPages}`
-  );
+  console.log("=== updatePagination Called ===");
+  console.log(`currentPage: ${currentPage}`);
+  console.log(`totalPages: ${totalPages}`);
+  console.log(`Should show pagination: ${totalPages > 1}`);
 
   if (totalPages <= 1) {
     console.log("Hiding pagination because totalPages <= 1");
@@ -459,19 +454,26 @@ function generatePaginationNumbers() {
   const paginationNumbers = document.getElementById("paginationNumbers");
   if (!paginationNumbers) return;
 
+  console.log("=== generatePaginationNumbers ===");
+  console.log(`currentPage: ${currentPage}, totalPages: ${totalPages}`);
+
   let numbersHTML = "";
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  console.log(`startPage: ${startPage}, endPage: ${endPage}`);
 
   // Adjust start page if we're near the end
   if (endPage - startPage < maxVisiblePages - 1) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
 
+  console.log(`After adjustment - startPage: ${startPage}, endPage: ${endPage}`);
+
   // First page
   if (startPage > 1) {
-    numbersHTML += `<button class="page-number" onclick="goToPage(1)">1</button>`;
+    numbersHTML += `<button class="page-number" onclick="event.preventDefault(); goToNewsPage(1)">1</button>`;
     if (startPage > 2) {
       numbersHTML += `<span class="page-ellipsis">...</span>`;
     }
@@ -480,7 +482,7 @@ function generatePaginationNumbers() {
   // Page numbers
   for (let i = startPage; i <= endPage; i++) {
     const activeClass = i === currentPage ? "active" : "";
-    numbersHTML += `<button class="page-number ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+    numbersHTML += `<button class="page-number ${activeClass}" onclick="event.preventDefault(); goToNewsPage(${i})">${i}</button>`;
   }
 
   // Last page
@@ -488,10 +490,13 @@ function generatePaginationNumbers() {
     if (endPage < totalPages - 1) {
       numbersHTML += `<span class="page-ellipsis">...</span>`;
     }
-    numbersHTML += `<button class="page-number" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    numbersHTML += `<button class="page-number" onclick="event.preventDefault(); goToNewsPage(${totalPages})">${totalPages}</button>`;
   }
 
   paginationNumbers.innerHTML = numbersHTML;
+  
+  console.log(`Generated ${endPage - startPage + 1} page buttons (${startPage} to ${endPage})`);
+  console.log(`HTML: ${numbersHTML.substring(0, 200)}...`);
 }
 
 function getCategoryLabel(category) {
@@ -501,20 +506,33 @@ function getCategoryLabel(category) {
   return labels[category] || "Tin tức";
 }
 
-window.goToPage = (page) => {
+// News page navigation functions with unique names
+window.goToNewsPage = (page) => {
+  console.log(`goToNewsPage called with page: ${page}`);
+  console.log(`Current state - currentPage: ${currentPage}, totalPages: ${totalPages}, isLoading: ${isLoading}`);
+  
   if (page >= 1 && page <= totalPages && page !== currentPage && !isLoading) {
+    console.log(`Loading news page ${page}...`);
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     loadNewsPage(page);
+  } else {
+    console.log(`Cannot load page ${page} - conditions not met`);
   }
 };
 
-window.goToPreviousPage = () => {
+window.goToNewsPagePrevious = () => {
+  console.log(`goToNewsPagePrevious called - currentPage: ${currentPage}`);
   if (currentPage > 1 && !isLoading) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     loadNewsPage(currentPage - 1);
   }
 };
 
-window.goToNextPage = () => {
+window.goToNewsPageNext = () => {
+  console.log(`goToNewsPageNext called - currentPage: ${currentPage}, totalPages: ${totalPages}`);
   if (currentPage < totalPages && !isLoading) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     loadNewsPage(currentPage + 1);
   }
 };

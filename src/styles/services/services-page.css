@@ -91,7 +91,7 @@
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, #F97316, #d78147, #ca7d2a);
+  background: linear-gradient(90deg, #F97316, #34ce57, #7ed957);
   transform: scaleX(0);
   transition: transform 0.4s;
 }
@@ -136,9 +136,9 @@
 }
 
 .service-option:hover .service-icon {
-  background: linear-gradient(145deg, #F97316, #ce7934);
+  background: linear-gradient(145deg, #F97316, #34ce57);
   transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 15px 35px rgba(152, 79, 15, 0.3);
+  box-shadow: 0 15px 35px rgba(40, 167, 69, 0.3);
 }
 
 .service-option .service-icon i {
@@ -198,9 +198,9 @@
 }
 
 .service-option:hover .btn-outline {
-  background: linear-gradient(135deg, #F97316, #ce7934);
+  background: linear-gradient(135deg, #F97316, #34ce57);
   color: white;
-  box-shadow: 0 15px 35px rgba(152, 79, 15, 0.3);
+  box-shadow: 0 10px 30px rgba(40, 167, 69, 0.4);
   transform: translateY(-2px);
 }
 

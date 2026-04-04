@@ -286,3 +286,66 @@
     height: 200px;
   }
 }
+
+.rental-info-card {
+  background: linear-gradient(135deg, #fff8f0, #ffffff);
+  border: 2px solid #F97316;
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.1);
+}
+
+.rental-title {
+  color: #F97316;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.rental-order-id {
+  text-align: center;
+  color: #666;
+  font-weight: 600;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.rental-info-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.rental-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rental-info-item:last-child {
+  border-bottom: none;
+}
+
+.rental-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.rental-value {
+  color: #333;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .rental-info-card {
+    padding: 20px;
+  }
+  
+  .rental-title {
+    font-size: 1.1rem;
+  }
+}

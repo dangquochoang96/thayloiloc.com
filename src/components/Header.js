@@ -1,5 +1,5 @@
 import { authService } from "../services/auth.service.js";
-import '../styles/header.css'
+import "../styles/header.css";
 
 export function Header() {
   const header = document.createElement("header");
@@ -34,7 +34,7 @@ export function Header() {
   const user = authService.getCurrentUser();
 
   // Declare contactDropdown variable at the top of the nav section
-  let contactDropdown = null;
+  // let contactDropdown = null;
 
   console.log("Auth check:", { isLoggedIn, user }); // Debug log
 
@@ -45,13 +45,13 @@ export function Header() {
   const baseLinks = [
     { text: "Trang Chủ", href: "#/" },
     { text: "Dịch Vụ", href: "#/services" },
+    { text: "Liên Hệ", href: "#/contact" },
   ];
 
   // Add history link for logged in users
   if (isLoggedIn && user) {
     baseLinks.push({ text: "Lịch Sử", href: "#/booking-history" });
     baseLinks.push({ text: "Tìm Thợ", href: "#/hotline" });
-    baseLinks.push({ text: "Góp Ý Khiếu Nại", href: "#/feedback" });
   }
 
   baseLinks.forEach((link) => {
@@ -74,22 +74,24 @@ export function Header() {
   // Add "Tin Tức" dropdown with submenus
   const newsDropdown = document.createElement("div");
   newsDropdown.className = "nav-dropdown";
-  // Check if we're on any of the process pages or news page to highlight the parent menu
+  // Check if we're on any of the process pages, news page, or video page to highlight the parent menu
   const isOnProcessPage = [
     "#/check-process",
     "#/filter-replacement",
     "#/maintenance-process",
     "#/training-content",
-    "#/news"
+    "#/news",
+    "#/video",
   ].includes(window.location.hash);
-  
+
   newsDropdown.innerHTML = `
-    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnProcessPage ? 'active' : ''}">
+    <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnProcessPage ? "active" : ""}">
       Tin Tức
       <i class="fas fa-chevron-down dropdown-arrow"></i>
     </a>
     <div class="nav-dropdown-menu">
-      <a href="#/news" class="${window.location.hash === '#/news' ? 'active' : ''}"><i class="fas fa-newspaper"></i> Dịch Vụ</a>
+      <a href="#/news" class="${window.location.hash === "#/news" ? "active" : ""}"><i class="fas fa-newspaper"></i> Tin Tức</a>
+      <a href="#/video" class="${window.location.hash === "#/video" ? "active" : ""}"><i class="fas fa-play-circle"></i> Video</a>
       <div class="nav-dropdown-submenu">
         <a href="javascript:void(0)" class="nav-submenu-toggle">
           <i class="fas fa-cogs"></i> Quy Trình
@@ -111,9 +113,9 @@ export function Header() {
   newsDropdownToggle.addEventListener("click", (e) => {
     e.preventDefault();
     // Close contact dropdown if open
-    if (contactDropdown) {
-      contactDropdown.classList.remove("active");
-    }
+    // if (contactDropdown) {
+    //   contactDropdown.classList.remove("active");
+    // }
     newsDropdown.classList.toggle("active");
   });
 
@@ -131,35 +133,35 @@ export function Header() {
   });
 
   // Dropdown toggle functionality for Liên Hệ - only if contactDropdown exists
-  if (contactDropdown) {
-    const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
-    contactToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      // Close news dropdown if open
-      newsDropdown.classList.remove("active");
-      // Also close submenu if open
-      const submenu = newsDropdown.querySelector('.nav-submenu');
-      if (submenu) {
-        submenu.style.display = "none";
-      }
-      contactDropdown.classList.toggle("active");
-    });
-  }
+  // if (contactDropdown) {
+  //   const contactToggle = contactDropdown.querySelector(".nav-dropdown-toggle");
+  //   contactToggle.addEventListener("click", (e) => {
+  //     e.preventDefault();
+  //     // Close news dropdown if open
+  //     newsDropdown.classList.remove("active");
+  //     // Also close submenu if open
+  //     const submenu = newsDropdown.querySelector(".nav-submenu");
+  //     if (submenu) {
+  //       submenu.style.display = "none";
+  //     }
+  //     contactDropdown.classList.toggle("active");
+  //   });
+  // }
 
   // Close dropdowns when clicking outside
   document.addEventListener("click", (e) => {
     if (!newsDropdown.contains(e.target)) {
       newsDropdown.classList.remove("active");
       // Also close submenu if open
-      const submenu = newsDropdown.querySelector('.nav-submenu');
+      const submenu = newsDropdown.querySelector(".nav-submenu");
       if (submenu) {
         submenu.style.display = "none";
       }
     }
     // Only check contact dropdown if it exists
-    if (contactDropdown && !contactDropdown.contains(e.target)) {
-      contactDropdown.classList.remove("active");
-    }
+    // if (contactDropdown && !contactDropdown.contains(e.target)) {
+    //   contactDropdown.classList.remove("active");
+    // }
   });
 
   // Always add nav to center

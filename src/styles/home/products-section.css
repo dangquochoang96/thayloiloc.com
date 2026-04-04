@@ -135,30 +135,40 @@
   transform: none;
 }
 
-.slider-dots {
+.slider-dot {
   display: flex;
   justify-content: center;
   gap: 10px;
   margin-top: 30px;
 }
 
-.slider-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: none;
-  background: #ddd;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.slider-dots{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 25px;
 }
 
-.slider-dot.active {
-  background: #f97316;
-  transform: scale(1.2);
+.slider-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
 }
 
 .slider-dot:hover {
-  background: #f97316;
+    background: #f97316;
+    transform: scale(1.2);
+}
+
+.slider-dot.active {
+    background: #f97316;
+    width: 30px;
+    border-radius: 6px;
 }
 
 .product-card {

@@ -1,33 +1,51 @@
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
 import { SupportService } from "../services/support.service.js";
 import { authService } from "../services/auth.service.js";
 import { getImageUrl } from "../utils/helpers.js";
+import { api } from "../services/api.js";
+import { favoriteStore } from "../services/favorite.store.js";
 import "../styles/hotline/technician-detail.css";
 
 export function TechnicianDetailPage() {
   const container = document.createElement("div");
-  container.className = "technician-detail-wrapper";
 
-  // Header with back button
-  const header = document.createElement("header");
-  header.className = "tech-detail-header";
-  header.innerHTML = `
-    <button class="back-btn" onclick="history.back()">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <h1>Thông tin kỹ thuật viên</h1>
-    <div class="header-spacer"></div>
-  `;
+  // Use standard Header component
+  const header = Header();
   container.appendChild(header);
 
   const main = document.createElement("main");
-  main.className = "tech-detail-main";
-  main.innerHTML = `
-    <div class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Đang tải thông tin...</p>
+  main.className = "technician-detail-page";
+  
+  // Page Header with breadcrumb
+  const pageHeader = document.createElement("div");
+  pageHeader.className = "page-header";
+  pageHeader.innerHTML = `
+    <h1><i class="fas fa-user-cog"></i> Thông tin kỹ thuật viên</h1>
+    <div class="breadcrumb">
+      <a href="#/" onclick="event.preventDefault(); window.location.hash='/'">Trang chủ</a>
+      <i class="fas fa-chevron-right"></i>
+      <a href="#/hotline" onclick="event.preventDefault(); window.location.hash='/hotline'">Hotline</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Chi tiết</span>
     </div>
   `;
+  main.appendChild(pageHeader);
+  
+  const contentSection = document.createElement("section");
+  contentSection.className = "tech-detail-content";
+  contentSection.innerHTML = `
+    <div class="container">
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải thông tin...</p>
+      </div>
+    </div>
+  `;
+  main.appendChild(contentSection);
+  
   container.appendChild(main);
+  container.appendChild(Footer());
 
   // Get technician ID from URL
   setTimeout(() => {
@@ -36,10 +54,12 @@ export function TechnicianDetailPage() {
     );
     const techId = urlParams.get("id");
 
+    const contentContainer = contentSection.querySelector(".container");
+    
     if (techId) {
-      loadTechnicianDetail(techId, main);
+      loadTechnicianDetail(techId, contentContainer);
     } else {
-      main.innerHTML = `
+      contentContainer.innerHTML = `
         <div class="error-state">
           <i class="fas fa-exclamation-triangle"></i>
           <p>Không tìm thấy thông tin kỹ thuật viên</p>
@@ -52,6 +72,30 @@ export function TechnicianDetailPage() {
   return container;
 }
 
+// Hàm hiển thị thông báo
+function showNotification(message, type = "success") {
+  // Remove existing notification if any
+  const existingNotification = document.querySelector(".tech-notification");
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  const notification = document.createElement("div");
+  notification.className = `tech-notification tech-notification-${type}`;
+  notification.innerHTML = `
+    <i class="fas fa-${type === "success" ? "check-circle" : "exclamation-circle"}"></i>
+    <span>${message}</span>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    notification.classList.add("fade-out");
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
 // function getUserById(id) {
 //   return authService.getUserFromServer(id).then((data) => console.log(data));
 // }
@@ -61,9 +105,13 @@ function loadTechnicianDetail(techId, mainEl) {
     .getUserFromServer(techId)
     .then((data) => {
       const tech = data.data || data || [];
-      console.log("Technician data:", tech);
 
       if (tech) {
+        if (authService.isAuthenticated()) {
+          const user = authService.getUser();
+          favoriteStore.init(user.id);
+        }
+        
         renderTechnicianDetail(tech, mainEl);
       } else {
         mainEl.innerHTML = `
@@ -85,6 +133,24 @@ function loadTechnicianDetail(techId, mainEl) {
         </div>
       `;
     });
+}
+
+// Hàm cập nhật UI favorite button từ store
+function updateFavoriteButton(techId, mainEl) {
+  const favoriteBtn = mainEl.querySelector(".favorite-btn");
+  if (!favoriteBtn) return;
+  
+  const isFavorite = favoriteStore.isFavorite(techId);
+  
+  if (isFavorite) {
+    favoriteBtn.classList.add("active");
+    const icon = favoriteBtn.querySelector("i");
+    if (icon) icon.className = "fas fa-heart";
+  } else {
+    favoriteBtn.classList.remove("active");
+    const icon = favoriteBtn.querySelector("i");
+    if (icon) icon.className = "far fa-heart";
+  }
 }
 
 function renderTechnicianDetail(tech, mainEl) {
@@ -146,13 +212,14 @@ function renderTechnicianDetail(tech, mainEl) {
     <!-- Area -->
     <div class="info-section">
       <h3 class="section-title">Khu vực</h3>
-      <div class="area-list">
+      <div class="area-info">
         ${
-          tech.location && tech.location.length > 0
-            ? tech.location
-                .map((a) => `<span class="area-tag">${a}</span>`)
-                .join("")
-            : '<span class="empty-text">Chưa cập nhật</span>'
+          tech.address
+            ? `<div class="address-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${tech.address}</span>
+              </div>`
+            : '<span class="empty-text">Chưa cập nhật địa chỉ</span>'
         }
       </div>
     </div>
@@ -183,13 +250,46 @@ function renderTechnicianDetail(tech, mainEl) {
   // Add favorite button event
   const favoriteBtn = mainEl.querySelector(".favorite-btn");
   if (favoriteBtn) {
-    favoriteBtn.addEventListener("click", () => {
-      favoriteBtn.classList.toggle("active");
-      const icon = favoriteBtn.querySelector("i");
-      if (favoriteBtn.classList.contains("active")) {
-        icon.className = "fas fa-heart";
-      } else {
-        icon.className = "far fa-heart";
+    const techId = favoriteBtn.getAttribute("data-tech-id");
+    
+    // Subscribe to store để update UI khi có thay đổi
+    const unsubscribe = favoriteStore.subscribe(() => {
+      updateFavoriteButton(techId, mainEl);
+    });
+    
+    // Cleanup khi rời trang
+    window.addEventListener('hashchange', () => {
+      unsubscribe();
+    }, { once: true });
+    
+    // Handle click
+    favoriteBtn.addEventListener("click", async () => {
+      // Kiểm tra đăng nhập
+      if (!authService.isAuthenticated()) {
+        alert("Vui lòng đăng nhập để lưu thợ yêu thích!");
+        window.location.hash = "#/login";
+        return;
+      }
+      
+      try {
+        favoriteBtn.disabled = true;
+        
+        // Sử dụng FavoriteStore (single source of truth)
+        const result = await favoriteStore.toggle(techId);
+        
+        // Show notification
+        showNotification(
+          result.action === 'added' 
+            ? "Đã thêm vào danh sách yêu thích" 
+            : "Đã xóa khỏi danh sách yêu thích",
+          "success"
+        );
+        
+      } catch (error) {
+        console.error("❌ Error updating favorite:", error);
+        showNotification("Có lỗi xảy ra. Vui lòng thử lại!", "error");
+      } finally {
+        favoriteBtn.disabled = false;
       }
     });
   }
@@ -199,42 +299,49 @@ function renderTechnicianDetail(tech, mainEl) {
 }
 
 function renderStars(rating) {
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating % 1 >= 0.5;
+  // Đảm bảo rating là số
+  const numRating = Number(rating) || 0;
+  const fullStars = Math.floor(numRating);
+  const hasHalf = (numRating % 1) >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
   let html = "";
+  
+  // Sao đầy
   for (let i = 0; i < fullStars; i++) {
     html += '<i class="fas fa-star"></i>';
   }
+  
+  // Sao nửa
   if (hasHalf) {
     html += '<i class="fas fa-star-half-alt"></i>';
   }
+  
+  // Sao rỗng
   for (let i = 0; i < emptyStars; i++) {
     html += '<i class="far fa-star"></i>';
   }
+  
   return html;
 }
 
 function renderReviewItem(review) {
-  // Handle both API format and local format
-  const avatarUrl = review.user.avartar
+  const avatarUrl = review.user?.avartar
     ? getImageUrl(review.user.avartar)
     : null;
-  console.log("Review data:", getImageUrl(review.user.avartar));
 
-  const userName = review.user.username || "Người dùng";
-  const rating = review.rate || 0;
+  const userName = review.user?.username || review.user?.name || "Người dùng";
+  const rating = parseInt(review.rate) || 0;
   const comment = review.comment || review.content || review.note || "";
 
-  console.log("Review data:", review.rate);
+  const safeComment = comment.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   return `
     <div class="review-item">
       <div class="review-avatar">
         ${
           avatarUrl
-            ? `<img src="${avatarUrl}" alt="${userName}">`
+            ? `<img src="${avatarUrl}" alt="${userName}" onerror="this.parentElement.innerHTML='<div class=\\'avatar-placeholder\\'><i class=\\'fas fa-user\\'></i></div>'">`
             : `<div class="avatar-placeholder"><i class="fas fa-user"></i></div>`
         }
       </div>
@@ -245,7 +352,7 @@ function renderReviewItem(review) {
             ${renderStars(rating)}
           </div>
         </div>
-        <p class="review-text">${comment}</p>
+        <p class="review-text">${safeComment}</p>
       </div>
     </div>
   `;
@@ -257,20 +364,39 @@ function loadReviews(techId, mainEl) {
 
   SupportService.getListOrderRating(techId)
     .then((data) => {
-      const reviews = data.data || data || [];
-      console.log("Reviews data:", reviews);
+      let reviews = [];
+      if (data && data.data && Array.isArray(data.data)) {
+        reviews = data.data;
+      } else if (Array.isArray(data)) {
+        reviews = data;
+      }
 
-      // Update rating display
-      if (reviews.length > 0) {
+      const validReviews = reviews.filter(r => 
+        r && r.rate && r.user && (r.comment || r.content || r.note)
+      );
+
+      const uniqueReviews = validReviews.reduce((acc, current) => {
+        const currentId = current.id || current.order_id;
+        const isDuplicate = acc.find(item => {
+          const itemId = item.id || item.order_id;
+          return itemId && currentId && itemId === currentId;
+        });
+        
+        if (!isDuplicate) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+
+      if (uniqueReviews.length > 0) {
         const avgRating =
-          reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
-          reviews.length;
-        console.log("Average rating:", avgRating);
+          uniqueReviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
+          uniqueReviews.length;
         techRating.innerHTML = `
           ${renderStars(avgRating)}
-          <span class="rating-count">(${reviews.length} đánh giá)</span>
+          <span class="rating-count">(${uniqueReviews.length} đánh giá)</span>
         `;
-        reviewsList.innerHTML = reviews
+        reviewsList.innerHTML = uniqueReviews
           .map((review) => renderReviewItem(review))
           .join("");
       } else {
@@ -280,6 +406,6 @@ function loadReviews(techId, mainEl) {
     })
     .catch((error) => {
       console.error("Error loading reviews:", error);
-      reviewsList.innerHTML = '<p class="empty-text">Chưa có đánh giá nào</p>';
+      reviewsList.innerHTML = '<p class="empty-text">Lỗi khi tải đánh giá</p>';
     });
 }

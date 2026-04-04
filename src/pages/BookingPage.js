@@ -4,6 +4,8 @@ import { authService } from "../services/auth.service.js";
 import { servicesService } from "../services/services.service.js";
 import { productService } from "../services/product.service.js";
 import { api } from "../services/api.js";
+import { favoriteStore } from "../services/favorite.store.js";
+import { getImageUrl } from "../utils/helpers.js";
 
 // Import HTML templates
 import loginRequiredTemplate from "../templates/booking/login-required.html?raw";
@@ -97,6 +99,37 @@ export function BookingPage() {
 
   centeredContainer.appendChild(form);
 
+  // Auto-populate type_task field if service is selected
+  if (selectedServiceId) {
+    const typeTaskField = form.querySelector('#type_task');
+    if (typeTaskField) {
+      typeTaskField.value = selectedServiceId;
+    }
+  }
+
+  // Handle conditional service name field
+  const typeTaskField = form.querySelector('#type_task');
+  const serviceNameGroup = form.querySelector('#service-name-group');
+  const serviceNameField = form.querySelector('#service_name');
+  
+  // Function to toggle service name field visibility
+  const toggleServiceNameField = () => {
+    if (typeTaskField.value === '6') { // 'Khác' option
+      serviceNameGroup.style.display = 'block';
+      serviceNameField.required = true;
+    } else {
+      serviceNameGroup.style.display = 'none';
+      serviceNameField.required = false;
+      serviceNameField.value = '';
+    }
+  };
+  
+  // Initial check
+  toggleServiceNameField();
+  
+  // Listen for changes
+  typeTaskField.addEventListener('change', toggleServiceNameField);
+
   // Add responsive styles
   const style = document.createElement("style");
   style.textContent = `
@@ -134,6 +167,33 @@ export function BookingPage() {
       border-radius: 15px !important;
       margin-bottom: 30px !important;
       border-left: 5px solid #f97316 !important;
+    }
+    
+    #service-name-group {
+      transition: all 0.3s ease;
+    }
+    
+    #service_name {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+    
+    #service_name:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    #service_name:required:valid {
+      border-color: #10b981;
+    }
+    
+    #service_name:required:invalid {
+      border-color: #ef4444;
     }
     
     /* Image upload styles */
@@ -220,7 +280,64 @@ export function BookingPage() {
   // Load danh sách sản phẩm
   const productSelect = form.querySelector("#product_id");
   const addressInput = form.querySelector("#address");
+  const staffSelect = form.querySelector("#staff");
   let productsData = []; // Store products data with addresses
+
+  // Initialize FavoriteStore (single source of truth)
+  favoriteStore.init(user.id);
+
+  // Render staff dropdown từ store state
+  function renderStaffDropdown(favorites) {
+    console.log('🎨 Rendering staff dropdown with', favorites.length, 'favorites');
+    
+    staffSelect.innerHTML = '<option value="">-- Không chọn (hệ thống sẽ tự động phân công) --</option>';
+    
+    if (favorites.length > 0) {
+      favorites.forEach(staff => {
+        const option = document.createElement('option');
+        option.value = staff.id;
+        option.textContent = `❤️ ${staff.username} - ${staff.phone}`;
+        staffSelect.appendChild(option);
+      });
+      console.log('✅ Added', favorites.length, 'staff options');
+    } else {
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = '💡 Chưa có thợ yêu thích. Hãy thêm từ trang chi tiết kỹ thuật viên!';
+      option.disabled = true;
+      staffSelect.appendChild(option);
+      console.log('ℹ️ No favorites, showing hint');
+    }
+  }
+
+  // Subscribe to FavoriteStore
+  const unsubscribe = favoriteStore.subscribe(({ favorites, loading, error }) => {
+    console.log('📣 FavoriteStore notification:', {
+      favoritesCount: favorites.length,
+      loading,
+      error: error?.message
+    });
+    
+    if (!loading && !error) {
+      renderStaffDropdown(favorites);
+    }
+    
+    if (error) {
+      console.error('❌ FavoriteStore error:', error);
+      staffSelect.innerHTML = '<option value="">-- Không chọn (hệ thống sẽ tự động phân công) --</option>';
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = '⚠️ Không thể tải danh sách thợ yêu thích';
+      option.disabled = true;
+      staffSelect.appendChild(option);
+    }
+  });
+
+  // Cleanup khi rời trang
+  window.addEventListener('hashchange', () => {
+    unsubscribe();
+    console.log('👋 BookingPage: Unsubscribed from FavoriteStore');
+  }, { once: true });
 
   productService
     .getListProduct(user.id)
@@ -409,12 +526,21 @@ export function BookingPage() {
         des: form.des.value || "",
         status: "1",
         priority: "1",
-        staff: "",
         user_create: "161",
         product_id: form.product_id.value,
         images: imageUrls, // Use uploaded image URLs
         address: form.address.value,
       };
+      
+      // Thêm staff nếu user đã chọn
+      if (form.staff.value) {
+        bookingData.staff = form.staff.value;
+      }
+
+      // Add service name if 'Khác' is selected
+      if (form.type_task.value === '6' && form.service_name.value.trim()) {
+        bookingData.name = form.service_name.value.trim();
+      }
 
       const response = await servicesService.bookingService(bookingData);
 

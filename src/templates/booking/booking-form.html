@@ -14,12 +14,29 @@
             </select>
         </div>
 
+        <!-- Tên dịch vụ (hiển thị khi chọn 'Khác') -->
+        <div class="form-group" id="service-name-group" style="display: none;">
+            <label for="service_name">Tên Dịch Vụ <span class="required">*</span></label>
+            <input type="text" id="service_name" name="service_name" 
+                   placeholder="Nhập tên dịch vụ bạn muốn đặt lịch" 
+                   autocomplete="off">
+        </div>
+
         <!-- Sản phẩm -->
         <div class="form-group">
             <label for="product_id">Sản Phẩm <span class="required">*</span></label>
             <select id="product_id" name="product_id" required>
                 <option value="">Đang tải...</option>
             </select>
+        </div>
+
+        <!-- Chọn thợ yêu thích -->
+        <div class="form-group">
+            <label for="staff">Chọn Thợ Yêu Thích</label>
+            <select id="staff" name="staff">
+                <option value="">-- Không chọn (hệ thống sẽ tự động phân công) --</option>
+            </select>
+            <p class="form-hint">Bạn có thể chọn thợ yêu thích hoặc để hệ thống tự động phân công</p>
         </div>
 
         <!-- Thời gian bắt đầu -->

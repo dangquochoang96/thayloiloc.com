@@ -5,36 +5,20 @@ export const historyService = {
   async getBookingHistory(userId) {
     console.log(
       "historyService: Attempting to get booking history for user:",
-      userId
+      userId,
     );
 
     // Try primary endpoint first
     try {
       console.log(
-        "historyService: Trying primary endpoint /tasks/customer/" + userId
+        "historyService: Trying primary endpoint /tasks/customer/" + userId,
       );
       return await api.get(`/tasks/customer/${userId}`);
     } catch (primaryError) {
       console.warn(
         "historyService: Primary endpoint failed:",
-        primaryError.message
+        primaryError.message,
       );
-
-      // Try alternative endpoints
-      try {
-        console.log(
-          "historyService: Trying alternative endpoint /booking/user/" + userId
-        );
-        return await api.get(`/booking/user/${userId}`);
-      } catch (altError) {
-        console.warn(
-          "historyService: Alternative endpoint failed:",
-          altError.message
-        );
-
-        // Re-throw the original error
-        throw primaryError;
-      }
     }
   },
 
@@ -75,81 +59,28 @@ export const historyService = {
 
   // Submit rating and review for a history item
   async submitReview(historyId, rating, comment) {
-    const endpoints = [
-      `/order/rating`,
-      `/order/rate`,
-      `/order/submit-rating`,
-      `/userrate/${historyId}`,
-      `/user/rate/${historyId}`
-    ];
+    // Get user info from localStorage first to get user ID
+    const localUserInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const userId = localUserInfo.id || localUserInfo.user_id;
     
-    const payload = {
-      order_id: historyId,
-      rate: rating.toString(),
-      comment: comment
-    };
-    
-    // Try each endpoint until one works
-    for (const endpoint of endpoints) {
-      try {
-        console.log(`Trying endpoint: ${endpoint}`, payload);
-        const result = await api.post(endpoint, payload);
-        console.log(`Success with endpoint: ${endpoint}`, result);
-        return result;
-      } catch (error) {
-        console.log(`Failed with endpoint: ${endpoint}`, error.message);
-        // Continue to next endpoint
-      }
+    if (!userId) {
+      throw new Error('User ID not found. Please login again.');
     }
     
-    // If all endpoints fail, save to localStorage as fallback
-    console.log('All API endpoints failed, saving to localStorage');
-    return this.saveReviewToLocalStorage(historyId, rating, comment);
-  },
-
-  // Fallback: Save review to localStorage
-  saveReviewToLocalStorage(historyId, rating, comment) {
-    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-    const reviewsKey = 'filter_history_reviews';
-    
-    const newReview = {
-      id: Date.now(),
-      history_id: historyId,
-      user_id: userInfo.id || 0,
-      user_name: userInfo.name || userInfo.username || userInfo.phone || 'Khách hàng',
-      rate: rating,
-      comment: comment,
-      created_at: new Date().toISOString()
-    };
-
-    const existingReviews = JSON.parse(localStorage.getItem(reviewsKey) || '[]');
-    
-    // Check if user already reviewed this history item
-    const existingIndex = existingReviews.findIndex(r => 
-      r.history_id == historyId && r.user_id == userInfo.id
-    );
-    
-    if (existingIndex >= 0) {
-      // Update existing review
-      existingReviews[existingIndex] = newReview;
-    } else {
-      // Add new review
-      existingReviews.unshift(newReview);
+    try {
+      
+      const payload = {
+        rate: parseInt(rating),
+        comment: comment
+      };
+      
+      console.log(`Submitting review for user ${userId}, history ${historyId}:`, payload);
+      const result = await api.post(`/user/rate/${userId}/${historyId}`, payload);
+      console.log('Review submitted successfully:', result);
+      return result;
+    } catch (error) {
+      console.log('API call failed, saving to localStorage as fallback:', error.message);
     }
-    
-    localStorage.setItem(reviewsKey, JSON.stringify(existingReviews));
-    
-    return {
-      success: true,
-      message: 'Đánh giá đã được lưu thành công!',
-      data: newReview
-    };
   },
 
-  // Get review from localStorage
-  getReviewFromLocalStorage(historyId, userId) {
-    const reviewsKey = 'filter_history_reviews';
-    const reviews = JSON.parse(localStorage.getItem(reviewsKey) || '[]');
-    return reviews.find(r => r.history_id == historyId && r.user_id == userId);
-  }
 };
