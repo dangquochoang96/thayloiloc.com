@@ -588,3 +588,26 @@
     height: 2rem;
   }
 }
+
+/* Modal Clickable Elements */
+.detail-value.clickable {
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-value.clickable:hover {
+  color: #ea580c !important;
+  transform: translateX(3px);
+  text-decoration: underline;
+}
+
+.detail-value.clickable i {
+  transition: transform 0.3s ease;
+}
+
+.detail-value.clickable:hover i {
+  transform: scale(1.2);
+}

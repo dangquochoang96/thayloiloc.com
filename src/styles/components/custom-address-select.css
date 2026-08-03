@@ -1,0 +1,155 @@
+/* Custom Address Select Styling with Theme Icons */
+.custom-address-select-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.custom-address-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.custom-address-select-trigger:hover {
+  border-color: var(--primary-color, #f97316);
+  background-color: #fffcf9;
+}
+
+.custom-address-select-trigger.is-open {
+  border-color: var(--primary-color, #f97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  background-color: #ffffff;
+}
+
+.custom-address-select-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.custom-address-select-icon {
+  color: var(--primary-color, #f97316) !important;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+}
+
+.custom-address-select-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.custom-address-select-arrow {
+  color: #64748b;
+  font-size: 0.85rem;
+  transition: transform 0.25s ease, color 0.2s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.custom-address-select-trigger.is-open .custom-address-select-arrow {
+  transform: rotate(180deg);
+  color: var(--primary-color, #f97316);
+}
+
+/* Dropdown Menu Options */
+.custom-address-select-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.custom-address-select-options.is-open {
+  display: block;
+  animation: customSelectFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes customSelectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-address-select-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.93rem;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.custom-address-select-option:hover {
+  background: #fff7ed;
+  color: var(--primary-dark, #ea580c);
+}
+
+.custom-address-select-option.is-selected {
+  background: #ffedd5;
+  color: var(--primary-dark, #ea580c);
+  font-weight: 600;
+}
+
+.custom-address-select-option.is-selected .custom-address-select-icon {
+  color: var(--primary-hover, #ea580c) !important;
+}
+
+.custom-address-select-option .option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.custom-address-select-option .check-mark {
+  margin-left: auto;
+  color: var(--primary-color, #f97316);
+  font-size: 0.85rem;
+}

@@ -1,0 +1,230 @@
+/* ============================================
+   AD BANNER POPUP - Promo Advertisement
+   ============================================ */
+
+/* Overlay backdrop */
+.ad-banner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  animation: adOverlayFadeIn 0.4s ease forwards;
+}
+
+.ad-banner-overlay.hiding {
+  animation: adOverlayFadeOut 0.35s ease forwards;
+}
+
+/* Modal container */
+.ad-banner-modal {
+  position: relative;
+  max-width: 420px;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: scale(0.85) translateY(30px);
+  animation: adModalPopIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+}
+
+.ad-banner-overlay.hiding .ad-banner-modal {
+  animation: adModalPopOut 0.3s ease forwards;
+}
+
+/* Banner image */
+.ad-banner-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.ad-banner-image:hover {
+  transform: scale(1.02);
+}
+
+/* Close button */
+.ad-banner-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  z-index: 1;
+  line-height: 1;
+}
+
+.ad-banner-close:hover {
+  background: rgba(220, 38, 38, 0.85);
+  border-color: rgba(220, 38, 38, 0.6);
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* CTA button bar */
+.ad-banner-cta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ad-banner-btn-primary {
+  flex: 1;
+  max-width: 200px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ad-banner-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.65);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* "Don't show again" checkbox */
+.ad-banner-footer {
+  background: #1e1e1e;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ad-banner-dont-show {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #aaa;
+  user-select: none;
+}
+
+.ad-banner-dont-show input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #f97316;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ad-banner-dont-show:hover {
+  color: #ddd;
+}
+
+.ad-banner-dismiss {
+  font-size: 0.8rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color 0.2s;
+}
+
+.ad-banner-dismiss:hover {
+  color: #ccc;
+}
+
+/* Pulse attention ring */
+.ad-banner-modal::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #f97316, #fbbf24, #f97316);
+  z-index: -1;
+  opacity: 0;
+  animation: adBorderPulse 2s ease 0.7s infinite;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes adOverlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes adOverlayFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes adModalPopIn {
+  from { transform: scale(0.85) translateY(30px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes adModalPopOut {
+  from { transform: scale(1) translateY(0); opacity: 1; }
+  to   { transform: scale(0.9) translateY(20px); opacity: 0; }
+}
+
+@keyframes adBorderPulse {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.6; }
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 480px) {
+  .ad-banner-modal {
+    max-width: 340px;
+  }
+
+  .ad-banner-btn-primary {
+    font-size: 0.82rem;
+    padding: 9px 14px;
+  }
+
+  .ad-banner-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

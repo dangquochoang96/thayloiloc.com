@@ -1,0 +1,67 @@
+<div class="qna-detail-page">
+  <div class="qna-detail-container">
+    <button id="backBtn" class="back-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Quay lại
+    </button>
+
+    <div id="postLoading" class="loading-indicator" style="display: none;">
+      <div class="spinner"></div>
+      <p>Đang tải bài đăng...</p>
+    </div>
+
+    <div id="postDetail">
+      <!-- Post detail will be loaded here -->
+    </div>
+
+    <div class="comments-section">
+      <h2 class="comments-title">Bình luận</h2>
+
+      <form id="commentForm" class="comment-form">
+        <textarea 
+          id="commentInput" 
+          placeholder="Viết bình luận của bạn..." 
+          rows="3"
+          maxlength="500"
+          required
+        ></textarea>
+        <div class="comment-media-inputs">
+          <label for="commentImages" class="media-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+              <path d="M21 15l-5-5L5 21" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Ảnh
+          </label>
+          <input type="file" id="commentImages" accept="image/*" multiple style="display: none;">
+          
+          <label for="commentVideos" class="media-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Video
+          </label>
+          <input type="file" id="commentVideos" accept="video/*" style="display: none;">
+          
+          <div id="commentImagePreview" class="comment-preview"></div>
+          <div id="commentVideoPreview" class="comment-preview"></div>
+        </div>
+        <button type="submit" id="submitCommentBtn" class="btn-submit-comment">
+          Gửi bình luận
+        </button>
+      </form>
+
+      <div id="commentsLoading" class="loading-indicator" style="display: none;">
+        <div class="spinner"></div>
+        <p>Đang tải bình luận...</p>
+      </div>
+
+      <div id="commentsList" class="comments-list">
+        <!-- Comments will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>

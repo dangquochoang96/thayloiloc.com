@@ -1,6 +1,7 @@
 import { Header } from '../components/Header.js';
 import { Footer } from '../components/Footer.js';
 import { servicesService } from '../services/services.service.js';
+import { MissingServiceFeedback } from '../components/MissingServiceFeedback.js';
 import '../styles/services/services-page.css';
 
 export function ServicesPage() {
@@ -53,8 +54,7 @@ export function ServicesPage() {
     try {
       const result = await servicesService.getListService();
       
-      console.log('Services API Response:', result);
-      
+            
       let services = [];
       if (result.data && Array.isArray(result.data)) {
         services = result.data;
@@ -123,12 +123,8 @@ export function ServicesPage() {
 
     // If no services
     if (services.length === 0) {
-      container.innerHTML = `
-        <div style="grid-column: 1/-1; text-align:center; padding:40px;">
-          <i class="fas fa-inbox" style="font-size:3rem; color:#ccc;"></i>
-          <p style="margin-top:15px; color:#666;">Chưa có dịch vụ nào</p>
-        </div>
-      `;
+      container.innerHTML = '';
+      container.appendChild(MissingServiceFeedback());
     }
   };
 

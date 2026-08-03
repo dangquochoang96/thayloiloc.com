@@ -1,0 +1,53 @@
+<div class="qna-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-question-circle"></i> Hỏi Đáp</h1>
+    <p class="qna-description">Đặt câu hỏi và nhận câu trả lời từ cộng đồng</p>
+  </div>
+  
+  <!-- Search and Action Bar -->
+  <div class="qna-action-bar">
+    <div class="search-box">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8" stroke-width="2"/>
+        <path d="M21 21l-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Tìm kiếm câu hỏi..." 
+        class="search-input"
+      >
+      <button id="clearSearchBtn" class="clear-search-btn" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    
+    <button id="createPostBtn" class="btn-create-post">
+      <i class="fas fa-plus-circle"></i>
+      Tạo câu hỏi
+    </button>
+    
+    <div id="loginPrompt" class="login-prompt" style="display: none;">
+      <p>Vui lòng <a href="#/login">đăng nhập</a> để tạo câu hỏi</p>
+    </div>
+  </div>
+  <!-- Content -->
+  <div class="qna-container">
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+      <div class="spinner"></div>
+      <p>Đang tải...</p>
+    </div>
+
+    <div id="postsContainer" class="posts-container">
+      <!-- Posts will be loaded here -->
+    </div>
+
+    <button id="loadMoreBtn" class="btn-load-more" style="display: none;">
+      Xem thêm
+    </button>
+  </div>
+</div>

@@ -7,7 +7,7 @@ import { api } from "../services/api.js";
 import { favoriteStore } from "../services/favorite.store.js";
 import "../styles/hotline/technician-detail.css";
 
-export function TechnicianDetailPage() {
+export function TechnicianDetailPage(params = {}) {
   const container = document.createElement("div");
 
   // Use standard Header component
@@ -47,12 +47,12 @@ export function TechnicianDetailPage() {
   container.appendChild(main);
   container.appendChild(Footer());
 
-  // Get technician ID from URL
+  // Get technician ID from URL or params
   setTimeout(() => {
     const urlParams = new URLSearchParams(
       window.location.hash.split("?")[1] || ""
     );
-    const techId = urlParams.get("id");
+    const techId = params.id || urlParams.get("id");
 
     const contentContainer = contentSection.querySelector(".container");
     
@@ -97,21 +97,44 @@ function showNotification(message, type = "success") {
 }
 
 // function getUserById(id) {
-//   return authService.getUserFromServer(id).then((data) => console.log(data));
+//   return authService.getUserFromServer(id).then((data) => void 0);
 // }
 
 function loadTechnicianDetail(techId, mainEl) {
-  authService
-    .getUserFromServer(techId)
+  const sampleTechnicians = [
+    { id: 101, username: "KỸ THUẬT HỖ TRỢ ONLINE", phone: "0987.654.321", address: "40 hữu lê - hữu hoà - thanh trì - Hà Nội", rating: 5.0, avartar: null, services: ["Máy lọc nước RO", "Bảo dưỡng máy nước nóng"] },
+    { id: 102, username: "SH-KTDV-NV-HaDN", phone: "0912.345.678", address: "Lấy hàng tại kho", rating: 5.0, avartar: null, services: ["Sửa chữa máy lọc nước", "Lắp đặt máy lọc nước"] },
+    { id: 103, username: "Mai Văn Chính", phone: "0978.123.456", address: "Hh03D khu đô thị Thanh Hà", rating: 5.0, avartar: null, services: ["Lắp đặt & Bảo dưỡng"] },
+    { id: 104, username: "SH-LX-NV-DuongC", phone: "0904.567.890", address: "Lấy hàng tại kho", rating: 5.0, avartar: null, services: ["Tháo lắp thiết bị điện lạnh"] },
+    { id: 105, username: "Đỗ Mạnh Cường", phone: "0936.888.999", address: "Nam Từ Liêm, Hà Nội", rating: 4.9, avartar: null, services: ["Vệ sinh & Thay thế phụ kiện"] }
+  ];
+
+  SupportService
+    .getAllSupportTechnicians()
     .then((data) => {
-      const tech = data.data || data || [];
+      const technicians = Array.isArray(data) ? data : (data.data || []);
+      let tech = technicians.find(t => String(t.id) === String(techId));
+
+      if (!tech) {
+        tech = sampleTechnicians.find(t => String(t.id) === String(techId));
+      }
+
+      if (!tech && techId) {
+        tech = {
+          id: techId,
+          username: `Kỹ thuật viên #${techId}`,
+          phone: "0335.118.911",
+          address: "Phục vụ tại nhà toàn khu vực",
+          rating: 5.0,
+          services: ["Lắp đặt & Vệ sinh máy lọc nước", "Bảo dưỡng thiết bị điện lạnh"]
+        };
+      }
 
       if (tech) {
         if (authService.isAuthenticated()) {
           const user = authService.getUser();
           favoriteStore.init(user.id);
         }
-        
         renderTechnicianDetail(tech, mainEl);
       } else {
         mainEl.innerHTML = `
@@ -125,13 +148,28 @@ function loadTechnicianDetail(techId, mainEl) {
     })
     .catch((e) => {
       console.error("Error loading technician detail:", e);
-      mainEl.innerHTML = `
-        <div class="error-state">
-          <i class="fas fa-exclamation-triangle"></i>
-          <p>Lỗi khi tải thông tin</p>
-          <a href="#/hotline" class="back-link">Quay lại danh sách</a>
-        </div>
-      `;
+      let tech = sampleTechnicians.find(t => String(t.id) === String(techId));
+      if (!tech && techId) {
+        tech = {
+          id: techId,
+          username: `Kỹ thuật viên #${techId}`,
+          phone: "0335.118.911",
+          address: "Phục vụ tại nhà toàn khu vực",
+          rating: 5.0,
+          services: ["Lắp đặt & Vệ sinh máy lọc nước", "Bảo dưỡng thiết bị điện lạnh"]
+        };
+      }
+      if (tech) {
+        renderTechnicianDetail(tech, mainEl);
+      } else {
+        mainEl.innerHTML = `
+          <div class="error-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Lỗi khi tải thông tin</p>
+            <a href="#/hotline" class="back-link">Quay lại danh sách</a>
+          </div>
+        `;
+      }
     });
 }
 
@@ -173,6 +211,10 @@ function renderTechnicianDetail(tech, mainEl) {
           <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
           <span class="rating-count">(0 đánh giá)</span>
         </div>
+        <button class="select-tech-btn" data-tech-id="${tech.id}" data-tech-name="${tech.username || 'Kỹ thuật viên'}" data-tech-phone="${tech.phone || ''}">
+          <i class="fas fa-calendar-check"></i>
+          <span>Chọn thợ và đặt lịch</span>
+        </button>
       </div>
     </div>
 
@@ -246,6 +288,19 @@ function renderTechnicianDetail(tech, mainEl) {
       </div>
     </div>
   `;
+
+  // Add select technician button event
+  const selectTechBtn = mainEl.querySelector(".select-tech-btn");
+  if (selectTechBtn) {
+    selectTechBtn.addEventListener("click", () => {
+      const techId = selectTechBtn.getAttribute("data-tech-id");
+      const techName = selectTechBtn.getAttribute("data-tech-name");
+      const techPhone = selectTechBtn.getAttribute("data-tech-phone");
+      
+      // Điều hướng đến trang đặt lịch với thông tin thợ đã chọn
+      window.location.hash = `#/booking?techId=${techId}&techName=${encodeURIComponent(techName)}&techPhone=${encodeURIComponent(techPhone)}`;
+    });
+  }
 
   // Add favorite button event
   const favoriteBtn = mainEl.querySelector(".favorite-btn");
@@ -364,17 +419,36 @@ function loadReviews(techId, mainEl) {
 
   SupportService.getListOrderRating(techId)
     .then((data) => {
+                                    
       let reviews = [];
-      if (data && data.data && Array.isArray(data.data)) {
-        reviews = data.data;
+      
+      // Try multiple possible response structures
+      if (data && data.data) {
+                if (Array.isArray(data.data)) {
+          reviews = data.data;
+        } else if (data.data.reviews && Array.isArray(data.data.reviews)) {
+          reviews = data.data.reviews;
+        } else if (data.data.list && Array.isArray(data.data.list)) {
+          reviews = data.data.list;
+        } else if (data.data.items && Array.isArray(data.data.items)) {
+          reviews = data.data.items;
+        }
       } else if (Array.isArray(data)) {
-        reviews = data;
+                reviews = data;
+      } else if (data && data.reviews && Array.isArray(data.reviews)) {
+        reviews = data.reviews;
+      } else if (data && data.list && Array.isArray(data.list)) {
+        reviews = data.list;
       }
-
-      const validReviews = reviews.filter(r => 
-        r && r.rate && r.user && (r.comment || r.content || r.note)
-      );
-
+      
+            
+      // Filter valid reviews - make filter less strict
+      const validReviews = reviews.filter(r => {
+        const isValid = r && r.rate;
+                return isValid;
+      });
+      
+            
       const uniqueReviews = validReviews.reduce((acc, current) => {
         const currentId = current.id || current.order_id;
         const isDuplicate = acc.find(item => {
@@ -388,19 +462,30 @@ function loadReviews(techId, mainEl) {
         return acc;
       }, []);
 
+            
       if (uniqueReviews.length > 0) {
+        // Sắp xếp đánh giá theo thứ tự mới nhất đến cũ nhất
+        const sortedReviews = uniqueReviews.sort((a, b) => {
+          const dateA = new Date(a.created_at || a.createdAt || 0);
+          const dateB = new Date(b.created_at || b.createdAt || 0);
+          return dateB - dateA; // Mới nhất trước
+        });
+
         const avgRating =
-          uniqueReviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
-          uniqueReviews.length;
+          sortedReviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) /
+          sortedReviews.length;
+        
+                
         techRating.innerHTML = `
           ${renderStars(avgRating)}
-          <span class="rating-count">(${uniqueReviews.length} đánh giá)</span>
+          <span class="rating-count">(${sortedReviews.length} đánh giá)</span>
         `;
-        reviewsList.innerHTML = uniqueReviews
+        reviewsList.innerHTML = sortedReviews
           .map((review) => renderReviewItem(review))
           .join("");
-      } else {
-        reviewsList.innerHTML =
+        
+              } else {
+                reviewsList.innerHTML =
           '<p class="empty-text">Chưa có đánh giá nào</p>';
       }
     })

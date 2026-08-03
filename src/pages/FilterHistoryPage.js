@@ -3,7 +3,9 @@ import { Footer } from '../components/Footer.js';
 import { authService } from '../services/auth.service.js';
 import { historyService } from '../services/history.service.js';
 import { getImageUrl } from '../utils/helpers.js';
+import { Pagination } from '../utils/pagination.js';
 import '../styles/history/filter-history.css';
+import '../styles/pagination.css';
 
 export function FilterHistoryPage() {
   const container = document.createElement('div');
@@ -14,11 +16,13 @@ export function FilterHistoryPage() {
   let allProducts = [];
   let loading = true;
 
+  let rentalTasksCount = 0; // Store rental count globally
+  let pagination = null; // Pagination instance
+
   const loadProducts = async () => {
     try {
       const currentUser = authService.getUser();
-      console.log('Current user data:', currentUser);
-      
+            
       if (!currentUser) {
         throw new Error('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
       }
@@ -31,13 +35,11 @@ export function FilterHistoryPage() {
         throw new Error('Không tìm thấy số điện thoại người dùng. Vui lòng cập nhật thông tin tài khoản.');
       }
 
-      console.log('Fetching products list for user:', currentUser.id);
-
+      
       // Step 1: Get list of products from /user/listProduct/{userId}
       const productsResult = await historyService.getFilterHistory(currentUser.id);
       
-      console.log('Products list response:', productsResult);
-
+      
       let products = [];
       if (productsResult.data && productsResult.data.listProducts) {
         products = productsResult.data.listProducts;
@@ -47,21 +49,21 @@ export function FilterHistoryPage() {
         products = productsResult;
       }
 
-      console.log('Found products:', products.length);
-
-      // Step 2: For each product, get its filter history count
+      
+      // Step 2: For each product, get its filter history with items
       let productsWithHistory = [];
       
       for (const product of products) {
         if (product.id) {
           try {
-            console.log(`Fetching history for product ${product.id}`);
-            const historyResult = await historyService.getFilterCoreHistoryByPhone(product.id, currentUser.phone);
+                        const historyResult = await historyService.getFilterCoreHistoryByPhone(product.id, currentUser.phone);
             
-            console.log(`History for product ${product.id}:`, historyResult);
-
+            
             let historyCount = 0;
             let historyItems = [];
+            let rentalDebt = 0;
+            let nextReplaceDate = null;
+            let nextFilterCoreName = null;
 
             // Extract history data from response
             if (historyResult.data) {
@@ -75,12 +77,68 @@ export function FilterHistoryPage() {
                 historyItems = historyResult.data.product.order_filter_cores;
                 historyCount = historyItems.length;
               }
+              
+              // Extract rental debt for rental products
+              if (product.order_type_label === "Thuê" && historyResult.data.product?.order_rent) {
+                const orderRent = Array.isArray(historyResult.data.product.order_rent) 
+                  ? historyResult.data.product.order_rent[0] 
+                  : historyResult.data.product.order_rent;
+                if (orderRent && orderRent.dept !== null) {
+                  rentalDebt = parseInt(orderRent.dept) || 0;
+                }
+              }
+              
+              // Get next replacement date from the most recent history item
+              if (historyItems.length > 0) {
+                                
+                // Sort to get the most recent item
+                const sortedItems = [...historyItems].sort((a, b) => {
+                  const dateA = new Date(a.replace_date || a.ngay_thay || a.created_at || 0);
+                  const dateB = new Date(b.replace_date || b.ngay_thay || b.created_at || 0);
+                  return dateB - dateA;
+                });
+                const mostRecent = sortedItems[0];
+                
+                                
+                // Try to get from item itself first
+                nextReplaceDate = mostRecent.replace_date_promise || mostRecent.ngay_thay_tiep_theo || mostRecent.next_replace_date;
+                
+                                
+                // If not available, try to get from detail API
+                if (!nextReplaceDate && mostRecent.id) {
+                  try {
+                                        const detailResult = await historyService.getFilterHistoryDetail(mostRecent.id);
+                    const detailData = detailResult.data || detailResult;
+                    const order = detailData.order || detailData;
+                    
+                                                            
+                    // Get from order_filter_core[1]
+                    if (Array.isArray(order.order_filter_core) && order.order_filter_core.length > 1) {
+                      const nextFilterCore = order.order_filter_core[1];
+                                            nextReplaceDate = nextFilterCore?.replace_date_promise || nextFilterCore?.replace_date || nextFilterCore?.ngay_thay_tiep_theo;
+                      nextFilterCoreName = nextFilterCore?.name;
+                    }
+                    
+                    // Fallback to order level
+                    if (!nextReplaceDate) {
+                      nextReplaceDate = order.next_replace_date || order.ngay_thay_tiep_theo;
+                    }
+                    
+                                                          } catch (detailError) {
+                    console.warn(`Failed to fetch detail for history ${mostRecent.id}:`, detailError);
+                  }
+                }
+              }
             }
 
             productsWithHistory.push({
               ...product,
               historyCount: historyCount,
-              hasHistory: historyCount > 0
+              hasHistory: historyCount > 0,
+              historyItems: historyItems, // Store history items for filtering
+              rentalDebt: rentalDebt, // Store rental debt
+              nextReplaceDate: nextReplaceDate, // Store next replace date
+              nextFilterCoreName: nextFilterCoreName // Store next filter core name
             });
           } catch (error) {
             console.warn(`Failed to fetch history for product ${product.id}:`, error);
@@ -88,15 +146,37 @@ export function FilterHistoryPage() {
             productsWithHistory.push({
               ...product,
               historyCount: 0,
-              hasHistory: false
+              hasHistory: false,
+              historyItems: [],
+              rentalDebt: 0,
+              nextReplaceDate: null,
+              nextFilterCoreName: null
             });
           }
         }
       }
 
-      console.log('Products with history:', productsWithHistory);
+            
+      // Assign original machine numbers to each product
+      productsWithHistory.forEach((product, index) => {
+        product.machineNumber = index + 1;
+      });
       
       allProducts = productsWithHistory || [];
+      
+      // Calculate rental machines count - only those with status "Đang thuê" (origin === "1")
+      const rentalProducts = allProducts.filter(product => 
+        product.order_type_label === "Thuê" && String(product.origin) === "1"
+      );
+      rentalTasksCount = rentalProducts.length;
+      
+      // Calculate total rental debt
+      const totalRentalDebt = rentalProducts.reduce((sum, product) => sum + (product.rentalDebt || 0), 0);
+      
+                        
+      // Store totalRentalDebt globally for display
+      window.totalRentalDebt = totalRentalDebt;
+      
       loading = false;
       updateDisplay();
     } catch (error) {
@@ -114,24 +194,177 @@ export function FilterHistoryPage() {
   };
 
   const filterByStatus = (status) => {
-    if (status === 'all') {
-      displayProducts(allProducts);
-    } else {
-      // Filter history items by status
-      const filtered = allProducts.filter(item => item.status === status);
-
-      if (filtered.length > 0) {
-        displayProducts(filtered);
-      } else {
-        const productsList = document.getElementById('productsList');
-        if (productsList) {
-          productsList.innerHTML = `
-            <div class="empty-filter-result">
-              <i class="fas fa-search"></i>
-              <p>Không có lịch sử thay lõi với trạng thái "${getStatusText(status)}"</p>
-            </div>
-          `;
+    const searchInput = document.getElementById('addressSearchInput');
+    const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const machineSearchInput = document.getElementById('machineNumberSearchInput');
+    const machineSearchText = machineSearchInput ? machineSearchInput.value.trim() : '';
+    
+    let filtered = allProducts;
+    
+    // Apply status filter
+    if (status !== 'all') {
+      filtered = filtered.filter(product => {
+        if (!product.historyItems || product.historyItems.length === 0) {
+          return false;
         }
+        return product.historyItems.some(item => String(item.status) === String(status));
+      });
+    }
+    
+    // Apply address search filter
+    if (searchText) {
+      filtered = filtered.filter(product => {
+        const address = (product.address || '').toLowerCase();
+        return address.includes(searchText);
+      });
+    }
+    
+    // Apply machine number search filter
+    if (machineSearchText) {
+      const machineNumber = parseInt(machineSearchText);
+      if (!isNaN(machineNumber) && machineNumber > 0) {
+        filtered = filtered.filter(product => product.machineNumber === machineNumber);
+      }
+    }
+
+    if (pagination) {
+      pagination.reset();
+    }
+
+    if (filtered.length > 0) {
+      displayProducts(filtered);
+    } else {
+      const productsList = document.getElementById('productsList');
+      if (productsList) {
+        productsList.innerHTML = `
+          <div class="empty-filter-result">
+            <i class="fas fa-search"></i>
+            <p>Không có sản phẩm nào phù hợp với bộ lọc${status !== 'all' ? ` trạng thái "${getStatusText(status)}"` : ''}${searchText ? ` và địa chỉ "${searchText}"` : ''}${machineSearchText ? ` và số máy "${machineSearchText}"` : ''}.</p>
+          </div>
+        `;
+      }
+      const paginationContainer = document.getElementById('pagination');
+      if (paginationContainer) {
+        paginationContainer.style.display = 'none';
+      }
+    }
+  };
+
+  const filterByAddress = (searchText) => {
+    const statusSelect = document.getElementById('statusFilter');
+    const status = statusSelect ? statusSelect.value : 'all';
+    const machineSearchInput = document.getElementById('machineNumberSearchInput');
+    const machineSearchText = machineSearchInput ? machineSearchInput.value.trim() : '';
+    
+    searchText = searchText.toLowerCase().trim();
+    
+    let filtered = allProducts;
+    
+    // Apply status filter
+    if (status !== 'all') {
+      filtered = filtered.filter(product => {
+        if (!product.historyItems || product.historyItems.length === 0) {
+          return false;
+        }
+        return product.historyItems.some(item => String(item.status) === String(status));
+      });
+    }
+    
+    // Apply address search filter
+    if (searchText) {
+      filtered = filtered.filter(product => {
+        const address = (product.address || '').toLowerCase();
+        return address.includes(searchText);
+      });
+    }
+    
+    // Apply machine number search filter
+    if (machineSearchText) {
+      const machineNumber = parseInt(machineSearchText);
+      if (!isNaN(machineNumber) && machineNumber > 0) {
+        const targetIndex = machineNumber - 1;
+        filtered = filtered.filter((product, index) => index === targetIndex);
+      }
+    }
+
+    if (pagination) {
+      pagination.reset();
+    }
+
+    if (filtered.length > 0) {
+      displayProducts(filtered);
+    } else {
+      const productsList = document.getElementById('productsList');
+      if (productsList) {
+        productsList.innerHTML = `
+          <div class="empty-filter-result">
+            <i class="fas fa-search"></i>
+            <p>Không có sản phẩm nào phù hợp với${status !== 'all' ? ` trạng thái "${getStatusText(status)}"` : ''}${searchText ? ` địa chỉ "${searchText}"` : ''}${machineSearchText ? ` số máy "${machineSearchText}"` : ' bộ lọc'}.</p>
+          </div>
+        `;
+      }
+      const paginationContainer = document.getElementById('pagination');
+      if (paginationContainer) {
+        paginationContainer.style.display = 'none';
+      }
+    }
+  };
+  
+  const filterByMachineNumber = (machineNumberText) => {
+    const statusSelect = document.getElementById('statusFilter');
+    const status = statusSelect ? statusSelect.value : 'all';
+    const addressSearchInput = document.getElementById('addressSearchInput');
+    const addressSearchText = addressSearchInput ? addressSearchInput.value.toLowerCase().trim() : '';
+    
+    machineNumberText = machineNumberText.trim();
+    
+    let filtered = allProducts;
+    
+    // Apply status filter
+    if (status !== 'all') {
+      filtered = filtered.filter(product => {
+        if (!product.historyItems || product.historyItems.length === 0) {
+          return false;
+        }
+        return product.historyItems.some(item => String(item.status) === String(status));
+      });
+    }
+    
+    // Apply address search filter
+    if (addressSearchText) {
+      filtered = filtered.filter(product => {
+        const address = (product.address || '').toLowerCase();
+        return address.includes(addressSearchText);
+      });
+    }
+    
+    // Apply machine number search filter
+    if (machineNumberText) {
+      const machineNumber = parseInt(machineNumberText);
+      if (!isNaN(machineNumber) && machineNumber > 0) {
+        filtered = filtered.filter(product => product.machineNumber === machineNumber);
+      }
+    }
+
+    if (pagination) {
+      pagination.reset();
+    }
+
+    if (filtered.length > 0) {
+      displayProducts(filtered);
+    } else {
+      const productsList = document.getElementById('productsList');
+      if (productsList) {
+        productsList.innerHTML = `
+          <div class="empty-filter-result">
+            <i class="fas fa-search"></i>
+            <p>Không có sản phẩm nào phù hợp với${status !== 'all' ? ` trạng thái "${getStatusText(status)}"` : ''}${addressSearchText ? ` địa chỉ "${addressSearchText}"` : ''}${machineNumberText ? ` số máy "${machineNumberText}"` : ' bộ lọc'}.</p>
+          </div>
+        `;
+      }
+      const paginationContainer = document.getElementById('pagination');
+      if (paginationContainer) {
+        paginationContainer.style.display = 'none';
       }
     }
   };
@@ -152,6 +385,11 @@ export function FilterHistoryPage() {
     return date.toLocaleDateString('vi-VN');
   };
 
+  const formatPrice = (price) => {
+    if (!price || price === 0) return '0đ';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
   const displayProducts = (products) => {
     const container = document.getElementById('productsList');
     if (!container) return;
@@ -159,14 +397,70 @@ export function FilterHistoryPage() {
     const currentUser = authService.getUser();
     const userPhone = currentUser?.phone || 'N/A';
 
+    // Initialize pagination if not exists
+    if (!pagination) {
+      pagination = new Pagination({
+        itemsPerPage: 10,
+        onPageChange: () => {
+          displayProducts(products);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    }
+
+    // Get paginated items
+    const paginatedProducts = pagination.getPaginatedItems(products);
+
+    // Count rental machines in the displayed products
+    const displayedRentalCount = products.filter(product => 
+      product.order_type_label === "Thuê" && String(product.origin) === "1"
+    ).length;
+
+    const totalDebt = window.totalRentalDebt || 0;
+
+                
+    // Update stats display - show total machines, rental machines, and total debt
+    const rentalCountSection = document.getElementById('rentalCountSection');
+    if (rentalCountSection) {
+      rentalCountSection.style.display = 'block';
+      rentalCountSection.innerHTML = `
+        <div class="stats-container">
+          <div class="stat-badge total-machines">
+            <i class="fas fa-tint"></i>
+            <span>Tổng số máy: <strong>${allProducts.length}</strong></span>
+          </div>
+          <div class="stat-badge rental-machines">
+            <i class="fas fa-handshake"></i>
+            <span>Số máy thuê: <strong>${rentalTasksCount}</strong></span>
+          </div>
+          <div class="stat-badge rental-debt">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Tổng công nợ: <strong>${formatPrice(totalDebt)}</strong></span>
+          </div>
+        </div>
+      `;
+    }
+
     container.style.display = 'block';
-    container.innerHTML = products.map(product => {
+    container.innerHTML = paginatedProducts.map((product, index) => {
       const productName = product.product?.name || product.name || 'Sản phẩm';
       const address = product.address || 'Chưa có địa chỉ';
       const purchaseDate = product.ngaymua || product.created_at;
       const filterLevel = product.filter_core_level || '?';
       const historyCount = product.historyCount || 0;
+      const machineNumber = product.machineNumber || (index + 1); // Use stored machine number
 
+      // Count history items by status
+      const historyItems = product.historyItems || [];
+      const pendingCount = historyItems.filter(item => String(item.status) === '1').length;
+      const confirmedCount = historyItems.filter(item => String(item.status) === '2').length;
+      const completedCount = historyItems.filter(item => String(item.status) === '3').length;
+      
+      // Get next replace date info
+      const nextReplaceDate = product.nextReplaceDate;
+      const nextFilterCoreName = product.nextFilterCoreName;
+      
+      
       // Lấy ảnh từ product_images array
       let productImage = '/images/default-service.svg';
       
@@ -184,6 +478,7 @@ export function FilterHistoryPage() {
             <div class="product-card-left">
               <div class="product-header">
                 <div class="product-info">
+                  <span class="machine-number-badge">Máy ${machineNumber}</span>
                   <h3><i class="fas fa-tint"></i> ${productName}</h3>
                   <p class="product-address"><i class="fas fa-map-marker-alt"></i> ${address}</p>
                   <p class="product-date"><i class="fas fa-calendar"></i> Ngày mua: ${formatDate(purchaseDate)}</p>
@@ -196,11 +491,33 @@ export function FilterHistoryPage() {
                   <i class="fas fa-history"></i>
                   <span><strong>${historyCount}</strong> lần thay lõi</span>
                 </div>
+                ${nextReplaceDate ? `
+                  <div class="next-replace-info">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Lần thay tiếp theo: <strong>${formatDate(nextReplaceDate)}</strong></span>
+                    ${nextFilterCoreName ? `<span class="next-filter-name">${nextFilterCoreName}</span>` : ''}
+                  </div>
+                ` : historyCount > 0 ? `
+                  <div class="next-replace-info" style="opacity: 0.6;">
+                    <i class="fas fa-info-circle"></i>
+                    <span style="font-size: 0.85rem; color: #999;">Chưa có thông tin lần thay tiếp theo</span>
+                  </div>
+                ` : ''}
+                ${historyCount > 0 ? `
+                  <div class="status-breakdown">
+                    ${pendingCount > 0 ? `<span class="status-tag pending"><i class="fas fa-clock"></i> ${pendingCount} chờ xác nhận</span>` : ''}
+                    ${confirmedCount > 0 ? `<span class="status-tag confirmed"><i class="fas fa-check"></i> ${confirmedCount} đã xác nhận</span>` : ''}
+                    ${completedCount > 0 ? `<span class="status-tag completed"><i class="fas fa-check-double"></i> ${completedCount} hoàn thành</span>` : ''}
+                  </div>
+                ` : ''}
               </div>
-              <div class="card-footer">
+              <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="view-detail">
                   <i class="fas fa-eye"></i> Xem lịch sử thay lõi
                 </span>
+                <button type="button" class="btn-feedback-action" onclick="event.stopPropagation(); window.location.hash='#/booking-history?tab=feedback&order_id=${product.order_id || product.id}'">
+                  <i class="fas fa-comment-dots"></i> Góp ý / Khiếu nại
+                </button>
               </div>
             </div>
             <div class="product-card-right">
@@ -212,6 +529,9 @@ export function FilterHistoryPage() {
         </div>
       `;
     }).join('');
+
+    // Render pagination
+    pagination.render(products.length, 'pagination');
   };
 
   const updateDisplay = () => {
@@ -256,6 +576,13 @@ export function FilterHistoryPage() {
   `;
   containerDiv.appendChild(pageHeader);
 
+  // Rental count section
+  const rentalCountSection = document.createElement('div');
+  rentalCountSection.className = 'rental-count-section';
+  rentalCountSection.id = 'rentalCountSection';
+  rentalCountSection.style.display = 'none';
+  containerDiv.appendChild(rentalCountSection);
+
   // History tabs
   const historyTabs = document.createElement('div');
   historyTabs.className = 'history-tabs';
@@ -285,6 +612,37 @@ export function FilterHistoryPage() {
   
   filterToolbar.appendChild(filterLabel);
   filterToolbar.appendChild(statusSelect);
+  
+  // Add machine number search input
+  const machineSearchLabel = document.createElement('label');
+  machineSearchLabel.innerHTML = '<i class="fas fa-hashtag"></i> Số máy:';
+  machineSearchLabel.style.marginLeft = '20px';
+  
+  const machineSearchInput = document.createElement('input');
+  machineSearchInput.type = 'number';
+  machineSearchInput.className = 'search-input';
+  machineSearchInput.id = 'machineNumberSearchInput';
+  machineSearchInput.placeholder = 'Nhập số máy...';
+  machineSearchInput.min = '1';
+  machineSearchInput.oninput = (e) => filterByMachineNumber(e.target.value);
+  
+  filterToolbar.appendChild(machineSearchLabel);
+  filterToolbar.appendChild(machineSearchInput);
+  
+  // Add address search input to the same toolbar
+  const searchLabel = document.createElement('label');
+  searchLabel.innerHTML = '<i class="fas fa-search"></i> Địa chỉ:';
+  searchLabel.style.marginLeft = '20px';
+  
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.className = 'search-input';
+  searchInput.id = 'addressSearchInput';
+  searchInput.placeholder = 'Nhập địa chỉ máy...';
+  searchInput.oninput = (e) => filterByAddress(e.target.value);
+  
+  filterToolbar.appendChild(searchLabel);
+  filterToolbar.appendChild(searchInput);
   containerDiv.appendChild(filterToolbar);
 
   // Loading state
@@ -316,6 +674,13 @@ export function FilterHistoryPage() {
     <p>Bạn chưa có sản phẩm nào được đăng ký.</p>
   `;
   containerDiv.appendChild(emptyState);
+
+  // Pagination container
+  const paginationContainer = document.createElement('div');
+  paginationContainer.className = 'pagination-container';
+  paginationContainer.id = 'pagination';
+  paginationContainer.style.display = 'none';
+  containerDiv.appendChild(paginationContainer);
 
   main.appendChild(containerDiv);
   page.appendChild(main);

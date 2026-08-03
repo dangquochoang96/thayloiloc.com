@@ -5,8 +5,7 @@ export const productService = {
   async getProductList() {
     try {
       const response = await api.get('/product/list');
-      console.log('Product list response:', response);
-      
+            
       // Handle different response structures
       if (response.code === 200 || response.status === 'success' || response.success) {
         return response.data || response.products || [];

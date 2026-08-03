@@ -3,6 +3,8 @@ import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
 import { bookingService } from "../services/booking.service.js";
 import { historyService } from "../services/history.service.js";
+import { favoriteStore } from "../services/favorite.store.js";
+import { SupportService } from "../services/support.service.js";
 
 // Import HTML template
 import bookingDetailTemplate from "../templates/booking/booking-detail.html?raw";
@@ -31,7 +33,7 @@ export function BookingDetailPage() {
 
 async function loadBookingDetail(container) {
   const user = authService.getCurrentUser();
-  
+
   if (!user) {
     console.warn('User not authenticated, redirecting to login');
     window.location.hash = "/login";
@@ -40,8 +42,7 @@ async function loadBookingDetail(container) {
 
   // Get booking ID from URL hash
   const hash = window.location.hash;
-  console.log('Current hash:', hash);
-  const bookingId = hash.split('/')[2]; // #/booking-detail/123
+    const bookingId = hash.split('/')[2]; // #/booking-detail/123
 
   if (!bookingId) {
     console.error('No booking ID found in URL:', hash);
@@ -49,22 +50,19 @@ async function loadBookingDetail(container) {
     return;
   }
 
-  console.log('Loading booking detail for ID:', bookingId);
-
+  
   try {
     // Show loading state
     const loadingState = container.querySelector('#detailLoading');
     const detailContent = container.querySelector('#detailContent');
     const errorState = container.querySelector('#errorState');
-    
+
     if (loadingState) loadingState.style.display = 'block';
     if (detailContent) detailContent.style.display = 'none';
     if (errorState) errorState.style.display = 'none';
 
     // Use historyService to get booking detail (same as BookingHistoryPage)
-    console.log('Attempting to load booking detail using historyService...');
-    const booking = await historyService.getBookingDetail(bookingId);
-    console.log('Booking detail loaded successfully:', booking);
+        const booking = await historyService.getBookingDetail(bookingId);
     
     // Handle different response formats
     let bookingData;
@@ -75,7 +73,7 @@ async function loadBookingDetail(container) {
     } else {
       throw new Error('Không có dữ liệu booking');
     }
-    
+
     // Render booking detail
     renderBookingDetail(container, bookingData);
 
@@ -89,7 +87,7 @@ function showError(container, message = 'Không tìm thấy thông tin') {
   const loadingState = container.querySelector('#detailLoading');
   const detailContent = container.querySelector('#detailContent');
   const errorState = container.querySelector('#errorState');
-  
+
   if (loadingState) loadingState.style.display = 'none';
   if (detailContent) detailContent.style.display = 'none';
   if (errorState) {
@@ -112,12 +110,11 @@ function getStatusText(status) {
 }
 
 function renderBookingDetail(container, booking) {
-  console.log('Rendering booking detail:', booking);
   
   const loadingState = container.querySelector('#detailLoading');
   const detailContent = container.querySelector('#detailContent');
   const errorState = container.querySelector('#errorState');
-  
+
   // Hide loading, show content
   if (loadingState) loadingState.style.display = 'none';
   if (detailContent) detailContent.style.display = 'block';
@@ -138,40 +135,40 @@ function renderBookingDetail(container, booking) {
 
   // Set booking data with safe access - same as BookingHistoryPage logic
   if (bookingIdSpan) bookingIdSpan.textContent = `#${booking.id || 'N/A'}`;
-  
+
   // Handle time display - same logic as BookingHistoryPage
   let displayDate = 'N/A';
-  if (booking.time_star) {
-    displayDate = formatDate(booking.time_star);
+  if (booking.time_start) {
+    displayDate = formatDate(booking.time_start);
   } else if (booking.appointment_date) {
     displayDate = formatDate(booking.appointment_date);
   } else if (booking.created_at) {
     displayDate = formatDate(booking.created_at);
   }
   if (timeValue) timeValue.textContent = `${displayDate} - ${booking.appointment_time || '14:00'}`;
-  
+
   // Task/Service name - same field priority as BookingHistoryPage
   if (taskName) taskName.textContent = booking.name || booking.service?.name || booking.task_name || 'Dịch vụ bảo dưỡng';
-  
+
   // Product name - same logic
   const customer = booking.customer || {};
   const product = booking.product_info || {};
   if (productName) productName.textContent = product.name || booking.service?.product_name || booking.product_name || 'N/A';
-  
+
   // Description - same field priority
   if (description) description.textContent = booking.des || booking.service?.description || booking.description || booking.notes || 'Không có mô tả';
-  
+
   // Address - prioritize product address over customer address
   const displayAddress = product.address || booking.address || booking.installation_address || customer.address || 'Chưa cập nhật';
   if (address) address.textContent = displayAddress;
-  
+
   // Set status with styling - using same status mapping as BookingHistoryPage
   if (status) {
     const statusText = getStatusText(booking.status);
     const statusClass = getStatusClass(booking.status);
     status.innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
   }
-  
+
   // Get technician info from staff array or direct staff object
   let staff = null;
   if (Array.isArray(booking.staff) && booking.staff.length > 0) {
@@ -179,14 +176,30 @@ function renderBookingDetail(container, booking) {
   } else if (booking.staff && typeof booking.staff === 'object') {
     staff = booking.staff;
   }
-  
-  const technicianName = staff?.username || staff?.staff_info?.username || staff?.staff_info?.name || booking.technician?.name || booking.staff_name || customer.username || customer.name || 'Chưa phân công';
-  const technicianPhone = staff?.phone || staff?.staff_info?.phone || booking.technician?.phone || booking.staff_phone || customer.phone || booking.phone || 'N/A';
-  
+
+  // If staff is just an ID (number/string), look up from favoriteStore or cache
+  if (!staff && booking.staff && (typeof booking.staff === 'number' || (typeof booking.staff === 'string' && !isNaN(booking.staff)))) {
+    const staffId = String(booking.staff);
+    staff = favoriteStore.getAll().find(f => String(f.id) === staffId) || null;
+    // If not in favorites, try to fetch from KTV list
+    if (!staff) {
+      SupportService.getAllSupportTechnicians().then(result => {
+        const found = (result.data || []).find(t => String(t.id) === staffId);
+        if (found && staffName) {
+          staffName.textContent = found.username || found.name || 'N/A';
+          if (staffPhone) staffPhone.textContent = found.phone || 'N/A';
+        }
+      }).catch(() => { });
+    }
+  }
+
+  const technicianName = staff?.username || staff?.staff_info?.username || staff?.staff_info?.name || staff?.name || booking.technician?.name || booking.staff_name || 'Chưa phân công';
+  const technicianPhone = staff?.phone || staff?.staff_info?.phone || booking.technician?.phone || booking.staff_phone || booking.phone || 'N/A';
+
   // Staff info - same field mapping
   if (staffName) staffName.textContent = technicianName;
   if (staffPhone) staffPhone.textContent = technicianPhone;
-  
+
   // Notification - same field priority
   if (notification) notification.textContent = booking.notification || booking.notes || booking.des || 'Không có thông báo';
 
@@ -205,9 +218,8 @@ function renderBookingDetail(container, booking) {
       mediaGallery.innerHTML = '<p class="no-media">Chưa có hình ảnh hoặc video</p>';
     }
   }
-  
-  console.log('Booking detail rendered successfully');
-}
+
+  }
 
 // Global functions for button actions
 window.cancelBooking = async (bookingId) => {
@@ -226,8 +238,7 @@ window.cancelBooking = async (bookingId) => {
 
 window.showRatingModal = (bookingId) => {
   // Implementation for rating modal
-  console.log('Show rating modal for booking:', bookingId);
-};
+  };
 
 window.rebookService = (serviceId) => {
   window.location.hash = `/booking?service=${serviceId}`;
@@ -271,7 +282,7 @@ window.openMediaModal = (url) => {
     z-index: 10000;
     cursor: pointer;
   `;
-  
+
   const img = document.createElement('img');
   img.src = url;
   img.style.cssText = `
@@ -280,10 +291,10 @@ window.openMediaModal = (url) => {
     object-fit: contain;
     border-radius: 12px;
   `;
-  
+
   modal.appendChild(img);
   document.body.appendChild(modal);
-  
+
   modal.addEventListener('click', () => {
     document.body.removeChild(modal);
   });

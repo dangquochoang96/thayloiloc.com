@@ -1,0 +1,205 @@
+/* Missing Service Feedback Component Styling */
+.missing-service-container {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 620px;
+  margin: 20px auto;
+  box-sizing: border-box;
+}
+
+.missing-service-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid #e2e8f0;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.missing-service-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.missing-service-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff7ed;
+  color: var(--primary-color, #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin: 0 auto 14px auto;
+  border: 2px solid #ffedd5;
+}
+
+.missing-service-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.missing-service-header p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.missing-service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.missing-service-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.missing-service-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.missing-service-form label i {
+  color: var(--primary-color, #f97316);
+}
+
+.required-star {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.user-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #16a34a;
+  background: #dcfce7;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.missing-input,
+.missing-select,
+.missing-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.missing-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 38px;
+}
+
+.missing-input:focus,
+.missing-textarea:focus {
+  border-color: var(--primary-color, #f97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.missing-input[readonly] {
+  background-color: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.input-note {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.missing-submit-btn {
+  background: linear-gradient(135deg, var(--primary-color, #f97316) 0%, #ea580c 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+  margin-top: 6px;
+}
+
+.missing-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.4);
+}
+
+.missing-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Success state */
+.missing-service-card.success-state {
+  text-align: center;
+  padding: 35px 24px;
+}
+
+.success-icon {
+  font-size: 3rem;
+  color: #22c55e;
+  margin-bottom: 12px;
+}
+
+.missing-reset-btn {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  transition: all 0.2s ease;
+}
+
+.missing-reset-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}

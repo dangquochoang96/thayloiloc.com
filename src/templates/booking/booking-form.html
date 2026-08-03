@@ -17,44 +17,52 @@
         <!-- Tên dịch vụ (hiển thị khi chọn 'Khác') -->
         <div class="form-group" id="service-name-group" style="display: none;">
             <label for="service_name">Tên Dịch Vụ <span class="required">*</span></label>
-            <input type="text" id="service_name" name="service_name" 
-                   placeholder="Nhập tên dịch vụ bạn muốn đặt lịch" 
-                   autocomplete="off">
+            <input type="text" id="service_name" name="service_name" placeholder="Nhập tên dịch vụ bạn muốn đặt lịch"
+                autocomplete="off">
         </div>
 
         <!-- Sản phẩm -->
         <div class="form-group">
-            <label for="product_id">Sản Phẩm <span class="required">*</span></label>
-            <select id="product_id" name="product_id" required>
+            <label for="product_id">Sản Phẩm </label>
+            <select id="product_id" name="product_id">
                 <option value="">Đang tải...</option>
             </select>
         </div>
 
-        <!-- Chọn thợ yêu thích -->
-        <div class="form-group">
-            <label for="staff">Chọn Thợ Yêu Thích</label>
-            <select id="staff" name="staff">
-                <option value="">-- Không chọn (hệ thống sẽ tự động phân công) --</option>
-            </select>
-            <p class="form-hint">Bạn có thể chọn thợ yêu thích hoặc để hệ thống tự động phân công</p>
-        </div>
-
-        <!-- Thời gian bắt đầu -->
-        <div class="form-group">
-            <label for="time_star">Thời Gian Bắt Đầu <span class="required">*</span></label>
-            <input type="datetime-local" id="time_star" name="time_star" required>
-        </div>
-
-        <!-- Thời gian kết thúc -->
-        <div class="form-group">
-            <label for="time_end">Thời Gian Kết Thúc <span class="required">*</span></label>
-            <input type="datetime-local" id="time_end" name="time_end" required>
+        <!-- Vị trí máy (hiển thị sau khi chọn sản phẩm) -->
+        <div id="product-location-info" class="product-location-info" style="display: none;">
+            <!-- Content will be dynamically inserted here -->
         </div>
 
         <!-- Địa chỉ -->
         <div class="form-group">
             <label for="address">Địa Chỉ <span class="required">*</span></label>
             <input type="text" id="address" name="address" required placeholder="Nhập địa chỉ của bạn">
+        </div>
+
+        <!-- Chọn thợ yêu thích -->
+        <div class="form-group staff-selection-group">
+            <label for="staff" class="staff-group-title">
+                <i class="fas fa-user-shield" style="color: #f97316;"></i> Chọn Thợ Yêu Thích
+            </label>
+            <select id="staff" name="staff" style="display: none;">
+                <option value="">-- Không chọn (hệ thống sẽ tự động phân công) --</option>
+            </select>
+            <!-- Visual Cards Container -->
+            <div id="staff-cards-container" class="staff-cards-container">
+                <!-- Dynamically rendered technician cards -->
+            </div>
+            <p class="form-hint"><i class="fas fa-info-circle"></i> Bạn có thể chọn thợ yêu thích hoặc để hệ thống tự động phân công thợ gần nhất</p>
+            <div id="staff-info" class="staff-info" style="display: none;">
+                <span class="staff-info-name"><i class="fas fa-user-cog"></i> <span id="staff-info-name"></span></span>
+                <span class="staff-info-phone"><i class="fas fa-phone"></i> <span id="staff-info-phone"></span></span>
+            </div>
+        </div>
+
+        <!-- Thời gian bắt đầu -->
+        <div class="form-group">
+            <label for="time_start">Thời Gian Bắt Đầu <span class="required">*</span></label>
+            <input type="datetime-local" id="time_start" name="time_start" required>
         </div>
 
         <!-- Mô tả -->
@@ -67,8 +75,12 @@
         <!-- Upload ảnh -->
         <div class="form-group">
             <label for="images">Hình Ảnh</label>
-            <input type="file" id="images" name="images" multiple accept="image/*">
-            <p class="form-hint">Bạn có thể upload nhiều ảnh để mô tả vấn đề</p>
+            <div class="image-upload-container" onclick="document.getElementById('images').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:#f97316; margin-bottom:8px;"></i>
+                <p style="margin:0; color:#555; font-size:0.95rem;">Kéo thả hoặc <strong style="color:#f97316;">bấm để chọn ảnh</strong></p>
+                <p class="form-hint" style="margin-top:6px;">Tối đa 4 ảnh • JPG, PNG, WEBP</p>
+            </div>
+            <input type="file" id="images" name="images" multiple accept="image/*" style="display:none;">
             <div id="image-preview" class="image-preview"></div>
         </div>
 

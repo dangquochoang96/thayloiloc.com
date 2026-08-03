@@ -177,10 +177,10 @@ async function loadAllTechniciansRatingData(technicians, onProgress = null) {
     // Smaller batch size for faster perceived performance - load 3 at a time
     const batchSize = 3;
     const ratingsData = {};
-    
+
     for (let i = 0; i < technicians.length; i += batchSize) {
       const batch = technicians.slice(i, i + batchSize);
-      const batchPromises = batch.map(tech => 
+      const batchPromises = batch.map(tech =>
         SupportService.getListOrderRating(tech.id, true) // Use cache
           .then(data => ({
             techId: tech.id,
@@ -194,14 +194,14 @@ async function loadAllTechniciansRatingData(technicians, onProgress = null) {
             };
           })
       );
-      
+
       const results = await Promise.all(batchPromises);
-      
+
       results.forEach(result => {
         if (result.reviews.length > 0) {
           const avgRating = result.reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / result.reviews.length;
           const roundedRating = Math.round(avgRating * 10) / 10;
-          
+
           ratingsData[result.techId] = {
             avgRating: roundedRating,
             count: result.reviews.length
@@ -213,15 +213,15 @@ async function loadAllTechniciansRatingData(technicians, onProgress = null) {
           };
         }
       });
-      
+
       // Call progress callback after each batch to update UI immediately
       if (onProgress && typeof onProgress === 'function') {
         onProgress(ratingsData, i + batch.length, technicians.length);
       }
-      
+
       // No delay between batches - let cache handle rate limiting
     }
-    
+
     return ratingsData;
   } catch (error) {
     console.error('Error loading all ratings:', error);
@@ -237,11 +237,11 @@ function loadTechnicianRating(techId) {
   SupportService.getListOrderRating(techId)
     .then((data) => {
       const reviews = data.data || data || [];
-      
+
       if (reviews.length > 0) {
         const avgRating = reviews.reduce((sum, r) => sum + (parseInt(r.rate) || 0), 0) / reviews.length;
         const roundedRating = Math.round(avgRating * 10) / 10;
-        
+
         ratingEl.innerHTML = `
           <div class="tech-rating-stars">
             ${renderStars(avgRating)}
@@ -276,19 +276,19 @@ function renderStars(rating) {
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
   let html = "";
-  
+
   for (let i = 0; i < fullStars; i++) {
     html += '<i class="fas fa-star"></i>';
   }
-  
+
   if (hasHalf) {
     html += '<i class="fas fa-star-half-alt"></i>';
   }
-  
+
   for (let i = 0; i < emptyStars; i++) {
     html += '<i class="far fa-star"></i>';
   }
-  
+
   return html;
 }
 
@@ -329,12 +329,32 @@ function initializeTechnicians() {
   let searchTimeout = null; // Debounce search
   let currentTechnicians = []; // Lưu danh sách thợ hiện tại để tính khoảng cách
 
+  // Render Skeleton Cards for smooth loading effect
+  function renderSkeletonCards(count = 6) {
+    if (loadingEl) loadingEl.style.display = "none";
+    if (!gridEl) return;
+    gridEl.innerHTML = Array(count).fill(0).map(() => `
+      <div class="skeleton-tech-card">
+        <div class="skeleton-avatar skeleton-shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-line skeleton-title skeleton-shimmer"></div>
+          <div class="skeleton-line skeleton-subtitle skeleton-shimmer"></div>
+          <div class="skeleton-line skeleton-rating skeleton-shimmer"></div>
+        </div>
+        <div class="skeleton-actions">
+          <div class="skeleton-btn skeleton-shimmer"></div>
+          <div class="skeleton-btn skeleton-shimmer"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
   // Progressive rating loading function - optimized with callback and viewport detection
   async function loadRatingsProgressively(technicians) {
     // Prioritize visible technicians first
     const visibleTechs = [];
     const hiddenTechs = [];
-    
+
     technicians.forEach(tech => {
       const card = document.querySelector(`.technician-card[data-tech-id="${tech.id}"]`);
       if (card) {
@@ -349,7 +369,7 @@ function initializeTechnicians() {
         visibleTechs.push(tech); // If card not found, load anyway
       }
     });
-    
+
     // Load visible technicians first
     if (visibleTechs.length > 0) {
       await loadAllTechniciansRatingData(visibleTechs, (newRatings, loaded, total) => {
@@ -357,7 +377,7 @@ function initializeTechnicians() {
         updateRatingUI(newRatings);
       });
     }
-    
+
     // Then load hidden technicians
     if (hiddenTechs.length > 0) {
       await loadAllTechniciansRatingData(hiddenTechs, (newRatings, loaded, total) => {
@@ -366,7 +386,7 @@ function initializeTechnicians() {
       });
     }
   }
-  
+
   // Helper function to update rating UI
   function updateRatingUI(newRatings) {
     Object.keys(newRatings).forEach(techId => {
@@ -395,14 +415,14 @@ function initializeTechnicians() {
   async function geocodeTechniciansInBackground(technicians) {
     for (let i = 0; i < technicians.length; i++) {
       const tech = technicians[i];
-      
+
       // Clean address: remove ||| separators and trim
       const cleanAddress = tech.address ? tech.address.replace(/\|+/g, ' ').trim() : '';
-      
+
       if (cleanAddress && !tech.geocoded && !tech.geocodeFailed) {
         try {
           const coords = await geocodeAddress(cleanAddress);
-          
+
           // Update the technician in allTechnicians array
           const index = allTechnicians.findIndex(t => t.id === tech.id);
           if (index !== -1) {
@@ -413,7 +433,7 @@ function initializeTechnicians() {
               geocoded: true,
               cleanAddress: cleanAddress
             };
-            
+
             // If in nearby mode, update the list
             if (nearbyMode && userLocation) {
               updateNearbyTechnicians();
@@ -424,21 +444,39 @@ function initializeTechnicians() {
           if (userLocation && !nearbyMode) {
             const currentIndex = currentTechnicians.findIndex(t => t.id === tech.id);
             if (currentIndex !== -1) {
+              const dist = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                coords.latitude,
+                coords.longitude
+              );
               currentTechnicians[currentIndex] = {
                 ...currentTechnicians[currentIndex],
                 latitude: coords.latitude,
                 longitude: coords.longitude,
                 geocoded: true,
                 cleanAddress: cleanAddress,
-                distance: calculateDistance(
-                  userLocation.latitude,
-                  userLocation.longitude,
-                  coords.latitude,
-                  coords.longitude
-                )
+                distance: dist
               };
-              // Re-render để hiển thị khoảng cách
-              renderTechnicians(currentTechnicians);
+              // Cập nhật trực tiếp thẻ DOM của thợ đó mà không re-render lại toàn bộ grid
+              const cardEl = gridEl.querySelector(`.technician-card[data-tech-id="${tech.id}"]`);
+              if (cardEl) {
+                const techInfoEl = cardEl.querySelector('.tech-info');
+                if (techInfoEl) {
+                  let distEl = cardEl.querySelector('.tech-distance');
+                  if (!distEl) {
+                    distEl = document.createElement('div');
+                    distEl.className = 'tech-distance';
+                    const h3El = techInfoEl.querySelector('h3');
+                    if (h3El && h3El.nextSibling) {
+                      techInfoEl.insertBefore(distEl, h3El.nextSibling);
+                    } else {
+                      techInfoEl.appendChild(distEl);
+                    }
+                  }
+                  distEl.innerHTML = `<i class="fas fa-route"></i> <span>${dist.toFixed(1)} km</span>`;
+                }
+              }
             }
           }
         } catch (error) {
@@ -453,12 +491,17 @@ function initializeTechnicians() {
             };
           }
         }
-        
+
         // Shorter wait time: 200ms instead of 500ms
         if (i < technicians.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
+    }
+
+    // Refresh status once background geocoding finishes for all technicians
+    if (nearbyMode && userLocation) {
+      updateNearbyTechnicians();
     }
   }
 
@@ -486,16 +529,16 @@ function initializeTechnicians() {
   function renderPagination() {
     const paginationContainer = document.getElementById('paginationContainer');
     if (!paginationContainer) return;
-    
+
     if (totalPages <= 1) {
       paginationContainer.style.display = 'none';
       return;
     }
 
     paginationContainer.style.display = 'flex';
-    
+
     let paginationHTML = '<div class="pagination">';
-    
+
     // Previous button
     paginationHTML += `
       <button class="pagination-btn ${currentPage === 1 ? 'disabled' : ''}" 
@@ -504,16 +547,16 @@ function initializeTechnicians() {
         <i class="fas fa-chevron-left"></i>
       </button>
     `;
-    
+
     // Page numbers
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     // First page
     if (startPage > 1) {
       paginationHTML += `<button class="pagination-btn" data-page="1">1</button>`;
@@ -521,7 +564,7 @@ function initializeTechnicians() {
         paginationHTML += `<span class="pagination-dots">...</span>`;
       }
     }
-    
+
     // Page numbers
     for (let i = startPage; i <= endPage; i++) {
       paginationHTML += `
@@ -531,7 +574,7 @@ function initializeTechnicians() {
         </button>
       `;
     }
-    
+
     // Last page
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
@@ -539,7 +582,7 @@ function initializeTechnicians() {
       }
       paginationHTML += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
     }
-    
+
     // Next button
     paginationHTML += `
       <button class="pagination-btn ${currentPage === totalPages ? 'disabled' : ''}" 
@@ -548,19 +591,19 @@ function initializeTechnicians() {
         <i class="fas fa-chevron-right"></i>
       </button>
     `;
-    
+
     paginationHTML += '</div>';
     paginationHTML += `<div class="pagination-info">Trang ${currentPage} / ${totalPages} (${totalItems} thợ)</div>`;
-    
+
     paginationContainer.innerHTML = paginationHTML;
-    
+
     // Add click events
     paginationContainer.querySelectorAll('.pagination-btn:not(.disabled)').forEach(btn => {
       btn.addEventListener('click', () => {
         const page = parseInt(btn.dataset.page);
         if (page >= 1 && page <= totalPages && page !== currentPage) {
           currentPage = page;
-          
+
           if (nearbyMode) {
             // Re-render nearby mode with new page
             updateNearbyTechnicians();
@@ -568,7 +611,7 @@ function initializeTechnicians() {
             // Load new page from API
             loadTechnicians();
           }
-          
+
           // Scroll to top of technicians section
           document.querySelector('.technicians-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -607,17 +650,16 @@ function initializeTechnicians() {
             <span class="tech-rating-text">${ratingInfo.avgRating} (${ratingInfo.count})</span>
           `
           : ratingsData[tech.id] !== undefined
-          ? `
+            ? `
             <div class="tech-rating-stars">
               ${renderStars(0)}
             </div>
             <span class="tech-rating-text">Chưa có đánh giá</span>
           `
-          : `
+            : `
             <div class="tech-rating-stars">
-              <i class="fas fa-spinner fa-spin"></i>
+              <div class="skeleton-rating-bar skeleton-shimmer"></div>
             </div>
-            <span class="tech-rating-text">Đang tải...</span>
           `;
 
         // Luôn hiển thị khoảng cách nếu có tọa độ
@@ -628,7 +670,7 @@ function initializeTechnicians() {
               <span>${tech.distance.toFixed(1)} km</span>
             </div>`
           : '';
-        
+
         const addressHTML = displayAddress
           ? `<div class="tech-address">
               <i class="fas fa-map-marker-alt"></i>
@@ -653,13 +695,11 @@ function initializeTechnicians() {
         )}' data-tech-id="${tech.id}">
           ${recommendedBadge}
           <div class="tech-avatar">
-            ${
-              tech.avartar
-                ? `<img src="${getImageUrl(tech.avartar)}" alt="${
-                    tech.username
-                  }">`
-                : `<i class="fas fa-user-cog"></i>`
-            }
+            ${tech.avartar
+            ? `<img src="${getImageUrl(tech.avartar)}" alt="${tech.username
+            }">`
+            : `<i class="fas fa-user-cog"></i>`
+          }
           </div>
           <div class="tech-info">
             <h3>${tech.username}</h3>
@@ -671,18 +711,15 @@ function initializeTechnicians() {
           </div>
           <div class="tech-contact">
             <div class="tech-actions">
-              <a href="tel:${
-                tech.phone
-              }" class="action-btn call-btn" onclick="event.stopPropagation()">
+              <a href="tel:${tech.phone
+          }" class="action-btn call-btn" onclick="event.stopPropagation()">
                 <i class="fas fa-phone"></i>
                 Gọi ngay
               </a>
-              <a href="sms:${
-                tech.phone
-              }" class="action-btn sms-btn" onclick="event.stopPropagation()">
-                <i class="fas fa-sms"></i>
-                Nhắn tin
-              </a>
+              <button class="action-btn select-tech-btn" data-tech-id="${tech.id}" data-tech-name="${tech.username}" data-tech-phone="${tech.phone}" onclick="event.stopPropagation()">
+                <i class="fas fa-calendar-alt"></i>
+                Đặt lịch
+              </button>
             </div>
           </div>
         </div>
@@ -697,6 +734,19 @@ function initializeTechnicians() {
         const tech = JSON.parse(card.dataset.tech);
         window.location.hash = `/technician-detail?id=${tech.id}`;
       });
+
+      const selectTechBtn = card.querySelector(".select-tech-btn");
+      if (selectTechBtn) {
+        selectTechBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const techId = selectTechBtn.getAttribute("data-tech-id");
+          const techName = selectTechBtn.getAttribute("data-tech-name");
+          const techPhone = selectTechBtn.getAttribute("data-tech-phone");
+          
+          // Điều hướng đến trang đặt lịch với thông tin thợ đã chọn
+          window.location.hash = `#/booking?techId=${techId}&techName=${encodeURIComponent(techName)}&techPhone=${encodeURIComponent(techPhone)}`;
+        });
+      }
     });
 
     // Render pagination
@@ -711,11 +761,11 @@ function initializeTechnicians() {
       locationStatus.style.display = 'block';
       locationStatus.className = 'location-status loading';
       locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xác định vị trí của bạn...';
+      renderSkeletonCards(itemsPerPage);
 
       // Get initial user location
       userLocation = await getUserLocation();
-      console.log('User location obtained:', userLocation);
-
+      
       locationStatus.className = 'location-status loading';
       locationStatus.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang tải danh sách thợ...`;
 
@@ -726,9 +776,7 @@ function initializeTechnicians() {
         geocoded: false
       }));
 
-      console.log(`Loaded ${allTechnicians.length} technicians for nearby search`);
-      console.log('Sample technician:', allTechnicians[0]);
-
+            
       locationStatus.className = 'location-status success';
       locationStatus.innerHTML = `<i class="fas fa-check-circle"></i> Đã xác định vị trí của bạn - Đang theo dõi di chuyển...`;
 
@@ -745,12 +793,10 @@ function initializeTechnicians() {
         ratingsData = { ...ratingsData, ...newRatings };
         // Re-render to show new ratings
         updateNearbyTechnicians();
-        console.log(`Loaded ratings: ${loaded}/${total}`);
-      }).then(ratings => {
+              }).then(ratings => {
         ratingsData = { ...ratingsData, ...ratings };
         updateNearbyTechnicians();
-        console.log('All ratings loaded');
-      }).catch(error => {
+              }).catch(error => {
         console.error('Error loading ratings in background:', error);
       });
 
@@ -772,7 +818,7 @@ function initializeTechnicians() {
             userLocation = newLocation;
             locationStatus.className = 'location-status success';
             locationStatus.innerHTML = `<i class="fas fa-location-arrow"></i> Vị trí đã cập nhật - Đang tìm thợ gần bạn...`;
-            
+
             // Update technicians list
             updateNearbyTechnicians();
           }
@@ -800,8 +846,7 @@ function initializeTechnicians() {
       return;
     }
 
-    console.log('Updating nearby technicians...');
-    locationStatus.className = 'location-status loading';
+        locationStatus.className = 'location-status loading';
     locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tính toán khoảng cách...';
 
     // Calculate distance for all technicians
@@ -810,7 +855,7 @@ function initializeTechnicians() {
       if (!tech.latitude || !tech.longitude) {
         return null;
       }
-      
+
       const distance = calculateDistance(
         userLocation.latitude,
         userLocation.longitude,
@@ -826,68 +871,75 @@ function initializeTechnicians() {
 
     // Count technicians without coordinates
     const withoutCoords = allTechnicians.filter(t => !t.latitude || !t.longitude);
-    
-    // Sort by distance
-    techniciansWithDistance.sort((a, b) => a.distance - b.distance);
+
+    // Sort by distance & rating: If distance difference <= 0.1km (100m), prioritize technician with higher rating
+    techniciansWithDistance.sort((a, b) => {
+      const distDiff = Math.abs(a.distance - b.distance);
+      if (distDiff <= 0.1) {
+        const ratingA = ratingsData[a.id]?.avgRating || 0;
+        const ratingB = ratingsData[b.id]?.avgRating || 0;
+        if (ratingA !== ratingB) {
+          return ratingB - ratingA; // Higher rating first
+        }
+      }
+      return a.distance - b.distance; // Otherwise nearer distance first
+    });
 
     // Debug: Log all technicians with distance
-    console.log('=== NEARBY TECHNICIANS DEBUG ===');
-    console.log('User location:', userLocation);
-    console.log('Total technicians:', allTechnicians.length);
-    console.log('Technicians with coordinates:', techniciansWithDistance.length);
-    console.log('Technicians without coordinates:', withoutCoords.length);
-    
+                    
     if (techniciansWithDistance.length > 0) {
-      console.log('Top 5 nearest technicians:');
-      techniciansWithDistance.slice(0, 5).forEach((tech, idx) => {
+            techniciansWithDistance.slice(0, 5).forEach((tech, idx) => {
         const displayAddress = tech.cleanAddress || tech.address?.replace(/\|+/g, ' ').trim() || 'No address';
-        console.log(`${idx + 1}. ${tech.username}: ${tech.distance.toFixed(2)} km - ${displayAddress}`);
-      });
+              });
+    }
+
+    if (withoutCoords.length > 0) {
+            withoutCoords.slice(0, 5).forEach(t => {
+        const displayAddress = t.address ? t.address.replace(/\|+/g, ' ').trim() : 'No address';
+              });
     }
     
-    if (withoutCoords.length > 0) {
-      console.log(`\nTechnicians without coords (${withoutCoords.length}):`);
-      withoutCoords.slice(0, 5).forEach(t => {
-        const displayAddress = t.address ? t.address.replace(/\|+/g, ' ').trim() : 'No address';
-        console.log(`- ${t.username} (${displayAddress}) - geocoded: ${t.geocoded}, failed: ${t.geocodeFailed}`);
-      });
-    }
-    console.log('================================');
-
-    // Show only technicians within 10km
+    // Filter technicians within 10km; fallback to all sorted by distance if 0 in 10km
     const nearbyTechs = techniciansWithDistance.filter(tech => tech.distance <= 10);
+    const displayTechs = nearbyTechs.length > 0 ? nearbyTechs : techniciansWithDistance;
+    const processingCoords = allTechnicians.filter(t => !t.latitude && !t.longitude && !t.geocoded && !t.geocodeFailed);
 
-    if (nearbyTechs.length === 0) {
+    if (displayTechs.length === 0) {
       locationStatus.className = 'location-status warning';
-      let message = '<i class="fas fa-exclamation-triangle"></i> Không tìm thấy thợ trong bán kính 10km';
-      if (withoutCoords.length > 0) {
-        message += `<br><small>${withoutCoords.length} thợ chưa có tọa độ (đang xử lý...)</small>`;
-      }
-      if (techniciansWithDistance.length > 0) {
-        const nearest = techniciansWithDistance[0];
-        message += `<br><small>Thợ gần nhất: ${nearest.username} (${nearest.distance.toFixed(1)} km)</small>`;
+      let message = '<i class="fas fa-exclamation-triangle"></i> Chưa xác định được vị trí của kỹ thuật viên nào';
+      if (processingCoords.length > 0) {
+        message += `<br><small><i class="fas fa-spinner fa-spin"></i> ${processingCoords.length} thợ đang được xử lý tọa độ...</small>`;
       }
       locationStatus.innerHTML = message;
       renderTechnicians([]);
     } else {
-      locationStatus.className = 'location-status success';
-      let message = `<i class="fas fa-map-marker-alt"></i> Tìm thấy ${nearbyTechs.length} thợ gần bạn (trong bán kính 10km)`;
-      if (withoutCoords.length > 0) {
-        message += `<br><small>${withoutCoords.length} thợ khác đang được xử lý...</small>`;
+      if (nearbyTechs.length > 0) {
+        locationStatus.className = 'location-status success';
+        let message = `<i class="fas fa-map-marker-alt"></i> Tìm thấy ${nearbyTechs.length} thợ gần bạn (trong bán kính 10km)`;
+        if (processingCoords.length > 0) {
+          message += `<br><small><i class="fas fa-spinner fa-spin"></i> ${processingCoords.length} thợ khác đang được xử lý tọa độ...</small>`;
+        }
+        locationStatus.innerHTML = message;
+      } else {
+        locationStatus.className = 'location-status warning';
+        const nearest = techniciansWithDistance[0];
+        let message = `<i class="fas fa-exclamation-triangle"></i> Không có thợ trong bán kính 10km. Đang hiển thị thợ gần bạn nhất (Gần nhất: ${nearest.username} - ${nearest.distance.toFixed(1)} km)`;
+        if (processingCoords.length > 0) {
+          message += `<br><small><i class="fas fa-spinner fa-spin"></i> ${processingCoords.length} thợ khác đang được xử lý tọa độ...</small>`;
+        }
+        locationStatus.innerHTML = message;
       }
-      locationStatus.innerHTML = message;
-      
+
       // Update pagination for nearby mode
-      totalItems = nearbyTechs.length;
+      totalItems = displayTechs.length;
       totalPages = Math.ceil(totalItems / itemsPerPage);
-      
+
       // Paginate nearby techs
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
-      const paginatedNearbyTechs = nearbyTechs.slice(startIndex, endIndex);
-      
-      console.log(`Showing ${paginatedNearbyTechs.length} technicians (page ${currentPage}/${totalPages})`);
-      renderTechnicians(paginatedNearbyTechs);
+      const paginatedNearbyTechs = displayTechs.slice(startIndex, endIndex);
+
+            renderTechnicians(paginatedNearbyTechs);
     }
   }
 
@@ -899,16 +951,16 @@ function initializeTechnicians() {
       userLocation = null;
       currentPage = 1; // Reset về trang 1
       allTechnicians = []; // Clear all technicians
-      
+
       // Stop watching location
       if (locationWatchId !== null) {
         clearLocationWatch(locationWatchId);
         locationWatchId = null;
       }
-      
+
       findNearbyBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Tìm thợ gần tôi';
       locationStatus.style.display = 'none';
-      
+
       // Reload with API pagination
       loadTechnicians();
     } else {
@@ -923,16 +975,10 @@ function initializeTechnicians() {
     // Skip if in nearby mode
     if (nearbyMode) return;
 
-    loadingEl.style.display = "block";
-    gridEl.innerHTML = "";
+    // Show skeleton cards for smooth loading
+    renderSkeletonCards(itemsPerPage);
 
     try {
-      // Show initial loading
-      loadingEl.innerHTML = `
-        <i class="fas fa-spinner fa-spin"></i>
-        <p>Đang tải danh sách kỹ thuật viên...</p>
-      `;
-
       // Call API with pagination and filters
       const data = await SupportService.getSupportTechnicians(currentPage, currentFilters);
       let technicians = data.data || [];
@@ -997,11 +1043,9 @@ function initializeTechnicians() {
               `;
           }
         });
-        console.log(`Loaded ratings: ${loaded}/${total}`);
-      }).then(ratings => {
+              }).then(ratings => {
         ratingsData = { ...ratingsData, ...ratings };
-        console.log('All ratings loaded');
-      }).catch(error => {
+              }).catch(error => {
         console.error('Error loading ratings in background:', error);
       });
 
@@ -1010,10 +1054,10 @@ function initializeTechnicians() {
     } catch (error) {
       console.error("Lỗi khi tải danh sách kỹ thuật viên:", error);
       loadingEl.style.display = "none";
-      
+
       // Check if it's a rate limit error
       const isRateLimit = error.message && error.message.includes('Too Many Requests');
-      
+
       gridEl.innerHTML = `
         <div class="error-message">
           <i class="fas fa-exclamation-triangle"></i>
@@ -1054,7 +1098,7 @@ function initializeTechnicians() {
       filterAddress.value = "";
       currentPage = 1; // Reset về trang 1
       currentFilters = { name: '', phone: '', address: '' }; // Reset filters
-      
+
       if (nearbyMode) {
         // Keep nearby mode active but recalculate
         updateNearbyTechnicians();
@@ -1074,7 +1118,7 @@ function initializeTechnicians() {
     refreshBtn.addEventListener("click", async () => {
       refreshBtn.disabled = true;
       refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
-      
+
       try {
         if (nearbyMode) {
           // Reload all technicians for nearby mode
@@ -1106,7 +1150,6 @@ function initializeTechnicians() {
   getUserLocation()
     .then(location => {
       userLocation = location;
-      console.log('User location obtained automatically:', userLocation);
       
       // Nếu đã có danh sách thợ, tính lại khoảng cách
       if (currentTechnicians.length > 0) {
@@ -1126,8 +1169,7 @@ function initializeTechnicians() {
       }
     })
     .catch(error => {
-      console.log('Could not get user location automatically:', error.message);
-      // Không hiển thị lỗi cho người dùng, chỉ log
+            // Không hiển thị lỗi cho người dùng, chỉ log
     });
 
   // Cleanup when leaving page
@@ -1154,13 +1196,11 @@ function initializeTechnicians() {
         </button>
         <div class="tech-modal-header">
           <div class="tech-modal-avatar">
-            ${
-              tech.avartar
-                ? `<img src="${getImageUrl(tech.avartar)}" alt="${
-                    tech.username
-                  }">`
-                : `<i class="fas fa-user-cog"></i>`
-            }
+            ${tech.avartar
+        ? `<img src="${getImageUrl(tech.avartar)}" alt="${tech.username
+        }">`
+        : `<i class="fas fa-user-cog"></i>`
+      }
           </div>
           <h2>${tech.username}</h2>
         </div>
@@ -1196,9 +1236,8 @@ function initializeTechnicians() {
             <i class="fas fa-sms"></i>
             Nhắn tin
           </a>
-          <a href="https://zalo.me/${
-            tech.phone
-          }" target="_blank" class="modal-btn zalo-btn">
+          <a href="https://zalo.me/${tech.phone
+      }" target="_blank" class="modal-btn zalo-btn">
             <i class="fas fa-comment-dots"></i>
             Zalo
           </a>

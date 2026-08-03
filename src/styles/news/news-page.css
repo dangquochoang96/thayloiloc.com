@@ -383,7 +383,7 @@
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 25px;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
@@ -393,34 +393,34 @@
   .news-page {
     padding: 80px 0 40px;
   }
-  
+
   .page-header h1 {
     font-size: 2rem;
   }
-  
+
   .page-header p {
     font-size: 1rem;
   }
-  
+
   .news-filters {
     flex-direction: column;
     align-items: stretch;
     gap: 20px;
   }
-  
+
   .filter-tabs {
     justify-content: center;
   }
-  
+
   .search-box {
     min-width: auto;
   }
-  
+
   .news-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .news-content {
     padding: 40px 0;
   }
@@ -430,23 +430,24 @@
   .filter-tabs {
     flex-direction: column;
   }
-  
+
   .filter-tab {
     text-align: center;
   }
-  
+
   .news-image {
     height: 180px;
   }
-  
+
   .news-content {
     padding: 20px;
   }
-  
+
   .page-title {
     font-size: 1.25rem;
   }
 }
+
 /* Pagination Section */
 .pagination-section {
   margin-top: 50px;
@@ -548,14 +549,14 @@
   .pagination-controls {
     gap: 6px;
   }
-  
+
   .pagination-btn,
   .page-number {
     width: 45px;
     height: 45px;
     font-size: 14px;
   }
-  
+
   .pagination-info {
     margin-bottom: 15px;
     font-size: 13px;
@@ -566,19 +567,19 @@
   .pagination-controls {
     gap: 4px;
   }
-  
+
   .pagination-btn,
   .page-number {
     width: 40px;
     height: 40px;
     font-size: 13px;
   }
-  
+
   .pagination-section {
     margin-top: 30px;
     padding: 20px 0;
   }
-  
+
   .page-ellipsis {
     font-size: 14px;
   }

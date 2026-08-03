@@ -1,0 +1,39 @@
+{
+  "rules": {
+    "qna_posts": {
+      ".read": true,
+      ".write": true
+    },
+    "qna_comments": {
+      ".read": true,
+      ".write": true
+    },
+    "qna_likes": {
+      ".read": true,
+      ".write": true
+    },
+    "qna_comment_likes": {
+      ".read": true,
+      ".write": true
+    },
+    "qna_replies": {
+      ".read": true,
+      ".write": true
+    },
+    "chat": {
+      "messages": {
+        ".read": true,
+        ".write": true,
+        ".indexOn": ["createdAt"]
+      },
+      "typing": {
+        ".read": true,
+        ".write": true
+      },
+      "online": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}

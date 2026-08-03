@@ -3,14 +3,44 @@ import { api } from "./api.js";
 export const authService = {
   async login(phone, pass) {
     try {
+      // Clear any existing session and cache first to avoid data contamination
+      localStorage.removeItem("user_info");
+      localStorage.removeItem("auth_token");
+      api.clearCache();
+
       const response = await api.post("/user/login", { phone, pass });
-      if (response.code === 1 && response.data) {
-        localStorage.setItem("user_info", JSON.stringify(response.data));
+            
+      // Check for success with flexible code comparison
+      const isSuccess = 
+        response.code === 1 || 
+        response.code === "1" || 
+        response.success === true ||
+        response.message === "success" ||
+        response.msg === "success";
+      
+      if (isSuccess) {
+        // Handle different response structures
+        const userData = response.data || response.user || response;
+                
+        // Save user info
+        if (userData && typeof userData === 'object') {
+          localStorage.setItem("user_info", JSON.stringify(userData));
+        }
+        
+        // Save Bearer token - check multiple possible locations
+        const token = response.token || response.access_token || userData?.token || userData?.access_token;
+        if (token) {
+          localStorage.setItem("auth_token", token);
+                  } else {
+          console.warn("No token found in response");
+        }
+        
         return response;
       } else {
-        throw new Error(response.message || "Đăng nhập thất bại");
+        throw new Error(response.message || response.msg || "Đăng nhập thất bại");
       }
     } catch (error) {
+      console.error("Login error:", error);
       throw error;
     }
   },
@@ -21,7 +51,35 @@ export const authService = {
       if (response.code == 1) {
         return response;
       } else {
-        throw new Error(response.message || "Đăng ký thất bại");
+        throw new Error(response.message || response.msg || response.messenger || "Đăng ký thất bại");
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async registerTechnician(data) {
+    try {
+      const formData = new FormData();
+      formData.append("phone", data.phone);
+      formData.append("name", data.name);
+      formData.append("pass", data.pass);
+      formData.append("type", data.type);
+      formData.append("type_staff", data.type_staff);
+      formData.append("address", data.address);
+      formData.append("birthday", data.birthday);
+      formData.append("id_card_number", data.id_card_number);
+      formData.append("id_card_image_front", data.id_card_image_front);
+      formData.append("id_card_image_back", data.id_card_image_back);
+      
+      // Add services as array with single value
+      formData.append("services[0]", data.services);
+
+      const response = await api.postFormData("/user/register", formData);
+      if (response.code == 1) {
+        return response;
+      } else {
+        throw new Error(response.message || response.msg || response.messenger || "Đăng ký kỹ thuật viên thất bại");
       }
     } catch (error) {
       throw error;
@@ -30,6 +88,7 @@ export const authService = {
 
   logout() {
     localStorage.removeItem("user_info");
+    localStorage.removeItem("auth_token");
     window.location.hash = "/login";
   },
 
@@ -39,44 +98,106 @@ export const authService = {
 
   getUser() {
     const user = localStorage.getItem("user_info");
-    console.log(user);
-    return user ? JSON.parse(user) : null;
+        return user ? JSON.parse(user) : null;
   },
 
   getCurrentUser() {
     return this.getUser();
   },
 
-  getUserFromServer(id) {
-    return api.get(`/user/${id}`);
+  async getUserFromServer() {
+    try {
+      // Debug: Check if token exists
+      const token = localStorage.getItem('auth_token');
+            if (token) {
+              }
+      
+      // Try both possible endpoints
+      let response;
+      try {
+        // Try without v1.0 prefix first
+        response = await api.get(`/user`);
+      } catch (err) {
+        // If that fails, try with v1.0 prefix
+                response = await api.get(`/v1.0/user`);
+      }
+      
+            
+      // Handle response structure
+      if (response && response.code === 1 && response.data) {
+        return response.data;
+      } else if (response && response.username) {
+        // Direct user object
+        return response;
+      }
+      
+      throw new Error(response?.message || "Không thể lấy thông tin người dùng");
+    } catch (error) {
+      console.error("Get user from server error:", error);
+      throw error;
+    }
+  },
+
+  async refreshUserData() {
+    try {
+      const user = this.getCurrentUser();
+      if (!user) {
+        // Silently return if no user in localStorage
+        return null;
+      }
+      
+      // Call API to get fresh user data (API uses Bearer token, no ID needed)
+      const freshUserData = await this.getUserFromServer();
+            
+      if (freshUserData) {
+        // Update localStorage with fresh data
+        localStorage.setItem("user_info", JSON.stringify(freshUserData));
+        return freshUserData;
+      }
+      
+      // If API call failed, return cached user
+            return user;
+    } catch (error) {
+      console.error("Refresh user data error:", error);
+      // Don't throw, return cached user to allow page to continue
+      return this.getCurrentUser();
+    }
   },
 
   getUserDisplayName() {
     const user = this.getUser();
     if (!user) return "Người dùng";
 
-    // Try different possible field names for user name
-    return (
-      user.name ||
-      user.fullName ||
-      user.username ||
-      user.ten ||
-      user.ho_ten ||
-      "Người dùng"
-    );
+    // Prioritize fields to find a display name, ignoring "Người dùng" placeholder if possible
+    const fields = [
+      user.username,
+      user.name,
+      user.fullName,
+      user.ten,
+      user.ho_ten,
+      user.phone
+    ];
+
+    for (const val of fields) {
+      if (val !== undefined && val !== null) {
+        const strVal = String(val).trim();
+        if (strVal && strVal !== "Người dùng") {
+          return strVal;
+        }
+      }
+    }
+
+    return "Người dùng";
   },
 
   // Debug method to check user data structure
   debugUserData() {
     const userInfo = localStorage.getItem("user_info");
-    console.log("Raw user_info from localStorage:", userInfo);
-
+    
     if (userInfo) {
       try {
         const parsed = JSON.parse(userInfo);
-        console.log("Parsed user data:", parsed);
-        console.log("Available fields:", Object.keys(parsed));
-        return parsed;
+                        return parsed;
       } catch (error) {
         console.error("Error parsing user data:", error);
         return null;
@@ -117,28 +238,19 @@ export const authService = {
         throw new Error("Bạn chưa đăng nhập");
       }
 
-      console.log("User data:", user);
-      console.log("User ID:", user.id);
-      
+                  
       // Use geyserecoApi instead of api
       const { geyserecoApi } = await import('./api.js');
       
       const endpoint = `/user/${user.id}/changePassWord`;
-      console.log("Change password endpoint:", endpoint);
-      console.log("Request body:", {
-        password: currentPassword,
-        new_password: newPassword,
-        new_password_confirm: confirmPassword,
-      });
-      
+                  
       const response = await geyserecoApi.post(endpoint, {
         password: currentPassword,
         new_password: newPassword,
         new_password_confirm: confirmPassword,
       });
 
-      console.log("Change password response:", response);
-
+      
       if (response.code === 1) {
         return response;
       } else {

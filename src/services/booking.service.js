@@ -5,18 +5,14 @@ export const bookingService = {
   // Lấy chi tiết booking theo ID
   async getBookingDetail(bookingId) {
     try {
-      console.log(`Fetching booking detail for ID: ${bookingId}`);
-      const response = await api.get(`/tasks/${bookingId}`);
-      console.log('API Response:', response);
-      
+            const response = await api.get(`/tasks/${bookingId}`);
+            
       // Handle different response formats
       if (response && response.code === 1 && response.data) {
-        console.log('Using response.data:', response.data);
-        return response.data;
+                return response.data;
       } else if (response && !response.code) {
         // Direct data response
-        console.log('Using direct response:', response);
-        return response;
+                return response;
       } else {
         console.warn('Unexpected response format:', response);
         throw new Error(response?.message || "Không thể lấy thông tin đặt lịch");
@@ -86,10 +82,30 @@ export const bookingService = {
       if (response.code == 200) {
         return response.data;
       } else {
-        throw new Error(response.message || "Không thể lấy thông tin lần thay gần nhất");
+        return null;
       }
     } catch (error) {
-      console.error('getLastReplaceFilterCore error:', error);
+      if (error.message?.includes('404')) {
+              } else {
+        console.error('getLastReplaceFilterCore error:', error);
+      }
+      return null;
+    }
+  },
+
+  // Cập nhật vị trí hiện tại (current_address) cho task bằng phương thức POST (truyền cả task_id trong body)
+  async updateTaskAddress(taskId, currentAddress) {
+    try {
+      const response = await api.post(`/tasks/update-address/${taskId}`, {
+        task_id: taskId,
+        taskId: taskId,
+        id: taskId,
+        current_address: currentAddress,
+        address: currentAddress
+      });
+      return response;
+    } catch (error) {
+      console.error('updateTaskAddress error:', error);
       throw error;
     }
   },

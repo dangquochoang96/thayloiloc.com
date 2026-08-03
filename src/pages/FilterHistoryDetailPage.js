@@ -83,8 +83,7 @@ async function loadFilterDetail(contentContainer, loadingState, errorState) {
     // Get detail from /user/detailHistory/{id}
     const result = await historyService.getFilterHistoryDetail(historyId);
 
-    console.log("Filter history detail response:", result);
-
+    
     let historyItem = null;
 
     // Handle response structure
@@ -117,11 +116,11 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
   loadingState.style.display = "none";
   container.style.display = "block";
 
-  console.log("Rendering history item:", historyItem);
-
+  
   // Extract order data if exists
   const order = historyItem.order || historyItem;
 
+      
   // Extract data with multiple possible field names
   // order_filter_core is an array
   // First item (index 0) is current replacement
@@ -135,6 +134,7 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
       ? order.order_filter_core[1]
       : null;
 
+    
   const filterCoreName =
     filterCore?.name ||
     filterCore?.filter_core_name ||
@@ -144,6 +144,8 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
     historyItem.filter_core_name ||
     historyItem.name ||
     "Lõi lọc";
+  
+    
   const replaceDate =
     order.created_at ||
     order.ngay_thay ||
@@ -168,6 +170,7 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
     staff = order.staff;
   }
   
+    
   const technicianName =
     staff?.username ||
     staff?.staff_info?.username ||
@@ -178,6 +181,7 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
     order.ten_ky_thuat_vien ||
     "Chưa phân công";
 
+  
   const technicianId =
     staff?.staff_info?.id ||
     staff?.id ||
@@ -188,7 +192,21 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
   // Rating info from API response
   let rating = parseInt(order.rate) || parseInt(order.rating) || parseInt(order.danh_gia) || 0;
   let comment = order.comment || order.nhan_xet || order.binh_luan || "";
-
+  
+  // Check localStorage for rating if not in API response
+  const ratingKey = `order_rating_${historyId}`;
+  const savedRating = localStorage.getItem(ratingKey);
+  if (savedRating && !comment) {
+    try {
+      const ratingData = JSON.parse(savedRating);
+      rating = ratingData.rate || rating;
+      comment = ratingData.comment || comment;
+          } catch (e) {
+      console.error('Error parsing saved rating:', e);
+    }
+  }
+  
+                      
 
   // Financial info from order
   const price =
@@ -242,19 +260,37 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
   header.innerHTML = `<h1><i class="fas fa-filter"></i> Chi tiết lần thay lõi</h1>`;
   container.appendChild(header);
 
+  // Extract product_filter_cores or order_filter_core array if returned from GET /user/detailHistory/{order_id}
+  const productFilterCoresList =
+    (Array.isArray(historyItem.product_filter_cores) && historyItem.product_filter_cores.length > 0 && historyItem.product_filter_cores) ||
+    (Array.isArray(order.product_filter_cores) && order.product_filter_cores.length > 0 && order.product_filter_cores) ||
+    (Array.isArray(historyItem.product?.product_filter_cores) && historyItem.product.product_filter_cores.length > 0 && historyItem.product.product_filter_cores) ||
+    (Array.isArray(order.order_filter_core) && order.order_filter_core.length > 0 && order.order_filter_core) ||
+    [];
+
   // Main card
   const mainCard = document.createElement("div");
   mainCard.className = "info-card";
   mainCard.innerHTML = `
     <div class="info-table">
       <div class="table-header">
-        <div class="header-cell">Tên lõi</div>
+        <div class="header-cell">Tên lõi lọc</div>
         <div class="header-cell">Thành tiền</div>
       </div>
-      <div class="table-row">
-        <div class="cell">${filterCoreName}</div>
-        <div class="cell price-cell">${formatPrice(price)}</div>
-      </div>
+      ${productFilterCoresList.length > 0 ? productFilterCoresList.map(c => `
+        <div class="table-row">
+          <div class="cell">
+            <strong style="color: #0f172a;">${c.name || c.filter_core_name || c.core_name || c.ten_loi || filterCoreName}</strong>
+            ${(c.replace_date_promise || c.ngay_thay_tiep_theo) ? `<div style="font-size: 0.8rem; color: #ea580c; margin-top: 3px;"><i class="fas fa-calendar-alt"></i> Ngày thay tiếp theo: ${formatDate(c.replace_date_promise || c.ngay_thay_tiep_theo)}</div>` : ''}
+          </div>
+          <div class="cell price-cell">${c.price || c.gia ? formatPrice(c.price || c.gia) : formatPrice(price)}</div>
+        </div>
+      `).join("") : `
+        <div class="table-row">
+          <div class="cell">${filterCoreName}</div>
+          <div class="cell price-cell">${formatPrice(price)}</div>
+        </div>
+      `}
     </div>
     
     <div class="info-list">
@@ -293,14 +329,20 @@ function renderFilterDetail(container, historyItem, user, loadingState, historyI
 
     <div class="rating-section">
       <div class="rating-label">Đánh giá và nhận xét dịch vụ</div>
+      ${comment ? `<div class="already-rated-notice"><i class="fas fa-check-circle"></i> Bạn đã đánh giá dịch vụ này</div>` : ''}
       <div class="stars" id="ratingStars">
-        ${generateInteractiveStars(rating)}
+        ${comment ? generateNonInteractiveStars(rating) : generateInteractiveStars(rating)}
       </div>
       <div class="comment-input-section">
         <textarea id="commentInput" placeholder="Viết nhận xét của bạn..." class="comment-input" ${comment ? `readonly` : ''}>${comment || ''}</textarea>
         ${!comment ? `<button id="submitReview" class="submit-review-btn">Gửi đánh giá</button>` : ''}
       </div>
-      ${comment ? `<div class="existing-comment"><p class="comment-text">"${comment}"</p></div>` : ''}
+    </div>
+
+    <div class="feedback-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: flex-end;">
+      <button type="button" class="btn-feedback-action" onclick="window.location.hash='#/booking-history?tab=feedback&order_id=${order.id || historyId}'">
+        <i class="fas fa-comment-dots"></i> Góp ý / Khiếu nại đơn hàng này
+      </button>
     </div>
   `;
   container.appendChild(mainCard);
@@ -395,7 +437,19 @@ function generateInteractiveStars(currentRating) {
   return starsHtml;
 }
 
-function setupRatingInteraction(container, historyId, currentRating) {
+function generateNonInteractiveStars(currentRating) {
+  const maxStars = 5;
+  let starsHtml = '';
+  
+  for (let i = 1; i <= maxStars; i++) {
+    const filled = i <= currentRating ? 'filled' : 'empty';
+    starsHtml += `<i class="fas fa-star ${filled}" style="cursor: default;"></i>`;
+  }
+  
+  return starsHtml;
+}
+
+function setupRatingInteraction(container, orderId, currentRating) {
   const stars = container.querySelectorAll('.stars .interactive');
   const submitBtn = container.querySelector('#submitReview');
   const commentInput = container.querySelector('#commentInput');
@@ -427,6 +481,7 @@ function setupRatingInteraction(container, historyId, currentRating) {
     submitBtn.addEventListener('click', async () => {
       const comment = commentInput.value.trim();
       
+                              
       if (selectedRating === 0) {
         alert('Vui lòng chọn số sao đánh giá');
         return;
@@ -436,18 +491,51 @@ function setupRatingInteraction(container, historyId, currentRating) {
         alert('Vui lòng viết nhận xét');
         return;
       }
+      
+      if (!orderId) {
+        alert('Không tìm thấy thông tin đơn hàng. Không thể gửi đánh giá.');
+        return;
+      }
 
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Đang gửi...';
 
-        await historyService.submitReview(historyId, selectedRating, comment);
-        
+                const result = await historyService.submitReview(orderId, selectedRating, comment);
+                
+        // Save rating to localStorage for persistence
+        const ratingKey = `order_rating_${orderId}`;
+        localStorage.setItem(ratingKey, JSON.stringify({
+          rate: selectedRating,
+          comment: comment,
+          timestamp: Date.now()
+        }));
+                
         // Show success message
         alert('Đánh giá của bạn đã được gửi thành công!');
         
-        // Reload page to show updated review
-        window.location.reload();
+        // Update UI directly instead of reloading
+        // Disable stars
+        stars.forEach(star => {
+          star.classList.remove('interactive');
+          star.style.cursor = 'default';
+        });
+        
+        // Make textarea readonly
+        commentInput.readOnly = true;
+        commentInput.style.background = '#f8f9fa';
+        commentInput.style.cursor = 'not-allowed';
+        
+        // Hide submit button
+        submitBtn.style.display = 'none';
+        
+        // Add success notice
+        const ratingSection = container.querySelector('.rating-section');
+        const ratingLabel = ratingSection.querySelector('.rating-label');
+        const notice = document.createElement('div');
+        notice.className = 'already-rated-notice';
+        notice.innerHTML = '<i class="fas fa-check-circle"></i> Bạn đã đánh giá dịch vụ này';
+        ratingLabel.insertAdjacentElement('afterend', notice);
         
       } catch (error) {
         console.error('Error submitting review:', error);

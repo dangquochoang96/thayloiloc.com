@@ -61,12 +61,10 @@ export const SupportService = {
     try {
       const now = Date.now();
       if (!forceRefresh && techniciansCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
-        console.log('Using cached technicians data');
-        return techniciansCache;
+                return techniciansCache;
       }
       
-      console.log('Fetching all technicians from API...');
-      let allTechnicians = [];
+            let allTechnicians = [];
       let currentPage = 1;
       let hasMoreData = true;
       
@@ -81,12 +79,10 @@ export const SupportService = {
             
             if (pageData.length > 0) {
               allTechnicians = allTechnicians.concat(pageData);
-              console.log(`Loaded page ${currentPage}: ${pageData.length} technicians (total: ${allTechnicians.length})`);
-              
+                            
               if (data.current_page && data.last_page) {
                 hasMoreData = data.current_page < data.last_page;
-                console.log(`Page ${data.current_page}/${data.last_page}`);
-              } else {
+                              } else {
                 hasMoreData = pageData.length > 0;
               }
               
@@ -112,8 +108,7 @@ export const SupportService = {
         }
       }
       
-      console.log(`Total technicians loaded: ${allTechnicians.length}`);
-      
+            
       const result = { data: allTechnicians };
       techniciansCache = result;
       cacheTimestamp = now;
@@ -124,8 +119,7 @@ export const SupportService = {
       
       // Return cached data if available on rate limit
       if (error.message && error.message.includes('429') && techniciansCache) {
-        console.log('Rate limited, using cached data');
-        return techniciansCache;
+                return techniciansCache;
       }
       
       throw error;
@@ -138,14 +132,13 @@ export const SupportService = {
       const now = Date.now();
       if (useCache && ratingsCache[techId] && ratingsCacheTimestamp[techId]) {
         if (now - ratingsCacheTimestamp[techId] < RATINGS_CACHE_DURATION) {
-          console.log(`Using cached rating for tech ${techId}`);
-          return ratingsCache[techId];
+                    return ratingsCache[techId];
         }
       }
 
       const response = await api.get(`/order/get-list-order-rating-by-staff?user_id=${techId}`);
-      const data = response.data;
-      
+            const data = response.data;
+            
       // Cache the result
       ratingsCache[techId] = data;
       ratingsCacheTimestamp[techId] = now;
@@ -156,8 +149,7 @@ export const SupportService = {
       
       // Return cached data if available on error
       if (ratingsCache[techId]) {
-        console.log(`Using stale cache for tech ${techId} due to error`);
-        return ratingsCache[techId];
+                return ratingsCache[techId];
       }
       
       throw error;

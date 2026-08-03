@@ -59,6 +59,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
 }
 
 .filter-toolbar label {
@@ -67,6 +68,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .filter-toolbar label i {
@@ -87,6 +89,28 @@
 .status-filter:focus {
   outline: none;
   border-color: #F97316;
+}
+
+.search-input {
+  padding: 10px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  background: white;
+  min-width: 200px;
+  transition: all 0.3s;
+  flex: 1;
+  max-width: 300px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #F97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.search-input::placeholder {
+  color: #999;
 }
 
 .empty-filter-result {
@@ -393,4 +417,283 @@
   font-weight: 600;
   margin-left: 10px;
   vertical-align: text-bottom;
+}
+
+.rental-count-section {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.stats-container {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+  font-size: 0.95rem;
+}
+
+.stat-badge:hover {
+  transform: translateY(-2px);
+}
+
+.stat-badge.total-machines {
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  border-color: #2196f3;
+}
+
+.stat-badge.total-machines i {
+  font-size: 1.3rem;
+  color: #2196f3;
+}
+
+.stat-badge.total-machines span {
+  color: #333;
+}
+
+.stat-badge.total-machines strong {
+  font-size: 1.2rem;
+  color: #2196f3;
+  font-weight: 700;
+}
+
+.stat-badge.rental-machines {
+  background: linear-gradient(135deg, #fff3e0, #ffffff);
+  border-color: #f97316;
+}
+
+.stat-badge.rental-machines i {
+  font-size: 1.3rem;
+  color: #f97316;
+}
+
+.stat-badge.rental-machines span {
+  color: #333;
+}
+
+.stat-badge.rental-machines strong {
+  font-size: 1.2rem;
+  color: #f97316;
+  font-weight: 700;
+}
+
+.stat-badge.rental-debt {
+  background: linear-gradient(135deg, #ffebee, #ffffff);
+  border-color: #e91e63;
+}
+
+.stat-badge.rental-debt i {
+  font-size: 1.3rem;
+  color: #e91e63;
+}
+
+.stat-badge.rental-debt span {
+  color: #333;
+}
+
+.stat-badge.rental-debt strong {
+  font-size: 1.2rem;
+  color: #e91e63;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .stats-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .stat-badge {
+    justify-content: center;
+  }
+}
+
+
+/* Status breakdown styles */
+.status-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-tag i {
+  font-size: 0.8rem;
+}
+
+.status-tag.pending {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.status-tag.confirmed {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.status-tag.completed {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .status-breakdown {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .status-tag {
+    font-size: 0.8rem;
+    padding: 3px 10px;
+  }
+}
+
+
+/* Rental status tags */
+.rental-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.rental-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rental-tag.rental-type {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #90caf9;
+}
+
+.rental-tag.rental-active {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.rental-tag.rental-ended {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Machine number badge */
+.machine-number-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  margin-bottom: 8px;
+}
+
+/* Rental filter toolbar */
+#rentalFilterToolbar {
+  margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rental-badges {
+    flex-direction: row;
+  }
+  
+  .rental-tag {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+  }
+  
+  .machine-number-badge {
+    font-size: 0.85rem;
+    padding: 5px 14px;
+  }
+}
+
+/* Next replace info */
+.next-replace-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #fff8f0, #ffffff);
+  border-radius: 12px;
+  border-left: 4px solid #F97316;
+  flex-wrap: wrap;
+}
+
+.next-replace-info i {
+  font-size: 1.2rem;
+  color: #F97316;
+}
+
+.next-replace-info span {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.next-replace-info strong {
+  color: #F97316;
+  font-weight: 600;
+}
+
+.next-replace-info .next-filter-name {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding-left: 32px;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .next-replace-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .next-replace-info .next-filter-name {
+    padding-left: 0;
+  }
 }

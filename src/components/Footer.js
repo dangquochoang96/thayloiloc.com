@@ -91,7 +91,7 @@ export function Footer() {
     <div class="footer-bottom">
       <div class="container">
         <div class="footer-bottom-content">
-          <p>&copy; ${new Date().getFullYear()} Socbay. All rights reserved. | Built by Hoang Anh Do.</p>
+          <p>&copy; ${new Date().getFullYear()} Socbay. All rights reserved. | Built by SOCBAY Team.</p>
           <div class="footer-bottom-links">
             <a href="#/privacy">Privacy Policy</a>
             <span class="separator">•</span>

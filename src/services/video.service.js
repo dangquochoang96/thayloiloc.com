@@ -95,38 +95,32 @@ export const videoService = {
   // Convert YouTube URL to embed URL
   convertToEmbedUrl(youtubeUrl) {
     if (!youtubeUrl) return '';
-    
-    // Handle different YouTube URL formats
-    let videoId = '';
-    
-    if (youtubeUrl.includes('youtube.com/watch?v=')) {
-      videoId = youtubeUrl.split('v=')[1].split('&')[0];
-    } else if (youtubeUrl.includes('youtu.be/')) {
-      videoId = youtubeUrl.split('youtu.be/')[1].split('?')[0];
-    } else if (youtubeUrl.includes('youtube.com/embed/')) {
-      return youtubeUrl; // Already embed URL
-    }
-    
+    const videoId = this.extractVideoId(youtubeUrl);
     return videoId ? `https://www.youtube.com/embed/${videoId}` : youtubeUrl;
   },
 
   // Extract video ID from YouTube URL
   extractVideoId(youtubeUrl) {
-    if (!youtubeUrl) return '';
+    if (!youtubeUrl || typeof youtubeUrl !== 'string') return '';
     
-    if (youtubeUrl.includes('youtube.com/watch?v=')) {
-      return youtubeUrl.split('v=')[1].split('&')[0];
-    } else if (youtubeUrl.includes('youtu.be/')) {
-      return youtubeUrl.split('youtu.be/')[1].split('?')[0];
-    } else if (youtubeUrl.includes('youtube.com/embed/')) {
-      return youtubeUrl.split('embed/')[1].split('?')[0];
+    // Support watch, shorts, embed, youtu.be, live, and parameter variations
+    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const match = youtubeUrl.match(regExp);
+
+    if (match && match[1]) {
+      return match[1];
+    }
+    
+    if (youtubeUrl.includes('v=')) {
+      const parts = youtubeUrl.split('v=')[1];
+      if (parts) return parts.split('&')[0].split('?')[0].slice(0, 11);
     }
     
     return '';
   },
 
   // Get YouTube thumbnail URL
-  getYoutubeThumbnail(youtubeUrl, quality = 'maxresdefault') {
+  getYoutubeThumbnail(youtubeUrl, quality = 'hqdefault') {
     const videoId = this.extractVideoId(youtubeUrl);
     if (!videoId) return '/images/logo.png';
     

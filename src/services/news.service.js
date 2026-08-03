@@ -37,10 +37,8 @@ export const newsService = {
   // Get news detail from Geysereco API
   async getGeyserecoNewsDetail(id) {
     try {
-      console.log('Calling getGeyserecoNewsDetail with id:', id);
-      const response = await geyserecoApi.get(`/blogs/detail/${id}`);
-      console.log('API response:', response);
-      
+            const response = await geyserecoApi.get(`/blogs/detail/${id}`);
+            
       if (response.code === 200) {
         return response.data;
       } else {

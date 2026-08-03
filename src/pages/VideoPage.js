@@ -20,7 +20,7 @@ export function VideoPage() {
   const pageHeader = document.createElement("div");
   pageHeader.className = "page-header";
   pageHeader.innerHTML = `
-    <h1><i class="fas fa-play-circle"></i> Video Hướng Dẫn</h1>
+    <h1><i class="fas fa-play-circle"></i> Quy trình thực hiện</h1>
     <p>Xem các video hướng dẫn sử dụng sản phẩm và dịch vụ</p>
     <div class="breadcrumb">
       <a href="#/" onclick="event.preventDefault(); navigateTo('/')">Trang chủ</a>
@@ -110,10 +110,10 @@ function initializeVideoPage() {
   filteredVideos = [];
   isLoading = false;
   isDataLoaded = false;
-  
+
   // Show loading state
   showLoadingState();
-  
+
   // Setup functionality
   setupSearch();
   setupCategoryFilters();
@@ -140,7 +140,7 @@ function showLoadingState() {
   const videoLoading = document.getElementById("videoLoading");
   const videoGrid = document.getElementById("videoGrid");
   const paginationSection = document.getElementById("paginationSection");
-  
+
   if (videoLoading) videoLoading.style.display = "flex";
   if (videoGrid) videoGrid.style.display = "none";
   if (paginationSection) paginationSection.style.display = "none";
@@ -174,7 +174,7 @@ function loadAllVideosFromAPI() {
         allVideos = processedVideos;
         isDataLoaded = true;
         currentPage = 1;
-        
+
         hideLoadingState();
         filterAndPaginateVideos();
       } else {
@@ -225,7 +225,7 @@ function setupCategoryFilters() {
       filterBtns.forEach(b => b.classList.remove("active"));
       // Add active class to clicked button
       e.target.classList.add("active");
-      
+
       currentCategory = e.target.dataset.category;
       filterAndPaginateVideos();
     });
@@ -299,7 +299,7 @@ function showNoResults() {
   const container = document.getElementById("videoGrid");
   const noResults = document.getElementById("noResults");
   const paginationSection = document.getElementById("paginationSection");
-  
+
   if (container) container.style.display = "none";
   if (noResults) noResults.style.display = "flex";
   if (paginationSection) paginationSection.style.display = "none";
@@ -320,14 +320,14 @@ function displayVideos(videos) {
 
   // Hide no results, show grid
   if (noResults) noResults.style.display = "none";
-  
+
   // Ensure grid is visible and properly configured
   container.style.display = "grid";
-  
+
   // Responsive grid layout
   const updateGridLayout = () => {
     const screenWidth = window.innerWidth;
-    
+
     if (showAllMode && videos.length > 9) {
       // For showing all videos, use responsive columns
       if (screenWidth <= 576) {
@@ -366,7 +366,7 @@ function displayVideos(videos) {
       }
     }
   };
-  
+
   updateGridLayout();
 
   // Add total count info at the top
@@ -501,7 +501,7 @@ function generatePaginationNumbers() {
 function getCategoryLabel(category) {
   const labels = {
     tutorial: "Hướng dẫn",
-    product: "Sản phẩm", 
+    product: "Sản phẩm",
     maintenance: "Bảo trì",
     general: "Tổng quát"
   };
@@ -529,7 +529,7 @@ window.playVideo = (videoId, videoUrl) => {
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(modal);
   document.body.style.overflow = "hidden";
 };

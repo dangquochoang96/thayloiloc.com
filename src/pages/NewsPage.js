@@ -128,14 +128,7 @@ function loadNewsPage(page = 1) {
   newsService
     .getGeyserecoNewsWithPagination("san-pham-dich-vu-2", page, itemsPerPage)
     .then((result) => {
-      console.log("=== Geysereco API Full Response ===");
-      console.log("Result object:", result);
-      console.log("Result.data:", result.data);
-      console.log("Result.last_page:", result.last_page);
-      console.log("Result.total:", result.total);
-      console.log("Result.per_page:", result.per_page);
-      console.log("Result.current_page:", result.current_page);
-
+                                          
       let newsData = [];
       let pagination = {};
 
@@ -158,8 +151,7 @@ function loadNewsPage(page = 1) {
         };
       } else {
         // No data from API, use sample news
-        console.log("No data from Geysereco API, using sample news");
-      }
+              }
 
       // Process news data
       const processedNews = newsData.map((item, index) => ({
@@ -177,15 +169,11 @@ function loadNewsPage(page = 1) {
       const calculatedTotalPages = Math.ceil(pagination.total / pagination.per_page);
       const apiLastPage = pagination.last_page || 1;
       
-      console.log("=== Total Pages Calculation ===");
-      console.log(`API last_page: ${apiLastPage}`);
-      console.log(`Calculated (${pagination.total} / ${pagination.per_page}): ${calculatedTotalPages}`);
-      
+                        
       totalPages = Math.max(apiLastPage, calculatedTotalPages);
       currentPage = pagination.current_page || page;
       
-      console.log(`Final totalPages: ${totalPages}`);
-
+      
       // Sort by date (newest first)
       allNews.sort((a, b) => {
         const dateA = new Date(a.created_at || a.date || a.published_at || 0);
@@ -193,15 +181,7 @@ function loadNewsPage(page = 1) {
         return dateB - dateA;
       });
 
-      console.log("=== Pagination Summary ===");
-      console.log(`Current Page: ${currentPage}`);
-      console.log(`Total Pages: ${totalPages}`);
-      console.log(`Items in this page: ${processedNews.length}`);
-      console.log(`Total items across all pages: ${pagination.total}`);
-      console.log(`Per page: ${pagination.per_page}`);
-      console.log(`Expected total pages (calculated): ${Math.ceil(pagination.total / pagination.per_page)}`);
-      console.log(`Should show pagination: ${totalPages > 1}`);
-
+                                                
       if (newsLoading) newsLoading.style.display = "none";
       if (newsGrid) newsGrid.style.display = "grid";
 
@@ -212,8 +192,7 @@ function loadNewsPage(page = 1) {
       isLoading = false;
     })
     .catch((err) => {
-      console.log("Error loading news from Geysereco API:", err);
-      
+            
       const newsLoading = document.getElementById("newsLoading");
       if (newsLoading) {
         newsLoading.innerHTML = `
@@ -229,8 +208,7 @@ function loadNewsPage(page = 1) {
 function setupSearch() {
   const searchInput = document.getElementById("newsSearch");
   if (!searchInput) {
-    console.log("Search input not found, retrying...");
-    setTimeout(setupSearch, 200);
+        setTimeout(setupSearch, 200);
     return;
   }
 
@@ -253,8 +231,7 @@ function getRandomCategory() {
 
 function filterNews() {
   if (!allNews || allNews.length === 0) {
-    console.log("No news data available for filtering");
-    return;
+        return;
   }
 
   // For server-side pagination, we don't filter on client side
@@ -314,16 +291,8 @@ function displayNews(news) {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     itemsToShow = news.slice(startIndex, endIndex);
-    console.log(
-      `Client-side pagination: showing items ${startIndex}-${endIndex - 1} of ${
-        news.length
-      } total`
-    );
-  } else {
-    console.log(
-      `Server-side pagination: showing ${news.length} items for page ${currentPage}`
-    );
-  }
+      } else {
+      }
 
   // Generate HTML for news items
   const newsHTML = itemsToShow
@@ -390,33 +359,23 @@ function updatePagination() {
   const nextPageBtn = document.getElementById("nextPageBtn");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-  console.log("=== updatePagination Called ===");
-  console.log(`currentPage: ${currentPage}`);
-  console.log(`totalPages: ${totalPages}`);
-  console.log(`Should show pagination: ${totalPages > 1}`);
-
+        
   if (totalPages <= 1) {
-    console.log("Hiding pagination because totalPages <= 1");
-    if (paginationSection) paginationSection.style.display = "none";
+        if (paginationSection) paginationSection.style.display = "none";
     if (loadMoreSection) loadMoreSection.style.display = "none";
     return;
   }
 
-  console.log("Showing pagination");
-  // Show pagination
+    // Show pagination
   if (paginationSection) {
     paginationSection.style.display = "block";
-    console.log("Pagination section made visible");
-  } else {
-    console.log("Pagination section not found!");
-  }
+      } else {
+      }
 
   if (loadMoreSection) {
     loadMoreSection.style.display = "flex";
-    console.log("Load more section made visible");
-  } else {
-    console.log("Load more section not found!");
-  }
+      } else {
+      }
 
   // Update pagination info
   if (paginationInfo) {
@@ -454,23 +413,19 @@ function generatePaginationNumbers() {
   const paginationNumbers = document.getElementById("paginationNumbers");
   if (!paginationNumbers) return;
 
-  console.log("=== generatePaginationNumbers ===");
-  console.log(`currentPage: ${currentPage}, totalPages: ${totalPages}`);
-
+    
   let numbersHTML = "";
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-  console.log(`startPage: ${startPage}, endPage: ${endPage}`);
-
+  
   // Adjust start page if we're near the end
   if (endPage - startPage < maxVisiblePages - 1) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
 
-  console.log(`After adjustment - startPage: ${startPage}, endPage: ${endPage}`);
-
+  
   // First page
   if (startPage > 1) {
     numbersHTML += `<button class="page-number" onclick="event.preventDefault(); goToNewsPage(1)">1</button>`;
@@ -495,9 +450,7 @@ function generatePaginationNumbers() {
 
   paginationNumbers.innerHTML = numbersHTML;
   
-  console.log(`Generated ${endPage - startPage + 1} page buttons (${startPage} to ${endPage})`);
-  console.log(`HTML: ${numbersHTML.substring(0, 200)}...`);
-}
+    }
 
 function getCategoryLabel(category) {
   const labels = {
@@ -508,30 +461,24 @@ function getCategoryLabel(category) {
 
 // News page navigation functions with unique names
 window.goToNewsPage = (page) => {
-  console.log(`goToNewsPage called with page: ${page}`);
-  console.log(`Current state - currentPage: ${currentPage}, totalPages: ${totalPages}, isLoading: ${isLoading}`);
-  
+      
   if (page >= 1 && page <= totalPages && page !== currentPage && !isLoading) {
-    console.log(`Loading news page ${page}...`);
-    // Scroll to top of page
+        // Scroll to top of page
     window.scrollTo({ top: 0, behavior: 'smooth' });
     loadNewsPage(page);
   } else {
-    console.log(`Cannot load page ${page} - conditions not met`);
-  }
+      }
 };
 
 window.goToNewsPagePrevious = () => {
-  console.log(`goToNewsPagePrevious called - currentPage: ${currentPage}`);
-  if (currentPage > 1 && !isLoading) {
+    if (currentPage > 1 && !isLoading) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     loadNewsPage(currentPage - 1);
   }
 };
 
 window.goToNewsPageNext = () => {
-  console.log(`goToNewsPageNext called - currentPage: ${currentPage}, totalPages: ${totalPages}`);
-  if (currentPage < totalPages && !isLoading) {
+    if (currentPage < totalPages && !isLoading) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     loadNewsPage(currentPage + 1);
   }

@@ -1,12 +1,14 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
+import { setLoginSuccessFlag } from "../utils/toast.js";
 
 // Import HTML template
 import loginFormTemplate from "../templates/auth/login-form.html?raw";
 
 // Import CSS styles
 import "../styles/auth/auth-form.css";
+import "../styles/toast.css";
 
 export function LoginPage() {
   const container = document.createElement("div");
@@ -42,6 +44,10 @@ export function LoginPage() {
 
     try {
       await authService.login(phone, pass);
+      
+      // Set login success flag for toast notification
+      setLoginSuccessFlag();
+      
       // If login successful, redirect to home/dashboard
       window.location.hash = "/";
       window.location.reload(); // To update header state

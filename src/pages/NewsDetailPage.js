@@ -105,18 +105,12 @@ function loadNewsDetail(newsId) {
   const newsDetail = document.getElementById("newsDetail");
   const newsDetailError = document.getElementById("newsDetailError");
 
-  console.log('DOM elements found:', {
-    loading: !!newsDetailLoading,
-    detail: !!newsDetail,
-    error: !!newsDetailError
-  });
-
+  
   if (newsDetailLoading) newsDetailLoading.style.display = "flex";
   if (newsDetail) newsDetail.style.display = "none";
   if (newsDetailError) newsDetailError.style.display = "none";
 
-  console.log('Loading news detail for ID:', newsId);
-
+  
   // Add timeout to prevent infinite loading - reduced to 3 seconds
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => reject(new Error('Request timeout')), 3000);
@@ -128,21 +122,17 @@ function loadNewsDetail(newsId) {
     timeoutPromise
   ])
     .then((newsData) => {
-      console.log('News detail loaded:', newsData);
-      
+            
       // Re-get DOM elements to ensure they exist
       const loadingEl = document.getElementById("newsDetailLoading");
       const detailEl = document.getElementById("newsDetail");
       
-      console.log('Hiding loading, showing detail...');
-      if (loadingEl) {
+            if (loadingEl) {
         loadingEl.style.display = "none";
-        console.log('Loading hidden');
-      }
+              }
       if (detailEl) {
         detailEl.style.display = "block";
-        console.log('Detail shown');
-      }
+              }
       
       displayNewsDetail(newsData);
       loadRelatedNews();
@@ -150,8 +140,7 @@ function loadNewsDetail(newsId) {
       isLoading = false;
     })
     .catch((err) => {
-      console.log("Error loading news detail:", err.message);
-    });
+          });
 }
 
 function displayNewsDetail(newsData) {
@@ -222,8 +211,7 @@ function displayNewsDetail(newsData) {
     </article>
   `;
   
-  console.log('News detail displayed successfully');
-}
+  }
 
 function loadRelatedNews() {
   // Load related news from the same category
@@ -242,8 +230,7 @@ function loadRelatedNews() {
       }
     })
     .catch((err) => {
-      console.log("Error loading related news:", err);
-    });
+          });
 }
 
 function displayRelatedNews(relatedNews) {

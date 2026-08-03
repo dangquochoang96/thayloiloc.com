@@ -7,8 +7,7 @@ export function navigateTo(path) {
 
 // Global function for viewing news detail
 export function viewNewsDetail(newsId) {
-  console.log('View news detail:', newsId);
-  navigateTo(`/news/${newsId}`);
+    navigateTo(`/news/${newsId}`);
 }
 
 // Make functions available globally

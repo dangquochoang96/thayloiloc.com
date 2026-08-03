@@ -46,7 +46,7 @@
     position: relative;
 }
 
-.video-player-wrapper iframe, .video-player-wrapper #youtubePlayer {
+.video-player-wrapper iframe, .video-player-wrapper #youtubePlayer, .video-player-wrapper #sdYoutubePlayer {
     position: absolute;
     top: 0;
     left: 0;

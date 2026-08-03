@@ -12,8 +12,7 @@ class FavoriteStore {
     this.listeners = new Set();
     this.userId = null;
     
-    console.log('🏪 FavoriteStore initialized');
-  }
+      }
 
   /**
    * Initialize store with user ID
@@ -26,8 +25,7 @@ class FavoriteStore {
     }
     
     this.userId = String(userId);
-    console.log('🔧 FavoriteStore.init:', this.userId);
-    
+        
     // Load favorites immediately
     this.load();
   }
@@ -42,8 +40,7 @@ class FavoriteStore {
       return;
     }
 
-    console.log('🔄 FavoriteStore.load: Loading favorites for user', this.userId);
-    
+        
     this.loading = true;
     this.error = null;
     this.notify();
@@ -52,8 +49,7 @@ class FavoriteStore {
       // Clear localStorage cache to avoid stale data
       const cacheKey = `favorites_${this.userId}`;
       localStorage.removeItem(cacheKey);
-      console.log('🗑️ Cleared localStorage cache:', cacheKey);
-
+      
       // Fetch from API (single source of truth)
       const response = await api.get(`/user/listFavorite?user_id=${this.userId}`);
       
@@ -65,29 +61,24 @@ class FavoriteStore {
         allFavorites = response.data;
       }
 
-      console.log('📋 API returned', allFavorites.length, 'items');
-
+      
       // Filter staff only (has username AND phone)
       this.favorites = allFavorites.filter(item => {
         const isStaff = item.username && item.phone;
         if (!isStaff) {
-          console.log('⏭️ Skipping non-staff item:', item.id);
-        }
+                  }
         return isStaff;
       });
 
-      console.log('❤️ Filtered', this.favorites.length, 'staff favorites');
-
+      
       // Update localStorage with fresh data
       const favoriteIds = this.favorites.map(f => String(f.id));
       localStorage.setItem(cacheKey, JSON.stringify(favoriteIds));
-      console.log('💾 Updated localStorage:', favoriteIds);
-
+      
       this.loading = false;
       this.notify();
       
-      console.log('✅ FavoriteStore.load: Success');
-      
+            
     } catch (error) {
       console.error('❌ FavoriteStore.load: Error', error);
       this.error = error;
@@ -111,18 +102,12 @@ class FavoriteStore {
     const isCurrentlyFavorite = this.isFavorite(staffIdStr);
     const action = isCurrentlyFavorite ? 'removed' : 'added';
     
-    console.log('🔘 FavoriteStore.toggle:', {
-      staffId: staffIdStr,
-      isCurrentlyFavorite,
-      action
-    });
-
+    
     // Optimistic update (for better UX)
     const previousFavorites = [...this.favorites];
     if (isCurrentlyFavorite) {
       this.favorites = this.favorites.filter(f => String(f.id) !== staffIdStr);
-      console.log('⚡ Optimistic remove from UI');
-    }
+          }
     // Cannot add optimistically (need full staff data from API)
     this.notify();
 
@@ -130,21 +115,17 @@ class FavoriteStore {
       // Call appropriate API endpoint based on current state
       if (isCurrentlyFavorite) {
         // Remove from favorites
-        console.log('📡 Calling API /user/unFavorite');
-        const response = await api.post('/user/unFavorite', {
+                const response = await api.post('/user/unFavorite', {
           user_id: this.userId,
           staff_id: staffId
         });
-        console.log('✅ API response:', response);
-      } else {
+              } else {
         // Add to favorites
-        console.log('📡 Calling API /user/addFavorite');
-        const response = await api.post('/user/addFavorite', {
+                const response = await api.post('/user/addFavorite', {
           user_id: this.userId,
           staff_id: staffId
         });
-        console.log('✅ API response:', response);
-      }
+              }
 
       // Reload from API to get fresh data
       await this.load();
@@ -157,8 +138,7 @@ class FavoriteStore {
           action: action 
         }
       }));
-      console.log('📢 Dispatched favoritesUpdated event');
-
+      
       return { success: true, action: action };
 
     } catch (error) {
@@ -191,6 +171,14 @@ class FavoriteStore {
   }
 
   /**
+   * Alias for getAll() for backward compatibility
+   * @returns {Array} Copy of favorites array
+   */
+  getFavorites() {
+    return this.getAll();
+  }
+
+  /**
    * Get favorite count
    * @returns {number}
    */
@@ -210,8 +198,7 @@ class FavoriteStore {
     }
     
     this.listeners.add(callback);
-    console.log('👂 Listener subscribed. Total listeners:', this.listeners.size);
-    
+        
     // Call immediately with current state
     callback({
       favorites: this.getAll(),
@@ -222,8 +209,7 @@ class FavoriteStore {
     // Return unsubscribe function
     return () => {
       this.listeners.delete(callback);
-      console.log('👋 Listener unsubscribed. Total listeners:', this.listeners.size);
-    };
+          };
   }
 
   /**
@@ -236,8 +222,7 @@ class FavoriteStore {
       error: this.error
     };
     
-    console.log('📣 Notifying', this.listeners.size, 'listeners');
-    
+        
     this.listeners.forEach(callback => {
       try {
         callback(state);
@@ -251,8 +236,7 @@ class FavoriteStore {
    * Clear store (logout)
    */
   clear() {
-    console.log('🧹 FavoriteStore.clear: Clearing all data');
-    
+        
     this.favorites = [];
     this.loading = false;
     this.error = null;

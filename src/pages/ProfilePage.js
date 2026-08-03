@@ -1,7 +1,9 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { authService } from "../services/auth.service.js";
+import { qnaService } from "../services/qna.service.js";
 import { bookingService } from "../services/booking.service.js";
+import { historyService } from "../services/history.service.js";
 import { formatDate } from "../utils/helpers.js";
 
 // Import HTML template
@@ -11,6 +13,12 @@ import profileTemplate from "../templates/auth/profile.html?raw";
 import "../styles/auth/profile.css";
 
 export function ProfilePage() {
+  // Check authentication first
+  if (!authService.isAuthenticated()) {
+        window.location.hash = "/login";
+    return document.createElement("div"); // Return empty div while redirecting
+  }
+
   const container = document.createElement("div");
   container.className = "page-container";
 
@@ -25,6 +33,9 @@ export function ProfilePage() {
 
   // Load user data
   loadUserProfile(profileContent);
+
+  // Load rental count
+  loadRentalCount(profileContent);
 
   // Load booking history
   const user = authService.getCurrentUser();
@@ -49,9 +60,26 @@ function loadUserProfile(container) {
   }
 
   // Debug user data structure
-  console.log("Profile page - user data:", user);
-  authService.debugUserData();
+    authService.debugUserData();
 
+  // Refresh user data from server to get latest tich_diem
+  authService.refreshUserData().then(freshUser => {
+    if (freshUser) {
+            // Update display with fresh data
+      updateUserDisplay(container, freshUser);
+    } else {
+            updateUserDisplay(container, user);
+    }
+  }).catch(error => {
+    console.error("Failed to refresh user data:", error);
+    // Fallback to cached data
+    updateUserDisplay(container, user);
+  });
+}
+
+function updateUserDisplay(container, user) {
+  // Debug: Log user data structure
+      
   // Fill user information with better field handling
   const nameInput = container.querySelector("#fullName");
   const phoneInput = container.querySelector("#phone");
@@ -62,25 +90,82 @@ function loadUserProfile(container) {
   const userPhoneDisplay = container.querySelector("#user-phone");
   const pointDisplay = container.querySelector("#user-point");
 
-  // Handle different possible field names for user data
-  const userName = user.name || user.fullName || user.username || user.ten || user.ho_ten || "";
-  const userPhone = user.phone || user.phoneNumber || user.sdt || user.so_dien_thoai || "";
+  // Handle different possible field names for user data - prioritize username from API
+  const userName = 
+    user.username ||        // API returns this field
+    user.user_name || 
+    user.userName ||
+    user.name || 
+    user.fullName || 
+    user.full_name || 
+    user.ten || 
+    user.ho_ten || 
+    user.displayName ||
+    user.display_name ||
+    // If no name found, show phone as fallback
+    user.phone ||
+    user.phoneNumber ||
+    user.phone_number ||
+    "Người dùng";
+    
+  const userPhone = user.phone || user.phoneNumber || user.sdt || user.so_dien_thoai || user.phone_number || "";
   const userEmail = user.email || user.emailAddress || user.email_address || "";
   const userAddress = user.address || user.diachi || user.dia_chi || "";
-  const userAvatar = user.avatar || user.avatarUrl || user.avatar_url || user.hinh_anh || "";
-  const point = user.point || user.tich_diem || 0;
+  // API uses "avartar" (typo in API response)
+  const userAvatar = user.avartar || user.avatar || user.avatarUrl || user.avatar_url || user.hinh_anh || "";
+  const point = user.point || user.tich_diem || user.points || 0;
 
-  if (nameInput) nameInput.value = userName;
+    
+  if (nameInput) nameInput.value = userName !== "Người dùng" ? userName : "";
   if (phoneInput) phoneInput.value = userPhone;
   if (emailInput) emailInput.value = userEmail;
   if (addressInput) addressInput.value = userAddress;
-  if (userNameDisplay) userNameDisplay.textContent = userName || "Người dùng";
+  if (userNameDisplay) userNameDisplay.textContent = userName;
   if (userPhoneDisplay) userPhoneDisplay.textContent = userPhone || "";
-  if (pointDisplay) pointDisplay.textContent = `${point} tích điểm` || "0 tích điểm";
+  if (pointDisplay) pointDisplay.textContent = `${point} tích điểm`;
   
-  // Set avatar
+  // Set avatar - prepend base URL if avatar path is relative
   if (avatarImg) {
-    avatarImg.src = userAvatar || "/images/default-avatar.svg";
+    const avatarUrl = userAvatar ? 
+      (userAvatar.startsWith('http') ? userAvatar : `https://api.iongeyser.com${userAvatar}`) 
+      : "/images/default-avatar.svg";
+    avatarImg.src = avatarUrl;
+  }
+}
+
+async function loadRentalCount(container) {
+  const rentalCountDisplay = container.querySelector("#user-rental-count");
+  if (!rentalCountDisplay) return;
+
+  try {
+    const user = authService.getCurrentUser();
+    if (!user || !user.id) {
+      rentalCountDisplay.textContent = "0 máy thuê";
+      return;
+    }
+
+    // Get list of products
+    const productsResult = await historyService.getFilterHistory(user.id);
+    
+    let products = [];
+    if (productsResult.data && productsResult.data.listProducts) {
+      products = productsResult.data.listProducts;
+    } else if (productsResult.data && Array.isArray(productsResult.data)) {
+      products = productsResult.data;
+    } else if (Array.isArray(productsResult)) {
+      products = productsResult;
+    }
+
+    // Count rental machines - only those with status "Đang thuê" (origin === "1")
+    const rentalProducts = products.filter(product => 
+      product.order_type_label === "Thuê" && String(product.origin) === "1"
+    );
+    const rentalCount = rentalProducts.length;
+            
+    rentalCountDisplay.textContent = `${rentalCount} máy thuê`;
+  } catch (error) {
+    console.error('Error loading rental count:', error);
+    rentalCountDisplay.textContent = "0 máy thuê";
   }
 }
 
@@ -187,28 +272,32 @@ function setupEventListeners(container) {
     avatarInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (file) {
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          showMessage(errorMsg, "Kích thước file không được vượt quá 5MB");
-          return;
-        }
-
         // Validate file type
         if (!file.type.startsWith('image/')) {
           showMessage(errorMsg, "Vui lòng chọn file hình ảnh");
           return;
         }
 
-        // Show preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          avatarPreview.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-
-        // Upload avatar
+        // Show preview and upload
         try {
-          await authService.uploadAvatar(file);
+          let fileToUpload = file;
+          if (file.size > 500 * 1024) {
+            try {
+              fileToUpload = await qnaService.compressImage(file, 500 * 1024);
+            } catch (compressErr) {
+              console.error("Failed to compress avatar image, using original:", compressErr);
+            }
+          }
+
+          // Show preview
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            avatarPreview.src = event.target.result;
+          };
+          reader.readAsDataURL(fileToUpload);
+
+          // Upload avatar
+          await authService.uploadAvatar(fileToUpload);
           showMessage(successMsg, "Cập nhật ảnh đại diện thành công!");
         } catch (error) {
           showMessage(errorMsg, error.message || "Có lỗi xảy ra khi tải ảnh lên");
@@ -289,11 +378,29 @@ async function loadBookingHistory(container) {
     `;
 
     const user = authService.getCurrentUser();
-    if (!user) return;
+    if (!user) {
+      bookingList.innerHTML = `
+        <div class="empty-state" style="text-align: center; padding: 3rem;">
+          <p style="color: #666;">Vui lòng đăng nhập để xem lịch sử</p>
+        </div>
+      `;
+      return;
+    }
 
     // Get user booking history
     const bookingHistory = await bookingService.getLastReplaceFilterCore(user.id);
-    console.log('Booking history:', bookingHistory);
+    
+    // Check if API returned null (error case handled gracefully)
+    if (bookingHistory === null) {
+      bookingList.innerHTML = `
+        <div class="empty-state" style="text-align: center; padding: 3rem;">
+          <i class="fas fa-info-circle" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+          <h4 style="color: #666; margin-bottom: 0.5rem;">Không thể tải lịch sử</h4>
+          <p style="color: #999;">Chức năng này hiện chưa khả dụng</p>
+        </div>
+      `;
+      return;
+    }
 
     // Get the first booking if exists
     if (bookingHistory && bookingHistory.length > 0) {

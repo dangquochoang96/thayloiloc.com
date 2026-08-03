@@ -4,20 +4,23 @@ const REVIEWS_KEY = 'technician_reviews';
 export const reviewService = {
   // Lấy tất cả reviews
   getAllReviews() {
-    const reviews = localStorage.getItem(REVIEWS_KEY);
-    return reviews ? JSON.parse(reviews) : [];
+        const reviews = localStorage.getItem(REVIEWS_KEY);
+    const parsed = reviews ? JSON.parse(reviews) : [];
+            return parsed;
   },
 
   // Lấy reviews theo technician ID
   getReviewsByTechId(techId) {
-    const allReviews = this.getAllReviews();
-    return allReviews.filter(r => r.tech_id == techId);
+        const allReviews = this.getAllReviews();
+    const filtered = allReviews.filter(r => r.tech_id == techId);
+            return filtered;
   },
 
   // Thêm review mới
   addReview(techId, rating, comment) {
+                    
     const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-    
+        
     const newReview = {
       id: Date.now(),
       tech_id: techId,
@@ -28,11 +31,11 @@ export const reviewService = {
       comment: comment,
       created_at: new Date().toISOString()
     };
-
-    const allReviews = this.getAllReviews();
-    allReviews.unshift(newReview); // Thêm vào đầu
-    localStorage.setItem(REVIEWS_KEY, JSON.stringify(allReviews));
     
+    const allReviews = this.getAllReviews();
+        allReviews.unshift(newReview); // Thêm vào đầu
+    localStorage.setItem(REVIEWS_KEY, JSON.stringify(allReviews));
+            
     return newReview;
   },
 
@@ -52,8 +55,39 @@ export const reviewService = {
 
   // Xóa review (nếu cần)
   deleteReview(reviewId) {
+        const allReviews = this.getAllReviews();
+        const filtered = allReviews.filter(r => r.id !== reviewId);
+        localStorage.setItem(REVIEWS_KEY, JSON.stringify(filtered));
+      },
+
+  // Sửa review
+  updateReview(reviewId, rating, comment) {
+                
     const allReviews = this.getAllReviews();
-    const filtered = allReviews.filter(r => r.id !== reviewId);
-    localStorage.setItem(REVIEWS_KEY, JSON.stringify(filtered));
+        
+    const reviewIndex = allReviews.findIndex(r => r.id === reviewId);
+        
+    if (reviewIndex !== -1) {
+      const oldReview = { ...allReviews[reviewIndex] };
+            
+      allReviews[reviewIndex] = {
+        ...allReviews[reviewIndex],
+        rating: rating,
+        comment: comment,
+        updated_at: new Date().toISOString()
+      };
+      
+            localStorage.setItem(REVIEWS_KEY, JSON.stringify(allReviews));
+            return allReviews[reviewIndex];
+    }
+    
+        return null;
+  },
+
+  // Lấy review theo ID
+  getReviewById(reviewId) {
+        const allReviews = this.getAllReviews();
+    const review = allReviews.find(r => r.id === reviewId);
+        return review || null;
   }
 };

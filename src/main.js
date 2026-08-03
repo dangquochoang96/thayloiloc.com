@@ -5,6 +5,7 @@ import { ensureFontAwesome } from "./utils/icons.js";
 import { HomePage } from "./pages/HomePage.js";
 import { LoginPage } from "./pages/LoginPage.js";
 import { RegisterPage } from "./pages/RegisterPage.js";
+import { PromoRegisterPage } from "./pages/PromoRegisterPage.js";
 import { ProfilePage } from "./pages/ProfilePage.js";
 import { BookingPage } from "./pages/BookingPage.js";
 import { BookingHistoryPage } from "./pages/BookingHistoryPage.js";
@@ -22,10 +23,17 @@ import { VideoPage } from "./pages/VideoPage.js";
 import { HotlinePage } from "./pages/HotlinePage.js";
 import { TechnicianDetailPage } from "./pages/TechnicianDetailPage.js";
 import { ContactPage } from "./pages/ContactPage.js";
+import { QnAPage } from "./pages/QnAPage.js";
+import { QnADetailPage } from "./pages/QnADetailPage.js";
 import { RentWaterPurifierPage } from "./pages/RentWaterPurifierPage.js";
 import { BookingRentPage } from "./pages/BookingRentPage.js";
 import { LapdatPage } from "./pages/Lapdat.js";
+import { ServiceQuotationPage } from "./pages/ServiceQuotationPage.js";
+import { ServiceDetailPage } from "./pages/ServiceDetailPage.js";
+import { FeedbackPage } from "./pages/FeedbackPage.js";
 import { FloatingButton } from "./components/FloatingButton.js";
+import { ChatWidget } from "./components/ChatWidget.js";
+import { BottomNav } from "./components/BottomNav.js";
 
 const routes = {
   "/": {
@@ -37,11 +45,26 @@ const routes = {
   "/register": {
     render: RegisterPage,
   },
+  "/feedback": {
+    render: FeedbackPage,
+  },
+  "/promo-register/:staffId": {
+    render: PromoRegisterPage,
+  },
   "/profile": {
     render: ProfilePage,
   },
   "/services": {
     render: ServicesPage,
+  },
+  "/services-quotation": {
+    render: ServiceQuotationPage,
+  },
+  "/services-quotation-detail": {
+    render: ServiceDetailPage,
+  },
+  "/services-quotation-detail/:id": {
+    render: ServiceDetailPage,
   },
   "/news": {
     render: NewsPage,
@@ -62,6 +85,9 @@ const routes = {
     render: BookingDetailPage,
   },
   "/product-filter-history": {
+    render: ProductFilterHistoryPage,
+  },
+  "/product-filter-history/:id": {
     render: ProductFilterHistoryPage,
   },
   "/filter-history-detail": {
@@ -88,8 +114,17 @@ const routes = {
   "/technician-detail": {
     render: TechnicianDetailPage,
   },
+  "/technician-detail/:id": {
+    render: TechnicianDetailPage,
+  },
   "/contact": {
     render: ContactPage,
+  },
+  "/qna": {
+    render: QnAPage,
+  },
+  "/qna/:id": {
+    render: QnADetailPage,
   },
   "/rent-water-purifier": {
     render: RentWaterPurifierPage,
@@ -110,13 +145,22 @@ const routes = {
 // Ensure Font Awesome is loaded before starting the router
 ensureFontAwesome()
   .then(() => {
-    console.log("Starting router with Font Awesome loaded");
-
+    
     // Add floating button to the body once
     const existingFloatingButton = document.querySelector(".floating-buttons");
     if (!existingFloatingButton) {
       const floatingButton = FloatingButton();
       document.body.appendChild(floatingButton);
+    }
+
+    // Add chat widget (floating popup)
+    if (!document.getElementById("chat-widget-root")) {
+      ChatWidget();
+    }
+
+    // Add global bottom mobile navigation
+    if (!document.getElementById("global-bottom-nav")) {
+      document.body.appendChild(BottomNav());
     }
 
     new Router(routes);
@@ -129,6 +173,16 @@ ensureFontAwesome()
     if (!existingFloatingButton) {
       const floatingButton = FloatingButton();
       document.body.appendChild(floatingButton);
+    }
+
+    // Add chat widget (floating popup)
+    if (!document.getElementById("chat-widget-root")) {
+      ChatWidget();
+    }
+
+    // Add global bottom mobile navigation
+    if (!document.getElementById("global-bottom-nav")) {
+      document.body.appendChild(BottomNav());
     }
 
     new Router(routes);

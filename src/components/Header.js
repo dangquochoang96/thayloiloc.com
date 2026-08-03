@@ -1,5 +1,7 @@
 import { authService } from "../services/auth.service.js";
+import { Toast } from "../utils/toast.js";
 import "../styles/header.css";
+import "../styles/toast.css";
 
 export function Header() {
   const header = document.createElement("header");
@@ -36,7 +38,7 @@ export function Header() {
   // Declare contactDropdown variable at the top of the nav section
   // let contactDropdown = null;
 
-  console.log("Auth check:", { isLoggedIn, user }); // Debug log
+   // Debug log
 
   // Debug user data structure
   authService.debugUserData();
@@ -61,7 +63,7 @@ export function Header() {
   // Dịch Vụ Dropdown
   const servicesDropdown = document.createElement("div");
   servicesDropdown.className = "nav-dropdown";
-  const isOnServicesPage = ["#/services", "#/rent-water-purifier"].includes(window.location.hash);
+  const isOnServicesPage = ["#/services", "#/rent-water-purifier", "#/services-quotation"].includes(window.location.hash);
 
   servicesDropdown.innerHTML = `
     <a href="javascript:void(0)" class="nav-link nav-dropdown-toggle ${isOnServicesPage ? "active" : ""}">
@@ -69,19 +71,20 @@ export function Header() {
       <i class="fas fa-chevron-down dropdown-arrow"></i>
     </a>
     <div class="nav-dropdown-menu">
+      <a href="#/services-quotation" class="${window.location.hash === "#/services-quotation" ? "active" : ""}"><i class="fas fa-file-invoice-dollar"></i> Bảng giá dịch vụ</a>
       <a href="#/services" class="${window.location.hash === "#/services" ? "active" : ""}"><i class="fas fa-wrench"></i> Dịch Vụ Sửa Chữa</a>
       <a href="#/rent-water-purifier" class="${window.location.hash === "#/rent-water-purifier" ? "active" : ""}"><i class="fas fa-tint"></i> Thuê máy lọc nước</a>
     </div>
   `;
   nav.appendChild(servicesDropdown);
 
-  nav.appendChild(createNavLink("Liên Hệ", "#/contact"));
-  nav.appendChild(createNavLink("Tìm Thợ", "#/hotline"));
-
   // Add history link for logged in users
   if (isLoggedIn && user) {
     nav.appendChild(createNavLink("Lịch Sử", "#/booking-history"));
   }
+
+  nav.appendChild(createNavLink("Tìm Thợ", "#/hotline"));
+  nav.appendChild(createNavLink("Hỏi Đáp", "#/qna"));
 
   // Add "Tin Tức" dropdown with submenus
   const newsDropdown = document.createElement("div");
@@ -199,13 +202,26 @@ export function Header() {
 
     // Get user display name using the auth service method
     const userName = authService.getUserDisplayName();
-    console.log("User name for display:", userName); // Debug log
+     // Debug log
 
     userBtn.innerHTML = `
       <i class="fas fa-user-circle"></i>
       <span>${userName}</span>
       <i class="fas fa-chevron-down"></i>
     `;
+
+    // Fetch fresh user profile in the background and update header name dynamically
+    authService.refreshUserData().then(freshUser => {
+      if (freshUser) {
+        const updatedUserName = authService.getUserDisplayName();
+        const nameSpan = userBtn.querySelector("span");
+        if (nameSpan && nameSpan.textContent !== updatedUserName) {
+                    nameSpan.textContent = updatedUserName;
+        }
+      }
+    }).catch(err => {
+      console.warn("Background user data refresh failed in Header:", err);
+    });
 
     const dropdownMenu = document.createElement("div");
     dropdownMenu.className = "dropdown-menu";
@@ -257,7 +273,10 @@ export function Header() {
       e.preventDefault();
       if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
         authService.logout();
-        window.location.reload();
+        Toast.info("Đã đăng xuất thành công. Hẹn gặp lại!", 3000);
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       }
     });
 

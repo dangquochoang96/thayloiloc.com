@@ -6,9 +6,12 @@ import { productService } from "../services/product.service.js";
 import { videoService } from "../services/video.service.js";
 import { getImageUrl, formatDate, truncateText } from "../utils/helpers.js";
 import { navigateTo } from "../utils/navigation.js";
+import { checkAndShowLoginSuccess } from "../utils/toast.js";
+import { showAdBanner } from "../components/AdBanner.js";
 
 // Import HTML templates
 import heroTemplate from "../templates/home/hero-section.html?raw";
+import workingProcessTemplate from "../templates/home/working-process.html?raw";
 import servicesTemplate from "../templates/home/services-section.html?raw";
 import productsTemplate from "../templates/home/products-section.html?raw";
 import appDownloadTemplate from "../templates/home/app-download-section.html?raw";
@@ -18,12 +21,14 @@ import contactTemplate from "../templates/home/contact-section.html?raw";
 
 // Import CSS styles
 import "../styles/home/hero-section.css";
+import "../styles/home/working-process.css";
 import "../styles/home/services-section.css";
 import "../styles/home/products-section.css";
 import "../styles/home/app-download-section.css";
 import "../styles/home/news-section.css";
 import "../styles/home/video-section.css";
 import "../styles/home/contact-section.css";
+import "../styles/toast.css";
 
 export function HomePage() {
   const container = document.createElement("div");
@@ -37,6 +42,11 @@ export function HomePage() {
   const heroSection = document.createElement("div");
   heroSection.innerHTML = heroTemplate;
   main.appendChild(heroSection.firstElementChild);
+
+  // Working Process Section (Placed directly under hero banner)
+  const workingProcessSection = document.createElement("div");
+  workingProcessSection.innerHTML = workingProcessTemplate;
+  main.appendChild(workingProcessSection.firstElementChild);
 
   // Services Section
   const servicesSection = document.createElement("div");
@@ -80,6 +90,16 @@ export function HomePage() {
   container.appendChild(main);
   container.appendChild(Footer());
 
+  // Check and show login success toast
+  setTimeout(() => {
+    checkAndShowLoginSuccess();
+  }, 100);
+
+  // Show promotional ad banner after a short delay
+  setTimeout(() => {
+    showAdBanner();
+  }, 800);
+
   return container;
 }
 
@@ -101,8 +121,7 @@ function loadProducts() {
       initializeSlider(displayProducts.length);
     })
     .catch((err) => {
-      console.log("Error loading products:", err);
-      const productsLoading = document.getElementById("productsLoading");
+            const productsLoading = document.getElementById("productsLoading");
       if (productsLoading) {
         productsLoading.innerHTML = `
           <i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i>
@@ -376,14 +395,12 @@ function formatPrice(price) {
 // Global functions for product interactions
 window.viewProductDetail = (productId) => {
   // Navigate to product detail page or show modal
-  console.log('View product detail:', productId);
-  // For now, just log - can implement product detail page later
+    // For now, just log - can implement product detail page later
 };
 
 window.contactForProduct = (productId) => {
   // Handle contact for specific product
-  console.log('Contact for product:', productId);
-  // Can implement contact modal or redirect to contact form
+    // Can implement contact modal or redirect to contact form
   alert('Vui lòng liên hệ hotline: 0335118911 để biết thêm chi tiết về sản phẩm này!');
 };
 
@@ -427,8 +444,7 @@ function loadNews() {
       }
     })
     .catch((err) => {
-      console.log("Error loading Geysereco news, trying main API:", err);
-      // Fallback to main API if Geysereco fails
+            // Fallback to main API if Geysereco fails
       return newsService.getNewsList()
         .then((result) => {
           const newsLoading = document.getElementById("newsLoading");
@@ -448,8 +464,7 @@ function loadNews() {
           initializeNewsSlider(news.length);
         })
         .catch((mainErr) => {
-          console.log("Error loading both APIs:", mainErr);
-          const newsLoading = document.getElementById("newsLoading");
+                    const newsLoading = document.getElementById("newsLoading");
           if (newsLoading) {
             newsLoading.innerHTML = '<p style="color:#666;">Không thể tải tin tức</p>';
           }
@@ -702,22 +717,35 @@ window.goToNewsSlide = (slideIndex) => {
 let videoHomePlaylist = [];
 let videoHomeCurrentIndex = 0;
 let youtubePlayerInstance = null;
-let isYoutubeApiLoaded = false;
 
 function loadYoutubeAPI() {
-  if (window.YT) {
-    isYoutubeApiLoaded = true;
+  if (window.YT && window.YT.Player) {
     return Promise.resolve();
   }
   return new Promise((resolve) => {
+    const existingReady = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
-      isYoutubeApiLoaded = true;
+      if (typeof existingReady === "function") existingReady();
       resolve();
     };
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      if (firstScriptTag && firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      } else {
+        document.head.appendChild(tag);
+      }
+    } else {
+      const checkInterval = setInterval(() => {
+        if (window.YT && window.YT.Player) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100);
+    }
   });
 }
 
@@ -728,30 +756,40 @@ function loadVideoHome() {
       const videoPlaylistContainer = document.getElementById("videoHomePlaylistContainer");
 
       if (videoHomeLoading) videoHomeLoading.style.display = "none";
-      if (videoPlaylistContainer) videoPlaylistContainer.style.display = "flex";
 
+      let videos = [];
       if (result && result.data && Array.isArray(result.data)) {
-        videoHomePlaylist = result.data.slice(0, 9);
+        videos = result.data;
       } else if (Array.isArray(result)) {
-        videoHomePlaylist = result.slice(0, 9);
+        videos = result;
       }
 
+      videoHomePlaylist = videos.slice(0, 9);
+
       if (videoHomePlaylist.length > 0) {
+        if (videoPlaylistContainer) videoPlaylistContainer.style.display = "flex";
+        videoHomeCurrentIndex = 0;
         renderVideoPlaylist();
-        loadYoutubeAPI().then(() => {
-          initYoutubePlayer();
-        });
+        loadYoutubeAPI()
+          .then(() => {
+            initYoutubePlayer();
+          })
+          .catch((e) => {
+            console.warn("YouTube API failed, falling back to iframe:", e);
+            initYoutubePlayer();
+          });
       } else {
         if (videoPlaylistContainer) {
-          videoPlaylistContainer.innerHTML = '<p style="text-align:center; padding: 40px; width: 100%;">Chưa có video</p>';
+          videoPlaylistContainer.style.display = "block";
+          videoPlaylistContainer.innerHTML = '<p style="text-align:center; padding: 40px; width: 100%; color: #666;">Chưa có video</p>';
         }
       }
     })
     .catch((err) => {
-      console.log("Error loading videos:", err);
+      console.error("Error loading videos:", err);
       const videoHomeLoading = document.getElementById("videoHomeLoading");
       if (videoHomeLoading) {
-        videoHomeLoading.innerHTML = '<p style="color:#666;">Không thể tải video</p>';
+        videoHomeLoading.innerHTML = '<p style="color:#666; text-align:center; padding: 20px;">Không thể tải video</p>';
       }
     });
 }
@@ -761,7 +799,7 @@ function renderVideoPlaylist() {
   if (!listContainer) return;
 
   listContainer.innerHTML = videoHomePlaylist.map((item, index) => {
-    const imageUrl = item.link ? videoService.getYoutubeThumbnail(item.link) : "/images/logo.png";
+    const imageUrl = item.link ? videoService.getYoutubeThumbnail(item.link, 'hqdefault') : "/images/logo.png";
     const title = item.name || item.title || "Video hướng dẫn";
     const date = item.created_at || new Date().toISOString();
     
@@ -784,28 +822,63 @@ function initYoutubePlayer() {
   if (!currentVideo) return;
   
   const videoId = videoService.extractVideoId(currentVideo.link);
-  if (!videoId) return;
+  const playerWrapper = document.querySelector(".video-player-wrapper");
+  if (!playerWrapper) return;
 
-  youtubePlayerInstance = new window.YT.Player('youtubePlayer', {
-    videoId: videoId,
-    playerVars: {
-      'autoplay': 1,
-      'mute': 1,
-      'rel': 0
-    },
-    events: {
-      'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
+  if (!videoId) {
+    playerWrapper.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%; color:#fff;">Link video không hợp lệ</div>`;
+    return;
+  }
+
+  // Clear existing container node
+  playerWrapper.innerHTML = `<div id="youtubePlayer"></div>`;
+
+  if (window.YT && window.YT.Player) {
+    try {
+      if (youtubePlayerInstance && typeof youtubePlayerInstance.destroy === 'function') {
+        try { youtubePlayerInstance.destroy(); } catch(e) {}
+      }
+
+      youtubePlayerInstance = new window.YT.Player('youtubePlayer', {
+        videoId: videoId,
+        playerVars: {
+          'autoplay': 1,
+          'mute': 1,
+          'rel': 0,
+          'iv_load_policy': 3,
+          'modestbranding': 1
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+      return;
+    } catch (e) {
+      console.warn("Could not create YT.Player, using iframe embed fallback:", e);
     }
-  });
+  }
+
+  // Direct iframe fallback
+  playerWrapper.innerHTML = `
+    <iframe 
+      id="youtubePlayer" 
+      src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
+  `;
 }
 
 function onPlayerReady(event) {
-  event.target.playVideo();
+  try {
+    event.target.playVideo();
+  } catch(e) {}
 }
 
 function onPlayerStateChange(event) {
-  if (event.data === window.YT.PlayerState.ENDED) {
+  if (window.YT && event.data === window.YT.PlayerState.ENDED) {
     playNextVideoHome();
   }
 }
@@ -830,10 +903,17 @@ function updatePlayerAndList() {
 
   const videoId = videoService.extractVideoId(currentVideo.link);
   
-  if (youtubePlayerInstance && videoId) {
-    youtubePlayerInstance.loadVideoById(videoId);
+  if (youtubePlayerInstance && typeof youtubePlayerInstance.loadVideoById === 'function' && videoId) {
+    try {
+      youtubePlayerInstance.loadVideoById(videoId);
+    } catch(e) {
+      initYoutubePlayer();
+    }
+  } else {
+    initYoutubePlayer();
   }
   
   renderVideoPlaylist();
 }
+
 

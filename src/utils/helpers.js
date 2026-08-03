@@ -82,3 +82,28 @@ export function truncateText(text, maxLength) {
   if (plainText.length <= maxLength) return plainText;
   return plainText.substring(0, maxLength) + "...";
 }
+
+/**
+ * Format user name for display
+ * @param {Object} user - User object with name/username and phone
+ * @returns {string} Formatted username
+ */
+export function formatUserName(user) {
+  if (!user) return "Người dùng";
+  
+  // Try different possible field names for user name
+  const displayName = user.username || user.name || user.fullName || user.ten || user.ho_ten;
+  
+  if (displayName && displayName.trim()) {
+    return displayName;
+  }
+  
+  // If no name, create username from phone number
+  if (user.phone) {
+    const phoneStr = user.phone.toString();
+    const lastFour = phoneStr.slice(-4);
+    return `User_${lastFour}`;
+  }
+  
+  return "Người dùng";
+}

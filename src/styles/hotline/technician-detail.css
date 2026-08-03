@@ -334,6 +334,46 @@
   font-weight: 600;
 }
 
+.tech-profile-card .select-tech-btn {
+  width: 100%;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.02em;
+  margin-top: 1rem;
+}
+
+.tech-profile-card .select-tech-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(234, 88, 12, 0.4);
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+}
+
+.tech-profile-card .select-tech-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.3);
+}
+
+.tech-profile-card .select-tech-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tech-profile-card .select-tech-btn i {
+  font-size: 1.125rem;
+}
+
 /* ============================================
    INFO SECTIONS
    ============================================ */
@@ -539,6 +579,53 @@
   border-color: #ef4444;
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   animation: heartBeat 0.5s ease;
+}
+
+/* ============================================
+   SELECT TECHNICIAN SECTION
+   ============================================ */
+.select-tech-section {
+  margin-bottom: 1.5rem;
+  animation: slideUp 0.5s ease;
+}
+
+.select-tech-btn {
+  width: 100%;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.02em;
+}
+
+.select-tech-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(234, 88, 12, 0.4);
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+}
+
+.select-tech-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.3);
+}
+
+.select-tech-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.select-tech-btn i {
+  font-size: 1.25rem;
 }
 
 /* ============================================
@@ -799,6 +886,15 @@
     height: 48px;
     font-size: 1.5rem;
   }
+  
+  .tech-profile-card .select-tech-btn {
+    font-size: 0.95rem;
+    padding: 0.75rem 1.25rem;
+  }
+  
+  .tech-profile-card .select-tech-btn i {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -863,6 +959,15 @@
   .review-text {
     font-size: 0.875rem;
   }
+  
+  .tech-profile-card .select-tech-btn {
+    font-size: 0.9rem;
+    padding: 0.625rem 1rem;
+  }
+  
+  .tech-profile-card .select-tech-btn i {
+    font-size: 0.95rem;
+  }
 }
 
 /* ============================================
@@ -886,6 +991,10 @@
 
   .tech-rating {
     margin-top: 0;
+  }
+  
+  .tech-profile-card .select-tech-btn {
+    max-width: 300px;
   }
 }
 
@@ -913,6 +1022,10 @@
 
   .info-section {
     padding: 2rem;
+  }
+  
+  .tech-profile-card .select-tech-btn {
+    max-width: 350px;
   }
 }
 

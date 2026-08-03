@@ -95,6 +95,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
 }
 
 .filter-toolbar label {
@@ -103,6 +104,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .filter-toolbar label i {
@@ -123,6 +125,28 @@
 .status-filter:focus {
   outline: none;
   border-color: #f97316;
+}
+
+.search-input {
+  padding: 10px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  background: white;
+  min-width: 200px;
+  transition: all 0.3s;
+  flex: 1;
+  max-width: 300px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.search-input::placeholder {
+  color: #999;
 }
 
 .loading-state,
@@ -597,8 +621,12 @@
     width: 100%;
   }
 
+  .feedback-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   .feedback-container {
-    padding: 20px;
+    padding: 10px;
   }
 
   .feedback-info {
@@ -608,6 +636,15 @@
   .image-preview {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 10px;
+  }
+  
+  .stats-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .stat-badge {
+    justify-content: center;
   }
 }
 
@@ -622,3 +659,284 @@
     padding: 12px 30px;
   }
 }
+
+/* Rental Count Section */
+.rental-count-section {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.stats-container {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+  font-size: 0.95rem;
+}
+
+.stat-badge:hover {
+  transform: translateY(-2px);
+}
+
+.stat-badge.total-machines {
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  border-color: #2196f3;
+}
+
+.stat-badge.total-machines i {
+  font-size: 1.3rem;
+  color: #2196f3;
+}
+
+.stat-badge.total-machines span {
+  color: #333;
+}
+
+.stat-badge.total-machines strong {
+  font-size: 1.2rem;
+  color: #2196f3;
+  font-weight: 700;
+}
+
+.stat-badge.rental-machines {
+  background: linear-gradient(135deg, #fff3e0, #ffffff);
+  border-color: #f97316;
+}
+
+.stat-badge.rental-machines i {
+  font-size: 1.3rem;
+  color: #f97316;
+}
+
+.stat-badge.rental-machines span {
+  color: #333;
+}
+
+.stat-badge.rental-machines strong {
+  font-size: 1.2rem;
+  color: #f97316;
+  font-weight: 700;
+}
+
+.stat-badge.rental-debt {
+  background: linear-gradient(135deg, #ffebee, #ffffff);
+  border-color: #e91e63;
+}
+
+.stat-badge.rental-debt i {
+  font-size: 1.3rem;
+  color: #e91e63;
+}
+
+.stat-badge.rental-debt span {
+  color: #333;
+}
+
+.stat-badge.rental-debt strong {
+  font-size: 1.2rem;
+  color: #e91e63;
+  font-weight: 700;
+}
+
+/* Summary table styles */
+.summary-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.summary-table thead {
+  background: linear-gradient(135deg, #F97316, #ea580c);
+  color: white;
+}
+
+.summary-table thead th {
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+  border-bottom: 2px solid #ea580c;
+}
+
+.summary-table thead th:first-child {
+  border-top-left-radius: 15px;
+}
+
+.summary-table thead th:last-child {
+  border-top-right-radius: 15px;
+}
+
+.summary-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: all 0.3s;
+}
+
+.summary-table tbody tr:hover {
+  background: #f8f9fa;
+  transform: scale(1.01);
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.1);
+}
+
+.summary-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.summary-table tbody td {
+  padding: 15px 20px;
+  vertical-align: middle;
+}
+
+.summary-table .text-center {
+  text-align: center;
+}
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-product-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 5px;
+}
+
+.summary-detail {
+  font-size: 0.9rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-detail i {
+  color: #F97316;
+  width: 16px;
+}
+
+.summary-product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #eee;
+  transition: transform 0.3s;
+}
+
+.summary-product-image:hover {
+  transform: scale(1.1);
+}
+
+.summary-next-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.next-date-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #F97316;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #fff8f0, #ffffff);
+  border-radius: 10px;
+  border: 2px solid #F97316;
+}
+
+.next-filter-name {
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+.no-data {
+  color: #999;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .summary-table-wrapper {
+    margin: 10px -20px;
+    border-radius: 0;
+  }
+  
+  .summary-table {
+    min-width: 600px;
+  }
+  
+  .summary-table thead th,
+  .summary-table tbody td {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .summary-product-name {
+    font-size: 1rem;
+  }
+  
+  .summary-product-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .next-date-value {
+    font-size: 0.95rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Action button for Feedback / Complaint */
+.btn-feedback-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #f97316;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.btn-feedback-action:hover {
+  background: #f97316;
+  color: #ffffff;
+  border-color: #f97316;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(249, 115, 22, 0.25);
+}
+
+.btn-feedback-action i {
+  font-size: 0.85rem;
+}
+
